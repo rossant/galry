@@ -3,9 +3,7 @@ Galry: high-performance interactive 2D visualization in Python
 
 Code quality
 ------------
-  * blog post
   * generate API reference
-  
   * automatic benchmark test
   * PEP8
   * unit testing
