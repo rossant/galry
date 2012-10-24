@@ -20,6 +20,12 @@ Optional dependencies include IPython, hdf5, PyOpenCL (the last two are not
 currently used but may be in the future).
 
 
+I want to see a demo!
+---------------------
+
+[![youtube](images/youtube.png)](http://www.youtube.com/watch?v=jYNJJ4O3pXo)
+
+
 Why Galry?
 ----------
 
@@ -48,7 +54,7 @@ On a 3-years old laptop with a modest graphics card, I am able to
 navigate into a one million points dataset at ~70 FPS, and five million points
 at ~15 FPS (see the benchmarks folder).
 
-The [benchmark page][wiki/Benchmark] contains more details. Users are invited
+The [benchmark page](wiki/Benchmark) contains more details. Users are invited
 to do their own benchmark.
 
 
