@@ -161,7 +161,7 @@ electrophysiological data GUI that will handle very large datasets.
 I want to participate!
 ----------------------
 
-Send me an e-mail.
+[Send me an e-mail](http://cyrille.rossant.net).
 
 
 Why this name?
