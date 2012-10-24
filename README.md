@@ -137,7 +137,7 @@ Once you've read this introduction, there are several sources of documentation:
   * The API reference: once you know the fundamentals, use the reference
     if you want to go deeper into Galry.
     
-The [installation page][wiki/Installation] also contains details on how
+The [installation page](wiki/Installation) also contains details on how
 installing Galry. As of now, Galry is still an experimental library and
 installation may not be straightforward depending on your software and
 hardware setup.
