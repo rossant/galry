@@ -23,7 +23,9 @@ currently used but may be in the future).
 I want to see a demo!
 ---------------------
 
-[![youtube](https://raw.github.com/rossant/galry/master/images/youtube.png)](http://www.youtube.com/watch?v=jYNJJ4O3pXo)
+[![Galry's Demo](https://raw.github.com/rossant/galry/master/images/youtube.png)](http://www.youtube.com/watch?v=jYNJJ4O3pXo)
+
+![Galry's gallery](https://raw.github.com/rossant/galry/master/images/overview.png)
 
 
 Why Galry?
