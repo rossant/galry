@@ -23,7 +23,7 @@ currently used but may be in the future).
 I want to see a demo!
 ---------------------
 
-[![youtube](rossant.github.com/repository/images/youtube.png)](http://www.youtube.com/watch?v=jYNJJ4O3pXo)
+[![youtube](https://raw.github.com/rossant/galry/master/images/youtube.png)](http://www.youtube.com/watch?v=jYNJJ4O3pXo)
 
 
 Why Galry?
