@@ -59,7 +59,7 @@ void main()
     // run mandelbrot system
     int n = mandelbrot_escape(pos, iterations);
     
-    // compute the blue value as a function of n
+    // compute the red value as a function of n
     gl_FragColor.r = log(n) / log(iterations);
 }
 """
@@ -73,16 +73,9 @@ class MandelbrotPaintManager(PaintManager):
         # create the textured rectangle and specify the shaders
         self.add_textured_rectangle(texture, vertex_shader=VS,
                                     fragment_shader=FS)
-                                    
-class MandelbrotPlot(GalryWidget):
-    def initialize(self):
-        # set the paint manager
-        self.set_companion_classes(paint_manager=MandelbrotPaintManager)
-        # initialize the companion classes
-        self.initialize_companion_classes()
-        self.constrain_ratio = True
-    
+
 if __name__ == '__main__':
     print "Zoom in!"
-    # create a basic window with MandelbrotPlot
-    window = show_basic_window(MandelbrotPlot)
+    window = show_basic_window(paint_manager=MandelbrotPaintManager,
+                               constrain_ratio=True)
+    
