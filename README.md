@@ -56,7 +56,7 @@ On a 3-years old laptop with a modest graphics card, I am able to
 navigate into a one million points dataset at ~70 FPS, and five million points
 at ~15 FPS (see the benchmarks folder).
 
-The [benchmark page](galry/wiki/Benchmark) contains more details. Users are invited
+The [benchmark page](https://github.com/rossant/galry/wiki/Benchmarks) contains more details. Users are invited
 to do their own benchmark.
 
 
@@ -145,7 +145,7 @@ Once you've read this introduction, there are several sources of documentation:
   * The API reference: once you know the fundamentals, use the reference
     if you want to go deeper into Galry.
     
-The [installation page](galry/wiki/Installation) also contains details on how
+The [installation page](https://github.com/rossant/galry/wiki/Installation) also contains details on how
 installing Galry. As of now, Galry is still an experimental library and
 installation may not be straightforward depending on your software and
 hardware setup.
