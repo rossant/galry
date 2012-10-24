@@ -31,7 +31,7 @@ class MyBinding(ActionEventBindingSet):
         
         # We need to import cursors here and not at the beginning of the script
         # because QT must have been initialized before loading cursors.
-        from galry import cursors
+        # from galry import cursors
         
         # We specify a custom base cursor for this interaction mode.
         self.set_base_cursor(cursors.MagnifyingGlassCursor)

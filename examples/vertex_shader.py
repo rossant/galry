@@ -9,11 +9,12 @@ VS = """
 void main()
 {
     // Update coordinate y as a function of x.
-    position.y = sin(10 * position.x);
+    vec4 newpos = position;
+    newpos.y = sin(10 * position.x);
     
     // Transform the position in order to take interactive navigation into
     // account.
-    gl_Position = gl_ModelViewProjectionMatrix * position;
+    gl_Position = gl_ModelViewProjectionMatrix * newpos;
     
     // Pass the default color to the fragment shader.
     gl_FrontColor = gl_Color;

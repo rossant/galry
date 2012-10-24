@@ -481,6 +481,8 @@ class GalryWidget(QGLWidget):
         image = self.grabFrameBuffer()
         image.save(file,"PNG")
     
+    
+    
 # Basic widgets helper functions and classes
 # ------------------------------------------
 def create_custom_widget(bindings=None, events_enum=None, antialiasing=False,

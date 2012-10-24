@@ -161,13 +161,3 @@ pip-log.txt
 
 # Mac crap
 .DS_Store
-/images/overview.psd
-/images/tile_conway.png
-/images/tile_earth.png
-/images/tile_fountain.png
-/images/tile_lines.png
-/images/tile_mandelbrot.png
-/images/tile_sprites.png
-/images/tile_sync.png
-/images/layouts_large.psd
-/images/layouts_old.psd

@@ -1,4 +1,5 @@
 from python_qt_binding.QtCore import Qt 
+import cursors
 import numpy as np
 from interactionevents import InteractionEvents as events
 from useractions import UserActions as actions
@@ -73,8 +74,8 @@ class ActionEventBindingSet(object):
     def __init__(self):
         # HACK: a QApplication needs to be constructed for creating Pixmap
         # cursors, so we load (and create the cursors) here
-        if "cursors" not in globals():
-            import cursors
+        # if "cursors" not in globals():
+            # import cursors
         self.base_cursor = cursors.ArrowCursor
         
         self.binding = {}
@@ -85,8 +86,8 @@ class ActionEventBindingSet(object):
         """Define the base cursor in this mode."""
         # HACK: a QApplication needs to be constructed for creating Pixmap
         # cursors, so we load (and create the cursors) here
-        if "cursors" not in globals():
-            import cursors
+        # if "cursors" not in globals():
+            # import cursors
         if cursor is None:
             cursor = cursors.OpenHandCursor
         # set the base cursor

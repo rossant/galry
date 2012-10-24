@@ -1187,18 +1187,6 @@ class PaintManager(object):
             # next times, at least until it has been changed again
             uniform["invalidated"] = False
 
-    # Transformation methods
-    # ----------------------
-    # def set_offset(self, x, y):
-        # """Set the active offset."""
-        # x0, y0 = self.current_offset
-        # gl.glTranslatef(x - x0, y - y0, 0)
-        # self.current_offset = (x, y)
-    
-    # def set_scaling(self, sx, sy):
-        # """Set the active scaling."""
-        # gl.glScalef(sx, sy, 1)
-    
     def transform_view(self):
         """Call GL transformation commands for the interactive navigation."""
         tx, ty = self.interaction_manager.get_translation()
@@ -1353,7 +1341,11 @@ class PaintManager(object):
         gl.glRasterPos2f(*position)
         if callable(text):
             text = text()
-        glut.glutBitmapString(glut.GLUT_BITMAP_HELVETICA_12, text)
+        try:
+            glut.glutBitmapString(glut.GLUT_BITMAP_HELVETICA_12, text)
+        except Exception as e:
+            log_warn("an error occurred when display text '%s': %s. You probably \
+need to install freeglut." % (text, e.message))
         
     def paint_rectangle(self, points, color=None):
         """Paint a rectangle.

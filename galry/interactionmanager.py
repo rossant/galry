@@ -3,6 +3,7 @@ import OpenGL.GL as gl
 import OpenGL.GLU as glu
 from interactionevents import InteractionEvents
 from tools import extend_enum
+import cursors
 
 __all__ = ['InteractionManager']
 
@@ -50,15 +51,15 @@ class InteractionManager(object):
         self.cursor = None
     
     def process_navigation_event(self, event, parameter):
-        if "cursors" not in globals():
-            import cursors
+        # if "cursors" not in globals():
+            # import cursors
         if event == self.events.PanEvent:
             self.pan(parameter)
             self.cursor = cursors.ClosedHandCursor
     
     def process_zoom_event(self, event, parameter):
-        if "cursors" not in globals():
-            import cursors
+        # if "cursors" not in globals():
+            # import cursors
         if event == self.events.ZoomEvent:
             self.zoom(parameter)
             self.cursor = cursors.MagnifyingGlassCursor
