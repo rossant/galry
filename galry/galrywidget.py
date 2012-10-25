@@ -11,7 +11,7 @@ from interactionevents import InteractionEvents as events
 from useractions import UserActions as actions
 from useractions import UserActionGenerator
 import bindingmanager
-from debugtools import log_debug, log_info, log_warn
+from debugtools import DEBUG, log_debug, log_info, log_warn
 import interactionmanager
 import paintmanager
 from tools import FpsCounter, show_window
@@ -35,7 +35,9 @@ __all__ = [
 # killed after a fixed time. It is useful for automatic debugging or
 # benchmarking.
 AUTODESTRUCT = False
+
 DEFAULT_AUTODESTRUCT = 1000
+DISPLAY_FPS = DEBUG == True
 
 # default manager classes
 DEFAULT_MANAGERS = dict(
@@ -63,7 +65,7 @@ class GalryWidget(QGLWidget):
     
     # FPS counter, used for debugging
     fps_counter = FpsCounter()
-    display_fps = False
+    display_fps = DISPLAY_FPS
 
     # widget creation parameters
     events_enum = None

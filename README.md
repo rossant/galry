@@ -35,7 +35,7 @@ Most visualization packages in Python are either meant to generate high-quality
 publication-ready figures (like matplotlib), or to offer 3D fast interactive 
 visualization (like mayavi).
 Existing 2D plotting packages do not generally offer an efficient way to 
-interactively visualize large datasets (1-10 million points, possibly more). 
+interactively visualize large datasets (1, 10, even 100 million points). 
 The main goal of Galry is to provide the most optimized way of visualizing
 large 2D datasets, by using the full power of the graphics card.
 
@@ -52,12 +52,26 @@ containing a large number of points.
 *More systematic and automatic  benchmark methods will be considered in the 
 near future.*
 
-On a 3-years old laptop with a modest graphics card, I am able to
-navigate into a one million points dataset at ~70 FPS, and five million points
-at ~15 FPS (see the benchmarks folder).
+Here are some results with a basic benchmark consisting of an N points plot
+(`benchmarks/benchmark01_points.py`).
 
-The [benchmark page](https://github.com/rossant/galry/wiki/Benchmarks) contains more details. Users are invited
-to do their own benchmark.
+On a 2012 desktop computer with an high-end AMD Radeon HD 7870 graphics card:
+
+  * N = 10 million points: ~125 FPS
+  * N = 20 million points: ~80 FPS
+  * N = 50 million points: ~35 FPS
+  * N = 100 million points: ~15 FPS
+
+On a 2009 laptop with a low-end AMD Radeon Mobility HD 3650 graphics card:
+
+  * N = 1 million points: ~70 FPS
+  * N = 2 million points: ~35 FPS
+  * N = 5 million points: ~15 FPS
+  * N = 10 million points: ~7 FPS
+
+
+The [benchmark page](https://github.com/rossant/galry/wiki/Benchmarks) contains 
+more details. Users are invited to do their own benchmark.
 
 
 What can I do with Galry?

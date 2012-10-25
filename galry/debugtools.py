@@ -3,8 +3,11 @@ import os.path
 import traceback
 import sys
 
+DEBUG = True
+
 __all__ = ['log_debug', 'log_info', 'log_warn',
-           'debug_level', 'info_level', 'warning_level']
+           'debug_level', 'info_level', 'warning_level',
+           'DEBUG']
 
 def setup_logging(level):
     if level == logging.DEBUG:
@@ -56,8 +59,10 @@ def warning_level():
     logger.setLevel(logging.WARNING)
 
 # default level
-# level = logging.DEBUG  # DEBUG
-level = logging.WARNING
+if DEBUG:
+    level = logging.DEBUG
+else:
+    level = logging.WARNING
 logger = setup_logging(level)
 
 
