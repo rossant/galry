@@ -56,9 +56,7 @@ currently used but may be in the future).</p>
 
 <h2>I want to see a demo!</h2>
 
-<!--<p><a href="http://www.youtube.com/watch?v=jYNJJ4O3pXo"><img src="https://raw.github.com/rossant/galry/master/images/youtube.png" alt="Galry's Demo"></a></p>-->
-
-<iframe width="640" height="480" src="http://www.youtube.com/embed/jYNJJ4O3pXo?rel=0" frameborder="0" allowfullscreen></iframe>
+<p><a href="http://www.youtube.com/watch?v=jYNJJ4O3pXo"><img src="https://raw.github.com/rossant/galry/master/images/youtube.png" alt="Galry's Demo"></a></p>
 
 <p><img src="https://raw.github.com/rossant/galry/master/images/overview.png" alt="Galry's gallery"></p>
 
@@ -68,7 +66,7 @@ currently used but may be in the future).</p>
 publication-ready figures (like matplotlib), or to offer 3D fast interactive 
 visualization (like mayavi).
 Existing 2D plotting packages do not generally offer an efficient way to 
-interactively visualize large datasets (1-10 million points, possibly more). 
+interactively visualize large datasets (1, 10, even 100 million points). 
 The main goal of Galry is to provide the most optimized way of visualizing
 large 2D datasets, by using the full power of the graphics card.</p>
 
@@ -83,12 +81,25 @@ containing a large number of points.</p>
 <p><em>More systematic and automatic  benchmark methods will be considered in the 
 near future.</em></p>
 
-<p>On a 3-years old laptop with a modest graphics card, I am able to
-navigate into a one million points dataset at ~70 FPS, and five million points
-at ~15 FPS (see the benchmarks folder).</p>
+<p>Here are some results with a basic benchmark consisting of an N points plot
+(<code>benchmarks/benchmark01_points.py</code>).</p>
 
-<p>The <a href="https://github.com/rossant/galry/wiki/Benchmarks">benchmark page</a> contains more details. Users are invited
-to do their own benchmark.</p>
+<p>On a 2012 desktop computer with an high-end AMD Radeon HD 7870 graphics card:</p>
+
+<ul>
+<li>N = 10 million points: ~125 FPS</li>
+<li>N = 20 million points: ~80 FPS</li>
+<li>N = 50 million points: ~35 FPS</li>
+<li>N = 100 million points: ~15 FPS</li>
+</ul><p>On a 2009 laptop with a low-end AMD Radeon Mobility HD 3650 graphics card:</p>
+
+<ul>
+<li>N = 1 million points: ~70 FPS</li>
+<li>N = 2 million points: ~35 FPS</li>
+<li>N = 5 million points: ~15 FPS</li>
+<li>N = 10 million points: ~7 FPS</li>
+</ul><p>The <a href="https://github.com/rossant/galry/wiki/Benchmarks">benchmark page</a> contains 
+more details. Users are invited to do their own benchmark.</p>
 
 <h2>What can I do with Galry?</h2>
 
@@ -178,7 +189,7 @@ electrophysiological data GUI that will handle very large datasets.</p>
 
 <h2>I want to participate!</h2>
 
-<p>Send me an e-mail.</p>
+<p><a href="http://cyrille.rossant.net">Send me an e-mail</a>.</p>
 
 <h2>Why this name?</h2>
 
@@ -186,30 +197,17 @@ electrophysiological data GUI that will handle very large datasets.</p>
       </section>
 
     </div>
-<!--[if !IE]><script>fixScale(document);</script><![endif]-->
-<script type="text/javascript">
-var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
-document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
-</script>
-<script type="text/javascript">
-try {
-var pageTracker = _gat._getTracker("UA-6774000-3");
-pageTracker._trackPageview();
-} catch(err) {}
-</script>
-<script type="text/javascript">
-var sc_project=8405204; 
-var sc_invisible=1; 
-var sc_security="c13aafcf"; 
-var scJsHost = (("https:" == document.location.protocol) ?
-"https://secure." : "http://www.");
-document.write("<sc"+"ript type='text/javascript' src='" +
-scJsHost +
-"statcounter.com/counter/counter.js'></"+"script>");</script>
-<noscript><div class="statcounter"><a title="web analytics"
-href="http://statcounter.com/" target="_blank"><img
-class="statcounter"
-src="https://c.statcounter.com/8405204/0/c13aafcf/1/"
-alt="web analytics"></a></div></noscript>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+              <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-6774000-3");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
   </body>
 </html>
