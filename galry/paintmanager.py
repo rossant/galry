@@ -297,7 +297,7 @@ class PaintManager(object):
                 bounds_sliced = np.hstack((0, bounds_sliced))
             if not ind[-1]:
                 bounds_sliced = np.hstack((bounds_sliced, slice_size))
-        return bounds_sliced
+        return enforce_dtype(bounds_sliced, np.int32)
         
     def _set_drawing_size(self, primitive_type, size):
         """Set the drawing size.
