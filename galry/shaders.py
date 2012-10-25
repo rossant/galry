@@ -1,225 +1,264 @@
+import numpy as np
+
+# Vertex shader template
+# ----------------------
+VS_TEMPLATE = """
+// Attribute declarations.
+%ATTRIBUTE_DECLARATIONS%
+
+// Uniform declarations.
+%UNIFORM_DECLARATIONS%
+
+// Varying declarations.
+%VARYING_DECLARATIONS%
+
+// Transform a position according to a given scaling and translation.
+vec4 transform_position(vec4 position, vec2 scale, vec2 translation)
+{
+    vec2 transformed_position = scale * (position.xy + translation);
+    return vec4(transformed_position.xy, 0.0, 1.0);
+}
+
+// Core functions (including main()).
+// By default, there is at least one attribute of vec4: `position`.
+// gl_Position must be set as output, all other gl_* variables are deprecated.
+%CORE%
+
+"""
+
+# Fragment shader template
+# ------------------------
+FS_TEMPLATE = """
+// Uniform declarations.
+%UNIFORM_DECLARATIONS%
+
+// Varying declarations.
+%VARYING_DECLARATIONS%
+
+// Output color.
+%FRAGMENT_OUTPUT%
+
+// Core functions (including main()).
+// gl_FragCoord is available, all other gl_* variables are deprecated.
+%CORE%
+
+"""
+
+# Default vertex shader cores
+# ---------------------------
+STATIC_VS_CORE = """
+
+void main()
+{
+    gl_Position = position;
+}
+
+"""
+
+DYNAMIC_VS_CORE = """
+
+void main()
+{
+    gl_Position = transform_position(position, scale, translation);
+}
+
+"""
+
+# Default fragment shader core
+# --------------------------
+DEFAULT_FS_CORE = """
+
+void main()
+{
+    out_color = vec4(1., 1., 1., 1.);
+}
+
+"""
 
 
 
-
-
-
-
-
-
-
-
-
-
-class Shader(object):
+class ShadersCreator(object):
+    """Abstraction class for shaders source codes.
     
-    version = "330"
+    The idea is that the developer provides the source code of the core 
+    functions in the vertex and fragment shaders (i.e. `main()`). The different
+    buffers, input variables, and vertex-to-fragment variables are declared
+    in Python, and the corresponding code is automatically generated. This is
+    to avoid compatibility issues with the different versions of OpenGL (and
+    also OpenGL ES) that implement these declarations differently. For example,
+    to pass a variable from the vertex to the fragment shader, one used to use
+    `varying` in older versions of OpenGL, which is now deprecated and replaced
+    by `in/out`. But in OpenGL ES, `in` and `out` keywords are not defined,
+    one should rather use... `varying`.
     
-    buffers = []
-    uniforms = []
+    """
+    # version = "330"
     
-    def add_buffer(self, name, vartype, location=None):
-        pass
+    # each item is a dict with the following keys:
+    #   * name: variable name, as used in shaders code
+    #   * vartype: 'bool', 'float' or 'int'
+    #   * ndim: 1 (scalar), 2 ((i)vec2), 3 or 4
+    #   * size: 1 (one value) or n (array)
+
+    def __init__(self, is_static=False):
+        self.attributes = []
+        self.uniforms = []
+        self.varyings = []
     
-    def add_uniform(self, name, vartype, location=None):
-        pass
-    
-    def __repr__(self):
-        return
-
-
-        
-        
-        
-# def _get_value_type(value):
-    # """Give information about an uniform value type."""
-    # # array
-    # if isinstance(value, np.ndarray):
-        # is_float = value.dtype == np.float32
-        # is_bool= value.dtype == np.bool
-        # size, ndim = value.shape
-    # # tuple
-    # elif type(value) is tuple:
-        # is_float = (type(value[0]) == float) | (type(value[0]) == np.float32)
-        # is_bool = type(value[0]) == bool
-        # ndim = len(value)
-        # size = None
-    # # scalar value
-    # else:
-        # is_float = type(value) == float
-        # is_bool = type(value) == bool
-        # ndim = 1
-        # size = None
-    # return dict(is_float=is_float, is_bool=is_bool, ndim=ndim, size=size)
-
-# # global counter for the buffer attribute location, allows to avoid 
-# # specifying explicitely an unique location for each buffer
-# SHADER_ATTRIBUTE_LOCATION = 0
-# def get_new_attribute_location():
-    # global SHADER_ATTRIBUTE_LOCATION
-    # loc = SHADER_ATTRIBUTE_LOCATION
-    # SHADER_ATTRIBUTE_LOCATION += 1
-    # return loc
-    
-# def reset_attribute_location():
-    # """Set the counter to 0 at initialization."""
-    # global SHADER_ATTRIBUTE_LOCATION
-    # SHADER_ATTRIBUTE_LOCATION = 0
-
-    
-
-
-
-
-
-
-    
-        
-        
-     
-# def process_vertex_shader_source(self, dataset):
-    # """Process templated vertex shader source.
-    
-    # This method replaces %AUTODECLARATIONS% with the actual shader variable
-    # declarations, based on what the dataset contains.
-    
-    # Arguments:
-      # * dataset: the dataset.
+        self.fragment_core = DEFAULT_FS_CORE
+        self.add_attribute("position", np.zeros((1, 4), dtype=np.float32))
+        if is_static:
+            self.vertex_core = STATIC_VS_CORE
+        else:
+            self.vertex_core = DYNAMIC_VS_CORE
+            self.add_uniform("scale", (1., 1.))
+            self.add_uniform("translation", (0., 0.))
+            
+    def _get_vartype(self, valuetype):
+        if (valuetype == float) | (valuetype == np.float32):
+            vartype = 'float'
+        elif (valuetype == int) | (valuetype == np.int32):
+            vartype = 'int'
+        elif valuetype == bool:
+            vartype = 'bool'
+        return vartype
       
-    # Returns:
-      # * dataset: the dataset with the updated shader code.
-    
-    # """
-    
-    # vs = dataset["vertex_shader"]
-    
-    # # autodeclaration of buffers
-    # declarations = "// Buffer declarations.\n"
-    # for name, buffer in dataset["buffers"].iteritems():
-        
-        # location = buffer["attribute_location"]
-        
-        # # find type declaration
-        # if buffer["ndim"] == 1:
-            # if buffer["dtype"] == np.float32:
-                # vartype = "float"
-            # else:
-                # vartype = "int"
-        # else:
-            # # vartype = "vec%d" % buffer["ndim"]
-            # # HACK: we force 4 dimensions, since everything will work with
-            # # that
-            # vartype = "vec%d" % 4 #buffer["ndim"]
-            # if buffer["dtype"] != np.float32:
-                # vartype = "i" + vartype
-                
-        # # add buffer declaration
-        # declarations += "layout(location = %d) in %s %s;\n" % \
-                                            # (location, vartype, name)
-    
-    # # autodeclaration of uniforms
-    # declarations += "\n// Uniform declarations.\n"
-    
-    # # is_static
-    # declarations += "uniform bool is_static;\n"
-    
-    # # all uniforms
-    # for name, uniform in dataset["uniforms"].iteritems():
-        
-        # # HACK: particular case for texture-related uniforms: they
-        # # are used in the fragment shader instead
-        # if "tex_sampler" in name:
-            # continue
-            
-        # typeinfo = _get_value_type(uniform["value"])
-        
-        # # handle array
-        # tab = ""
-        # if typeinfo["size"] is not None:
-            # tab = "[%d]" % typeinfo["size"]
-            
-        # # find type declaration
-        # if typeinfo["ndim"] == 1:
-            # if typeinfo["is_float"]:
-                # vartype = "float"
-            # elif typeinfo["is_bool"]:
-                # vartype = "bool"
-            # else:
-                # vartype = "int"
-        # else:
-            # vartype = "vec%d" % typeinfo["ndim"]
-            # if not typeinfo["is_float"]:
-                # vartype = "i" + vartype
-                
-        # # add uniform declaration
-        # declarations += "uniform %s %s%s;\n" % (vartype, name, tab)
-        
-    # declarations += "\n"
-        
-    # # put auto declarations
-    # vs = vs.replace("%AUTODECLARATIONS%", declarations)
-    
-    # # add version
-    # vs = "#version 330\n" + vs
-    
-    # # save the modifications
-    # dataset["vertex_shader"] = vs
-         
-        
-        
-        
-        
-        
-        
-# # default shaders
-# DEFAULT_SHADERS = dict(
-# # Position-only
-# # -------------
-    # position={
-        # "vertex": """
-# %AUTODECLARATIONS%
+    def _get_value_info(self, value):
+        """Give information about an uniform value type."""
+        # array
+        if isinstance(value, np.ndarray):
+            vartype = self._get_vartype(value.dtype)
+            if value.ndim == 1:
+                size, ndim = value.size, 1
+            elif value.ndim >= 2:
+                size, ndim = value.shape
+        # tuple
+        elif type(value) is tuple:
+            vartype = self._get_vartype(type(value[0]))
+            ndim = len(value)
+            size = None
+        # scalar value
+        else:
+            vartype = self._get_vartype(type(value))
+            ndim = 1
+            size = None
+        return dict(vartype=vartype, ndim=ndim, size=size)
 
-# void main()
-# {
-    # if (!is_static)
-        # gl_Position = gl_ModelViewProjectionMatrix * position;
-    # else
-        # gl_Position = position;
-    # gl_FrontColor = gl_Color;
-# }
-        # """,
-        
-        # "fragment": """
-# void main()
-# {
-    # gl_FragColor = gl_Color;
-# }
-        # """
-    # },
+    def _get_shader_type(self, value_info):
+        if value_info["ndim"] == 1:
+            shader_type = value_info["vartype"]
+        else:
+            shader_type = "vec%d" % value_info["ndim"]
+            if value_info["vartype"] != "float":
+                shader_type = "i" + shader_type
+        return shader_type
     
-# # Position and color
-# # ------------------
-    # position_color={
-        # "vertex": """
-# %AUTODECLARATIONS%
-
-# void main()
-# {
-    # if (!is_static)
-        # gl_Position = gl_ModelViewProjectionMatrix * position;
-    # else
-        # gl_Position = position; 
-    # gl_FrontColor = color;
-# }
-        # """,
+    
+    def add_attribute(self, name, value, location=None):
+        dic = self._get_value_info(value)
+        if location is None:
+            location = len(self.attributes)
+        self.attributes.append(dict(
+            name=name,
+            location=location,
+            **dic
+        ))
+    
+    def add_uniform(self, name, value):
+        dic = self._get_value_info(value)
+        self.uniforms.append(dict(
+            name=name,
+            **dic
+        ))
         
-        # "fragment": """
-# void main()
-# {
-    # gl_FragColor = gl_Color;
-# }
-        # """
-    # },
+    def add_varying(self, name, value):
+        dic = self._get_value_info(value)
+        self.varyings.append(dict(
+            name=name,
+            **dic
+        ))
+    
+    
+    
+    
+    def get_attribute_declarations(self):
+        declarations = ""
+        for attribute in self.attributes:
+            declarations += "layout(location = %d) in %s %s;\n" % \
+                (attribute["location"],
+                 self._get_shader_type(attribute), 
+                 attribute["name"])
+        return declarations
+        
+    def get_uniform_declarations(self):
+        declarations = ""
+        for uniform in self.uniforms:
+            tab = ""
+            if uniform["size"] is not None:
+                tab = "[%d]" % uniform["size"]
+            # add uniform declaration
+            declarations += "uniform %s %s%s;\n" % \
+                (self._get_shader_type(uniform),
+                 uniform["name"],
+                 tab)
+        return declarations
+        
+    def get_varying_declarations(self):
+        vs_declarations = ""
+        fs_declarations = ""
+        for varying in self.varyings:
+            s = "%%s %s %s;\n" % \
+                (self._get_shader_type(varying), 
+                 varying["name"])
+            vs_declarations += s % "out"
+            fs_declarations += s % "in"
+        return vs_declarations, fs_declarations
+    
+    
+    
+        
+    def get_vertex_core(self):
+        return self.vertex_core
+        
+    def get_fragment_core(self):
+        return self.fragment_core
+    
+    
+    
+    
+    
+    def set_vertex_core(self, core):
+        self.vertex_core = core
+    
+    def set_fragment_core(self, core):
+        self.fragment_core = core
+    
+    def get_shaders(self):
+        vs_varying_declarations, fs_varying_declarations = \
+                                            self.get_varying_declarations()
+        vs = VS_TEMPLATE
+        vs = vs.replace('%ATTRIBUTE_DECLARATIONS%', self.get_attribute_declarations())
+        vs = vs.replace('%UNIFORM_DECLARATIONS%', self.get_uniform_declarations())
+        vs = vs.replace('%VARYING_DECLARATIONS%', vs_varying_declarations)
+        vs = vs.replace('%CORE%', self.get_vertex_core())
+        
+        fs = FS_TEMPLATE
+        fs = fs.replace('%UNIFORM_DECLARATIONS%', self.get_uniform_declarations())
+        fs = fs.replace('%VARYING_DECLARATIONS%', fs_varying_declarations)
+        fs = fs.replace('%FRAGMENT_OUTPUT%', "out vec4 out_color;")
+        
+        fs = fs.replace('%CORE%', self.get_fragment_core())
+        
+        return vs, fs
+
+    def __repr__(self):
+        vs, fs = self.get_shaders()
+        return vs + "\n\n\n\n" + fs
+        
+        
+        
+        
+        
 
 # # Textured rectangle
 # # ------------------
@@ -303,3 +342,11 @@ class Shader(object):
 # }
 # """},
 # )
+
+
+if __name__ == '__main__':
+    s = Shader()
+    s.add_uniform("t", 0.0)
+    s.add_attribute("color", (1.,1.,1.,1.))
+    s.add_varying("out_pos", (0.,) * 3)
+    print s

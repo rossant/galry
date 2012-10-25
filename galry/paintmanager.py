@@ -415,7 +415,8 @@ class PaintManager(object):
         dataset["vertex_shader"] = vertex_shader
         dataset["fragment_shader"] = fragment_shader
         dataset["color"] = color
-        # dataset["primitive_size"] = primitive_size
+        if primitive_type is None:
+            primitive_type = PrimitiveType.Points
         dataset["primitive_type"] = primitive_type
         dataset["buffers"] = {}
         dataset["textures"] = {}
