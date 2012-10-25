@@ -5,6 +5,7 @@ Bug fixes
 ---------
   * GLSL: gl_* are deprecated, remove matrix transformation, gl_translate,
   etc and implement everything with shaders...
+  MAYBE create a shader class?
 
   * texCoord[0] deprecated, rather use something like:
   

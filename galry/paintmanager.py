@@ -62,12 +62,6 @@ def _get_value_type(value):
         size = None
     return dict(is_float=is_float, is_bool=is_bool, ndim=ndim, size=size)
 
-# Maximum size of a VBO, generally to 65k. You might try to increase it
-# in order to improve performance, but be very careful since no error will
-# be raised if you cross the limit: all values defined after that limit
-# will be zero, so you might just have very weird results! Make sure to test.
-MAX_VBO_SIZE = 65000
-
 # global counter for the buffer attribute location, allows to avoid 
 # specifying explicitely an unique location for each buffer
 SHADER_ATTRIBUTE_LOCATION = 0
@@ -82,8 +76,17 @@ def reset_attribute_location():
     global SHADER_ATTRIBUTE_LOCATION
     SHADER_ATTRIBUTE_LOCATION = 0
 
+    
+    
 # VBO functions
 # -------------
+
+# Maximum size of a VBO, generally to 65k. You might try to increase it
+# in order to improve performance, but be very careful since no error will
+# be raised if you cross the limit: all values defined after that limit
+# will be zero, so you might just have very weird results! Make sure to test.
+MAX_VBO_SIZE = 65000
+
 def create_vbo(data):
     """Create an OpenGL Vertex Buffer Object.
     
