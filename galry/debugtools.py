@@ -3,7 +3,7 @@ import os.path
 import traceback
 import sys
 
-DEBUG = True
+DEBUG = False
 
 __all__ = ['log_debug', 'log_info', 'log_warn',
            'debug_level', 'info_level', 'warning_level',
