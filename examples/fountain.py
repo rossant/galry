@@ -19,7 +19,7 @@ void main()
         return;
 
     // update position
-    vec4 position;
+    vec4 position = vec4(0,0,0,1);
     position.x = initial_positions.x + velocities.x * tloc;
     position.y = initial_positions.y + velocities.y * tloc - 0.5 * g * tloc * tloc;
 
@@ -28,6 +28,8 @@ void main()
         gl_Position = gl_ModelViewProjectionMatrix * position;
     else
         gl_Position = position;
+        
+    //gl_Position = position;
         
     // pass the color and point size to the fragment shader
     gl_FrontColor = gl_Color;

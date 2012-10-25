@@ -20,7 +20,7 @@ void main()
         return;
 
     // update position
-    vec4 position;
+    vec4 position = vec4(0,0,0,1);
     position.x = initial_positions.x + (velocities.x + v.x) * tloc;
     position.y = initial_positions.y + (velocities.y + v.y) * tloc - 0.5 * g * tloc * tloc;
 
