@@ -5,7 +5,8 @@ import OpenGL.GL as gl
 import OpenGL.arrays.vbo as glvbo
 import OpenGL.GLUT as glut
 from tools import enum, memoize, enforce_dtype
-from default_shaders import DEFAULT_SHADERS
+# from default_shaders import DEFAULT_SHADERS
+from shaders import ShadersCreator
 import ctypes
 from debugtools import log_debug, log_info, log_warn
 
@@ -40,6 +41,7 @@ NP_GL_TYPE_CONVERTER = {
     np.bool:gl.GL_BOOL,
 }
 
+DEFAULT_COLOR = (1., 1., 1., 1.)
 
 def _get_value_type(value):
     """Give information about an uniform value type."""
@@ -62,22 +64,7 @@ def _get_value_type(value):
         size = None
     return dict(is_float=is_float, is_bool=is_bool, ndim=ndim, size=size)
 
-# global counter for the buffer attribute location, allows to avoid 
-# specifying explicitely an unique location for each buffer
-SHADER_ATTRIBUTE_LOCATION = 0
-def get_new_attribute_location():
-    global SHADER_ATTRIBUTE_LOCATION
-    loc = SHADER_ATTRIBUTE_LOCATION
-    SHADER_ATTRIBUTE_LOCATION += 1
-    return loc
-    
-def reset_attribute_location():
-    """Set the counter to 0 at initialization."""
-    global SHADER_ATTRIBUTE_LOCATION
-    SHADER_ATTRIBUTE_LOCATION = 0
 
-    
-    
 # VBO functions
 # -------------
 
@@ -216,7 +203,7 @@ class PaintManager(object):
     """Defines what to render in the widget."""
     
     # Background color.
-    bgcolor = (0, 0, 0, 0)
+    bgcolor = (0., 0., 0., 0.)
     
     def __init__(self):
         # current absolute translation offset, used because glTranslate is
@@ -315,14 +302,14 @@ class PaintManager(object):
         elif primitive_type == PrimitiveType.LineStrip:
             gl.glLineWidth(size)
         
-    def _set_color(self, color):
-        """Set the current paint color.
+    # def _set_color(self, color):
+        # """Set the current paint color.
         
-        Arguments:
-          * color: a 3- or 4- tuple (RGB or RGBA).
+        # Arguments:
+          # * color: a 3- or 4- tuple (RGB or RGBA).
         
-        """
-        gl.glColor(*color)
+        # """
+        # gl.glColor(*color)
         
     def _set_vbo(self, vbo, location, ndim, dtype=None, gltype=None):
         """Activate the VBO before rendering.
@@ -349,9 +336,9 @@ class PaintManager(object):
     # Data creation methods
     # ---------------------
     def create_dataset(self, size, bounds=None,
-                       primitive_type=None, color=None,
-                       vertex_shader=None,
-                       fragment_shader=None,
+                       primitive_type=None, #default_color=(1., 1., 0., 1.),
+                       # vertex_shader=None,
+                       # fragment_shader=None,
                        is_static=False,
                        **uniforms):
         """Create a dataset.
@@ -406,15 +393,16 @@ class PaintManager(object):
             bounds = np.array([0, size], np.int32)
 
         # reset the attribute location
-        reset_attribute_location()
+        # reset_location()
             
         dataset = {}
+        dataset["is_static"] = is_static
         dataset["size"] = size
         dataset["bounds"] = enforce_dtype(bounds, np.int32)
         dataset["slices_count"] = int(np.ceil(size / float(MAX_VBO_SIZE)))
-        dataset["vertex_shader"] = vertex_shader
-        dataset["fragment_shader"] = fragment_shader
-        dataset["color"] = color
+        # dataset["vertex_shader"] = vertex_shader
+        # dataset["fragment_shader"] = fragment_shader
+        # dataset["color"] = color
         if primitive_type is None:
             primitive_type = PrimitiveType.Points
         dataset["primitive_type"] = primitive_type
@@ -431,27 +419,39 @@ class PaintManager(object):
         # save uniforms with their names, values, and type (and dtype if 
         # they are Numpy arrays)
         dataset["uniforms"] = {}
+        
+        # define scale and translation uniforms is non static
+        if not is_static:
+            uniforms["scale"] = (1., 1.)
+            uniforms["translation"] = (0., 0.)
+        
+        # viewport uniform
+        uniforms["viewport"] = (1., 1.)
+        
+        # record the uniforms in the dataset
         for name, value in uniforms.iteritems():
-            uniform = dict(
-                value=value,
-                type=type(value),
-                invalidated=True,
-            )
-            if isinstance(value, np.ndarray):
-                # enforce 32 bits for floats and integers
-                # if value.dtype == np.float64:
-                    # value = enforce_dtype(value, np.float32)
-                # if value.dtype == np.int64:
-                    # value = enforce_dtype(value, np.int32)
-                uniform = self.validate_uniform_value(uniform)
-                uniform["dtype"] = value.dtype
-            dataset["uniforms"][name] = uniform
+            self.add_uniform(name, value, dataset=dataset)
         
         self.datasets.append(dataset)
         return dataset
         
+    def add_uniform(self, name, value, dataset=None):
+        if dataset is None:
+            dataset = self.datasets[0]
+        uniform = dict(
+                name=name,
+                value=value,
+                type=type(value),
+                invalidated=True,
+            )
+        if isinstance(value, np.ndarray):
+            uniform = self.validate_uniform_value(uniform)
+            uniform["dtype"] = value.dtype
+        dataset["uniforms"][name] = uniform
+        return uniform
+        
     def add_buffer(self, name, data, dataset=None,
-                   attribute_location=None):
+                   location=None):
         """Add a data buffer to a dataset.
         
         A buffer is linked to a dataset and is defined by:
@@ -481,7 +481,7 @@ class PaintManager(object):
           * dataset=None: the dataset containing the buffer to be created. It
             is theobject returned by `create_dataset`. By default, the first
             dataset that has been defined.
-          * attribute_location: the location of this buffer, calculated
+          * location: the location of this buffer, calculated
             automatically if it is not specified. It should be unique.
             You should not need to change it.
         
@@ -506,8 +506,9 @@ class PaintManager(object):
         if data.shape[0] != dataset["size"]:
             raise ValueError("The shape of 'data' should be \
                               dataset[size] x ndim")
-        if attribute_location is None:
-            attribute_location = get_new_attribute_location()
+        # default location
+        if location is None:
+            location = len(dataset["buffers"])
         
         # create the buffer info
         buffer = {}
@@ -519,7 +520,7 @@ class PaintManager(object):
         buffer["bounds"] = dataset["bounds"]
         buffer["slices"] = dataset["slices"]
         buffer["subdata_bounds"] = dataset["subdata_bounds"]
-        buffer["attribute_location"] = attribute_location
+        buffer["location"] = location
         
         # slice data
         data_sliced = self._slice_data(data, dataset["slices"])
@@ -530,8 +531,8 @@ class PaintManager(object):
         
         return buffer
         
-    def add_texture(self, name, data, dataset=None,
-                   attribute_location=None):
+    def add_texture(self, name, data, is_sprite=False, dataset=None,
+                   location=None):
         """Add a texture to a dataset.
         
         Arguments:
@@ -559,9 +560,12 @@ class PaintManager(object):
         
         # default parameters
         ndim = data.ndim
-        if attribute_location is None:
-            # TODO: allow several textures
-            attribute_location = 0
+        # if location is None:
+            # # TODO: allow several textures
+            # location = 0
+        # default location
+        if location is None:
+            location = len(dataset["textures"])
         
         # compute the number of dimensions and color components
         if ndim == 1:
@@ -582,11 +586,12 @@ class PaintManager(object):
         texture = {}
         texture["name"] = name
         texture["data"] = data
+        texture["is_sprite"] = is_sprite
         texture["dtype"] = data.dtype
         texture["ndim"] = ndim
         texture["ncomponents"] = ncomponents
         texture["size"] = size
-        texture["attribute_location"] = attribute_location
+        texture["location"] = location
         
         # initialize texture
         texture["texture"] = create_texture(data, size, ndim, ncomponents)
@@ -595,11 +600,10 @@ class PaintManager(object):
         dataset["textures"][name] = texture
         
         # add texture uniform sampler
-        # TODO: check this when several textures are used. this currently works
-        # for 1 texture only
-        name = "tex_sampler%d" % attribute_location
+        # TODO: check this when several textures are used
+        name = "tex_sampler%d" % location
         dataset["uniforms"][name] = dict(
-            value=0,
+            value=location,
             type=int,
             invalidated=True,
         )
@@ -688,14 +692,15 @@ class PaintManager(object):
 
         # texture may be a dataset object, in which case get the first texture
         if "texture" not in texture:
-            texture = texture["textures"]["position"]
+            texture = texture["textures"]["tex_sampler0"]
         update_texture(texture["texture"], newdata, texture["size"], 
                         texture["ndim"], texture["ncomponents"])
         
     # Helper plotting methods
     # -----------------------
     def add_plot(self, X, Y, color=None, is_static=False, primitive_type=None,
-                    vertex_shader=None, fragment_shader=None):
+                    # vertex_shader=None, fragment_shader=None
+                    ):
         """Add points on the plot.
         
         Arguments:
@@ -718,8 +723,8 @@ class PaintManager(object):
         # check arguments
         if X.shape != Y.shape:
             raise ValueError("")
-        if color is None:
-            color = (1, 1, 0)
+        # if color is None:
+            # color = (1., 1., 0.)
         kwargs = {}
         # color
         if isinstance(color, np.ndarray):
@@ -739,20 +744,24 @@ class PaintManager(object):
         data[:,1] = Y.ravel()
         if (X.ndim > 1) and (min(X.shape) > 1):
             kwargs["bounds"] = np.arange(0, X.size + 1, X.shape[1])
+            # TODO: use custom shader and color map to save memory
             color = np.repeat(color, X.shape[1], axis=0)
         # create dataset
         ds = self.create_dataset(n, primitive_type=primitive_type,
                                  is_static=is_static, 
-                                 vertex_shader=vertex_shader,
-                                 fragment_shader=fragment_shader,
+                                 # vertex_shader=vertex_shader,
+                                 # fragment_shader=fragment_shader,
                                  **kwargs)
         self.add_buffer("position", data, dataset=ds)
         if isinstance(color, np.ndarray):
             self.add_buffer("color", color, dataset=ds)
+        else:
+            pass
         return ds
     
     def add_textured_rectangle(self, texture, points=None, is_static=False,
-                                vertex_shader=None, fragment_shader=None):
+                                # vertex_shader=None, fragment_shader=None
+                                ):
         """Helper function to add a textured rectangle (image).
         
         Arguments:
@@ -767,22 +776,23 @@ class PaintManager(object):
           * dataset: the newly created dataset.
         
         """
-        if vertex_shader is None:
-            vertex_shader = DEFAULT_SHADERS["textured_rectangle"]["vertex"]
-        if fragment_shader is None:
-            fragment_shader = DEFAULT_SHADERS["textured_rectangle"]["fragment"]
+        # if vertex_shader is None:
+            # vertex_shader = DEFAULT_SHADERS["textured_rectangle"]["vertex"]
+        # if fragment_shader is None:
+            # fragment_shader = DEFAULT_SHADERS["textured_rectangle"]["fragment"]
         if points is None:
             points = (-1, -1, 1, 1)
         x0, y0, x1, y1 = points
         x0, x1 = min(x0, x1), max(x0, x1)
         y0, y1 = min(y0, y1), max(y0, y1)
-        name = "position" #"textured_rectangle%d" % len(self.datasets)
-        coordinates_name = "texture_coordinates" #%d" % len(self.datasets)
+        name = "position"
+        coordinates_name = "tex_coords"
         ds = self.create_dataset(4,
                                 primitive_type=PrimitiveType.TriangleStrip, 
                                 is_static=is_static,
-                                vertex_shader=vertex_shader,
-                                fragment_shader=fragment_shader)
+                                # vertex_shader=vertex_shader,
+                                # fragment_shader=fragment_shader
+                                )
                                 
         data = np.zeros((4,2), dtype=np.float32)
         data[0,:] = (x0, y0)
@@ -798,7 +808,7 @@ class PaintManager(object):
         coordinates[3,:] = (1, 0)
         self.add_buffer(coordinates_name, coordinates, dataset=ds)
         
-        self.add_texture(name, texture, dataset=ds)        
+        self.add_texture("tex_sampler0", texture, dataset=ds)        
         return ds
 
     def add_sprites(self, X, Y, texture, color=None, size=None, is_static=False):
@@ -819,12 +829,12 @@ class PaintManager(object):
         
         """
         gl.glEnable(gl.GL_POINT_SPRITE)
-        if isinstance(color, np.ndarray):
-            vertex_shader = DEFAULT_SHADERS["sprites_color"]["vertex"]
-            fragment_shader = DEFAULT_SHADERS["sprites_color"]["fragment"]
-        else:
-            vertex_shader = DEFAULT_SHADERS["sprites"]["vertex"]
-            fragment_shader = DEFAULT_SHADERS["sprites"]["fragment"]
+        # if isinstance(color, np.ndarray):
+            # vertex_shader = DEFAULT_SHADERS["sprites_color"]["vertex"]
+            # fragment_shader = DEFAULT_SHADERS["sprites_color"]["fragment"]
+        # else:
+            # vertex_shader = DEFAULT_SHADERS["sprites"]["vertex"]
+            # fragment_shader = DEFAULT_SHADERS["sprites"]["fragment"]
         if size is None:
             size = max(texture.shape)
         # convert size into float because the associated uniform is a float
@@ -834,8 +844,8 @@ class PaintManager(object):
             kwargs["color"] = color
         ds = self.create_dataset(len(X),
                                 primitive_type=PrimitiveType.Points,
-                                vertex_shader=vertex_shader,
-                                fragment_shader=fragment_shader,
+                                # vertex_shader=vertex_shader,
+                                # fragment_shader=fragment_shader,
                                 point_size=size,
                                 is_static=is_static,
                                 **kwargs)
@@ -845,7 +855,7 @@ class PaintManager(object):
         self.add_buffer("position", pos, dataset=ds)
         if isinstance(color, np.ndarray):
             self.add_buffer("color", color, dataset=ds)
-        self.add_texture("texture", texture, dataset=ds)
+        self.add_texture("tex_sampler0", texture, is_sprite=True, dataset=ds)
         return ds
         
     # Buffer methods
@@ -869,7 +879,7 @@ class PaintManager(object):
             
         """
         buffer = dataset["buffers"][buffer_name]
-        location = buffer["attribute_location"]
+        location = buffer["location"]
         ndim = buffer["ndim"]
         vbo, pos, size = buffer["vbos"][slice_index]
         
@@ -880,130 +890,85 @@ class PaintManager(object):
         else:
             gl.glDisableVertexAttribArray(location)
             
-    # Shader methods
-    # --------------
-    def set_default_shaders(self, dataset):
-        """Set the default shaders if no shaders are specified by the user,
-        depending on which buffers were added in the dataset at initialization
-        time.
-        
-        Arguments:
-          * dataset: the dataset object.
+    # Shader source methods
+    # ---------------------
+    def update_shaders_creator(self, dataset=None):
+        """Update the shaders creator with the information stored in the
+        dataset.
         
         """
-        vs = dataset["vertex_shader"]
-        fs = dataset["fragment_shader"]
+        if dataset is None:
+            dataset = self.datasets[0]
+        sc = dataset["shaders_creator"]
         
-        # specify default shaders
-        # just position
-        if "color" not in dataset["buffers"]:
-            if vs is None:
-                dataset["vertex_shader"] = DEFAULT_SHADERS["position"]["vertex"]
-            if fs is None:
-                dataset["fragment_shader"] = DEFAULT_SHADERS["position"]["fragment"]
-        # position and color
-        elif "position" in dataset["buffers"]:
-            if vs is None:
-                dataset["vertex_shader"] = DEFAULT_SHADERS["position_color"]["vertex"]
-            if fs is None:
-                dataset["fragment_shader"] = DEFAULT_SHADERS["position_color"]["fragment"]
-                
-    def process_vertex_shader_source(self, dataset):
-        """Process templated vertex shader source.
-        
-        This method replaces %AUTODECLARATIONS% with the actual shader variable
-        declarations, based on what the dataset contains.
-        
-        Arguments:
-          * dataset: the dataset.
-          
-        Returns:
-          * dataset: the dataset with the updated shader code.
-        
-        """
-        
-        vs = dataset["vertex_shader"]
-        
-        # autodeclaration of buffers
-        declarations = "// Buffer declarations.\n"
+        # synchronize attributes in the shaders creator
         for name, buffer in dataset["buffers"].iteritems():
-            
-            location = buffer["attribute_location"]
-            
-            # find type declaration
-            if buffer["ndim"] == 1:
-                if buffer["dtype"] == np.float32:
-                    vartype = "float"
-                else:
-                    vartype = "int"
-            else:
-                # vartype = "vec%d" % buffer["ndim"]
-                # HACK: we force 4 dimensions, since everything will work with
-                # that
-                vartype = "vec%d" % 4 #buffer["ndim"]
-                if buffer["dtype"] != np.float32:
-                    vartype = "i" + vartype
-                    
-            # add buffer declaration
-            declarations += "layout(location = %d) in %s %s;\n" % \
-                                                (location, vartype, name)
-        
-        # autodeclaration of uniforms
-        declarations += "\n// Uniform declarations.\n"
-        
-        # is_static
-        declarations += "uniform bool is_static;\n"
-        
-        # all uniforms
+            sc.add_attribute(name, 
+                             buffer["data"], buffer["location"])
+                             
+        # synchronize textures in the shaders creator
+        for name, texture in dataset["textures"].iteritems():
+            sc.add_texture(name, 
+                           texture["data"], texture["location"],
+                           is_sprite=texture["is_sprite"])
+                           
+        # synchronize uniforms in the shaders creator
         for name, uniform in dataset["uniforms"].iteritems():
-            
-            # HACK: particular case for texture-related uniforms: they
-            # are used in the fragment shader instead
-            if "tex_sampler" in name:
-                continue
-                
-            typeinfo = _get_value_type(uniform["value"])
-            
-            # handle array
-            tab = ""
-            if typeinfo["size"] is not None:
-                tab = "[%d]" % typeinfo["size"]
-                
-            # find type declaration
-            if typeinfo["ndim"] == 1:
-                if typeinfo["is_float"]:
-                    vartype = "float"
-                elif typeinfo["is_bool"]:
-                    vartype = "bool"
-                else:
-                    vartype = "int"
-            else:
-                vartype = "vec%d" % typeinfo["ndim"]
-                if not typeinfo["is_float"]:
-                    vartype = "i" + vartype
-                    
-            # add uniform declaration
-            declarations += "uniform %s %s%s;\n" % (vartype, name, tab)
-            
-        declarations += "\n"
-            
-        # put auto declarations
-        vs = vs.replace("%AUTODECLARATIONS%", declarations)
+            sc.add_uniform(name, uniform["value"])
+    
+    def set_shaders(self, shaders_creator=None, vertex_shader=None,
+                    fragment_shader=None, dataset=None):
+        if dataset is None:
+            dataset = self.datasets[0]
+        # if vertex and fragment shaders are given, it means we don't use
+        # the shaders creator at all
+        if (vertex_shader is not None) and (fragment_shader is not None):
+            dataset["vertex_shader"] = vertex_shader
+            dataset["fragment_shader"] = fragment_shader
+        # otherwise, we use the shaders creator to create the shaders
+        if (vertex_shader is None) and (fragment_shader is None):
+            # we create a new shaders creator if it is not given
+            if (shaders_creator is None):# or not(shaders_creator.is_ready):
+                shaders_creator = ShadersCreator(dataset["is_static"])
+            # in all cases, we update it with the information stored in the
+            # dataset
+            # shaders_creator.is_static = dataset["is_static"]
+            dataset["shaders_creator"] = shaders_creator
+            self.update_shaders_creator(dataset)
+            # finally, we can generate the fragments source codes
+            dataset["vertex_shader"], dataset["fragment_shader"] = \
+                shaders_creator.get_shaders()
+    
+    def finalize_dataset(self, dataset):
+        # ensure color is defined
+        if ("color" not in dataset["buffers"]) and \
+                        ("color" not in dataset["uniforms"]):
+            self.add_uniform("color", DEFAULT_COLOR)
+        # if dataset["textures"] and "tex_coords" not in dataset["buffers"]:
+            # self.add_buffer("tex_coords", np.zeros((dataset["size"], 2)))
+    
+    def initialize_shaders(self):
+        """Initialize shaders in all datasets.
         
-        # add version
-        vs = "#version 330\n" + vs
+        Shader initialization involve using default shader if needed,
+        shader compilation, and uniform variables declarations.
         
-        # save the modifications
-        dataset["vertex_shader"] = vs
-                
-    def process_fragment_shader_source(self, dataset):
-        fs = dataset["fragment_shader"]
-        
-        # add version
-        fs = "#version 330\n" + fs
-        
-        dataset["fragment_shader"] = fs
-                
+        """
+        for dataset in self.datasets:
+            self.finalize_dataset(dataset)
+            # no vertex shader ==> we need to automatically create shaders
+            if "vertex_shader" not in dataset:
+                self.set_shaders(dataset=dataset)
+            # print dataset["vertex_shader"]
+            # print dataset["fragment_shader"]
+            # compile shaders
+            self.compile_shaders(dataset)
+            # initialize all uniforms
+            for name in dataset["uniforms"].keys():
+                self.define_uniform(name, dataset=dataset)
+    
+    # GL shader methods
+    # -----------------
     def compile_shaders(self, dataset):
         """Compile the shaders.
         
@@ -1012,8 +977,8 @@ class PaintManager(object):
         
         """
         # process template for variable autodeclaration
-        self.process_vertex_shader_source(dataset)
-        self.process_fragment_shader_source(dataset)
+        # self.process_vertex_shader_source(dataset)
+        # self.process_fragment_shader_source(dataset)
         
         vs = dataset["vertex_shader"]
         fs = dataset["fragment_shader"]
@@ -1079,26 +1044,6 @@ class PaintManager(object):
         """
         gl.glUseProgram(0)
         
-    def initialize_shaders(self):
-        """Initialize shaders in all datasets.
-        
-        Shader initialization involve using default shader if needed,
-        shader compilation, and uniform variables declarations.
-        
-        """
-        for dataset in self.datasets:
-            # # special case with one texture and zero buffer
-            # if (len(dataset["textures"]) > 0) and (len(dataset["buffers"]) == 0):
-                # # show texture
-                # self.prepare_single_texture(dataset)
-            # set default shader sources
-            self.set_default_shaders(dataset)
-            # compile shaders
-            self.compile_shaders(dataset)
-            # initialize all uniforms
-            for name in dataset["uniforms"].keys():
-                self.define_uniform(name, dataset=dataset)
-    
     # Uniform methods
     # ---------------
     def define_uniform(self, name, dataset=None):
@@ -1192,12 +1137,15 @@ class PaintManager(object):
             uniform["invalidated"] = False
 
     def transform_view(self):
-        """Call GL transformation commands for the interactive navigation."""
+        """Change uniform variables to implement interactive navigation."""
         tx, ty = self.interaction_manager.get_translation()
         sx, sy = self.interaction_manager.get_scaling()
-        gl.glLoadIdentity()
-        gl.glScalef(sx, sy, 1.)
-        gl.glTranslatef(tx, ty, 0.)
+        scale = (np.float32(sx), np.float32(sy))
+        translation = (np.float32(tx), np.float32(ty))
+        for dataset in self.datasets:
+            if not dataset["is_static"]:
+                self.update_uniform_values(dataset=dataset, 
+                        scale=scale, translation=translation)
     
     # Overlay methods
     # ---------------
@@ -1251,7 +1199,7 @@ class PaintManager(object):
     
     # Rendering methods
     # -----------------
-    def paint_dataset(self, dataset, primitive_type=None, color=None,
+    def paint_dataset(self, dataset, primitive_type=None, #color=None,
                       **buffers_activations):
         """Paint a dataset.
         
@@ -1267,8 +1215,8 @@ class PaintManager(object):
         """
         if primitive_type is None:
             primitive_type = dataset.get("primitive_type", PrimitiveType.Points)
-        if color is None:
-            color = dataset["color"]
+        # if color is None:
+        # color = dataset["color"]
         gl_primitive_type = GL_PRIMITIVE_TYPE_CONVERTER[primitive_type]
         subdata_bounds = dataset["subdata_bounds"]
         
@@ -1284,10 +1232,10 @@ class PaintManager(object):
         self.update_invalidated_uniforms(dataset)
         
         # use global color if there is no color buffer
-        if color is None:
-            color = (1, 1, 0)
-        if "colors" not in dataset["buffers"] or not buffers_activations["colors"]:
-            self._set_color(color)
+        # if color is None:
+            # color = (1, 1, 0)
+        # if "colors" not in dataset["buffers"] or not buffers_activations["colors"]:
+            # self._set_color(color)
         
         # go through all slices
         for slice_index in xrange(dataset["slices_count"]):
@@ -1394,6 +1342,13 @@ need to install freeglut." % (text, e.message))
     def updateGL(self):
         """Update rendering."""
         self.parent.updateGL()
+        
+        
+    def set_viewport(self, vx, vy):
+        viewport = (np.float32(vx), np.float32(vy))
+        for dataset in self.datasets:
+            self.update_uniform_values(viewport=viewport, dataset=dataset)
+        
         
     # Cleanup methods
     # ---------------

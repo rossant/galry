@@ -6,7 +6,6 @@ Bug fixes
   * GLSL: gl_* are deprecated, remove matrix transformation, gl_translate,
   etc and implement everything with shaders...
   MAYBE create a shader class?
-
   * texCoord[0] deprecated, rather use something like:
   
 varying vec2 texCoord;
@@ -17,6 +16,8 @@ void main(void)
    texCoord = 0.5 * gl_Position.xy + vec2(0.5);     
 }
   
+  
+  * identifier strings with '' instead of ""
   
   
 Doc

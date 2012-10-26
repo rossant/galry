@@ -17,28 +17,6 @@ import numpy as np
 # Here, it takes the initial position as input, and returns the final position.
 # It also passes the default color to the fragment shader.
 vertex_shader = """
-
-/* `position` is the value coming from the position buffer. The layout location
- * 0 is used as an unique identifier for this buffer. It is specified in the
- * PaintManager's method `add_buffer` as the `attribute_location` parameter.
- * By default, it is first 0, and then incremented by one for every new call
- * to `add_buffer`.
- * 
- * The type is vec4: a vector of 4 floats (default size for the position 
- * vector in OpenGL). Since we'll pass an array of vec2 values (the `positions`
- * array is of size n x 2), the last two coordinates will always be null.
- *
- * The `in` attribute means that this variable is an input.
- */
-//layout(location = 0) in vec4 position;
-
-/* We define an uniform (variable global to all points) with the frequency
- * of the sine function.
- */
-//uniform float frequency;
-
-%AUTODECLARATIONS%
-
 // Main program.
 void main()
 {
@@ -94,8 +72,8 @@ class MyPaintManager(PaintManager):
         self.create_dataset(n,
                                  primitive_type=PrimitiveType.LineStrip,
                                  # Try commenting the following two lines
-                                 vertex_shader=vertex_shader,
-                                 fragment_shader=fragment_shader,
+                                 # vertex_shader=vertex_shader,
+                                 # fragment_shader=fragment_shader,
                                  # We define the frequency uniform with its
                                  # initial value.
                                  frequency = 20.,
@@ -109,4 +87,7 @@ class MyPaintManager(PaintManager):
         # the same name as used in the vertex shader.
         self.add_buffer("position", positions)
 
+        self.set_shaders(vertex_shader=vertex_shader,
+                         fragment_shader=fragment_shader,)
+        
 show_basic_window(paint_manager=MyPaintManager)

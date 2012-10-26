@@ -235,23 +235,24 @@ class GalryWidget(QGLWidget):
     def paint_fps(self):
         """Display the FPS in the top-right of the screen."""
         fps = "FPS: %d" % int(self.fps_counter.get_fps())
-        x, y = self.normalize_position(10, 20)
+        # x, y = self.normalize_position(10, 20)
+        x, y = -.95, .92
         self.paint_manager.paint_text(fps, (x, y), (1,1,0))
         
     # Viewport methods
     # ----------------
-    def get_viewport(self):
-        return self.viewport
+    # def get_viewport(self):
+        # return self.viewport
         
-    def set_viewport(self, viewport):
-        self.viewport = viewport
-        x0, y0, x1, y1 = viewport
-        # set orthographic projection (2D only)
-        gl.glMatrixMode(gl.GL_PROJECTION)
-        gl.glLoadIdentity()
-        gl.glOrtho(x0, x1, y0, y1, -1, 1)
-        # all subsequent transformations relate to the model view
-        gl.glMatrixMode(gl.GL_MODELVIEW)
+    # def set_viewport(self, viewport):
+        # self.viewport = viewport
+        # x0, y0, x1, y1 = viewport
+        # # set orthographic projection (2D only)
+        # gl.glMatrixMode(gl.GL_PROJECTION)
+        # gl.glLoadIdentity()
+        # gl.glOrtho(x0, x1, y0, y1, -1, 1)
+        # # all subsequent transformations relate to the model view
+        # gl.glMatrixMode(gl.GL_MODELVIEW)
         
     def resizeGL(self, width, height):
         """Reinitialize the viewport.
@@ -265,18 +266,22 @@ class GalryWidget(QGLWidget):
         gl.glViewport(0, 0, width, height)
         
         # scaled viewport -1/1
-        x0 = -1
-        x1 = 1
-        y0 = -1
-        y1 = 1
+        # x0 = -1
+        # x1 = 1
+        # y0 = -1
+        # y1 = 1
+        vx = vy = 1.0
         # viewport in the case where the ratio should be kept constant
         if self.constrain_ratio:
             a = float(width) / height
             if a > 1:
-                x0, x1 = -a, a
+                # x0, x1 = -a, a
+                vx = a
             else:
-                y0, y1 = -1. / a, 1. / a
-        self.set_viewport((x0, y0, x1, y1))
+                # y0, y1 = -1. / a, 1. / a
+                vy = 1. / a
+        self.viewport = (vx, vy)
+        self.paint_manager.set_viewport(*self.viewport)
         
     def sizeHint(self):
         return QtCore.QSize(self.width, self.height)
@@ -314,9 +319,9 @@ class GalryWidget(QGLWidget):
     # ---------------------
     def normalize_position(self, x, y):
         """Window coordinates ==> world coordinates."""
-        x0, y0, x1, y1 = self.viewport
-        x = x0 + x/float(self.width) * (x1 - x0)
-        y = -(y0 + y/float(self.height) * (y1 - y0))
+        vx, vy = self.viewport
+        x = -vx + 2 * vx * x/float(self.width)
+        y = -(-vy + 2 * vy * y/float(self.height))
         return x, y
              
     def normalize_diff_position(self, x, y):
@@ -324,9 +329,9 @@ class GalryWidget(QGLWidget):
         points.
         
         """
-        x0, y0, x1, y1 = self.viewport
-        x = x/float(self.width) * (x1 - x0)
-        y = -y/float(self.height) * (y1 - y0)
+        vx, vy = self.viewport
+        x = 2 * vx * x/float(self.width)
+        y = -2 * vy * y/float(self.height)
         return x, y
         
     def normalize_action_parameters(self, parameters):

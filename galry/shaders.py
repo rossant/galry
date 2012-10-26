@@ -1,4 +1,7 @@
 import numpy as np
+from debugtools import log_debug
+
+__all__ = ["ShadersCreator"]
 
 # Vertex shader template
 # ----------------------
@@ -13,10 +16,9 @@ VS_TEMPLATE = """
 %VARYING_DECLARATIONS%
 
 // Transform a position according to a given scaling and translation.
-vec4 transform_position(vec4 position, vec2 scale, vec2 translation)
+vec2 transform_position(vec2 position, vec2 scale, vec2 translation)
 {
-    vec2 transformed_position = scale * (position.xy + translation);
-    return vec4(transformed_position.xy, 0.0, 1.0);
+    return scale * (position + translation);
 }
 
 // Core functions (including main()).
@@ -32,6 +34,9 @@ FS_TEMPLATE = """
 // Uniform declarations.
 %UNIFORM_DECLARATIONS%
 
+// Texture sampler declarations.
+%TEXTURE_DECLARATIONS%
+
 // Varying declarations.
 %VARYING_DECLARATIONS%
 
@@ -44,33 +49,32 @@ FS_TEMPLATE = """
 
 """
 
-# Default vertex shader cores
-# ---------------------------
-STATIC_VS_CORE = """
+# Default vertex shader core
+# --------------------------
+DEFAULT_VS_CORE = """
 
 void main()
 {
-    gl_Position = position;
-}
-
-"""
-
-DYNAMIC_VS_CORE = """
-
-void main()
-{
-    gl_Position = transform_position(position, scale, translation);
+    %GET_POSITION%
+    // Take viewport into account.
+    gl_Position.xy = gl_Position.xy / viewport;
+    
+    %GET_VARYING_COLOR%
+    
+    %GET_VARYING_COORDINATES%
+    
+    %GET_POINT_SIZE%
 }
 
 """
 
 # Default fragment shader core
-# --------------------------
+# ----------------------------
 DEFAULT_FS_CORE = """
 
 void main()
 {
-    out_color = vec4(1., 1., 1., 1.);
+    %GET_OUT_COLOR%
 }
 
 """
@@ -100,20 +104,23 @@ class ShadersCreator(object):
     #   * ndim: 1 (scalar), 2 ((i)vec2), 3 or 4
     #   * size: 1 (one value) or n (array)
 
-    def __init__(self, is_static=False):
-        self.attributes = []
-        self.uniforms = []
-        self.varyings = []
+    # is_ready = False
     
+    def __init__(self, is_static=False):
+        self.attributes = {}
+        self.uniforms = {}
+        self.textures = {}
+        self.varyings = {}
+        self.is_static = is_static
+    
+        self.vertex_core = DEFAULT_VS_CORE
         self.fragment_core = DEFAULT_FS_CORE
-        self.add_attribute("position", np.zeros((1, 4), dtype=np.float32))
-        if is_static:
-            self.vertex_core = STATIC_VS_CORE
-        else:
-            self.vertex_core = DYNAMIC_VS_CORE
-            self.add_uniform("scale", (1., 1.))
-            self.add_uniform("translation", (0., 0.))
-            
+        
+        # varying color variable by default, set by the vertex shader
+        self.add_varying("varying_color", (1., 1., 0., 1.))
+        
+    # Internal methods
+    # ----------------
     def _get_vartype(self, valuetype):
         if (valuetype == float) | (valuetype == np.float32):
             vartype = 'float'
@@ -121,6 +128,8 @@ class ShadersCreator(object):
             vartype = 'int'
         elif valuetype == bool:
             vartype = 'bool'
+        else:
+            vartype = None
         return vartype
       
     def _get_value_info(self, value):
@@ -130,8 +139,11 @@ class ShadersCreator(object):
             vartype = self._get_vartype(value.dtype)
             if value.ndim == 1:
                 size, ndim = value.size, 1
-            elif value.ndim >= 2:
+            elif value.ndim == 2:
                 size, ndim = value.shape
+            elif value.ndim == 3:
+                w, h, ndim = value.shape
+                size = w, h
         # tuple
         elif type(value) is tuple:
             vartype = self._get_vartype(type(value[0]))
@@ -147,43 +159,66 @@ class ShadersCreator(object):
     def _get_shader_type(self, value_info):
         if value_info["ndim"] == 1:
             shader_type = value_info["vartype"]
-        else:
+        elif value_info["ndim"] >= 2:
             shader_type = "vec%d" % value_info["ndim"]
             if value_info["vartype"] != "float":
                 shader_type = "i" + shader_type
         return shader_type
     
-    
-    def add_attribute(self, name, value, location=None):
+    # Public methods
+    # --------------
+    def add_attribute(self, name, value, location):
         dic = self._get_value_info(value)
-        if location is None:
-            location = len(self.attributes)
-        self.attributes.append(dict(
-            name=name,
-            location=location,
-            **dic
-        ))
+        # if location is None:
+            # location = len(self.attributes)
+        self.attributes[name] = dict(name=name,
+                                       location=location,
+                                       **dic)
+        # self.is_ready = True
+        # return location
+        if name == "color":
+            self.ndim_color = dic["ndim"]
+    
+    def add_texture(self, name, value, location, is_sprite=False):
+        dic = self._get_value_info(value)
+        # if location is None:
+            # location = len(self.attributes)
+        self.textures[name] = dict(name=name,
+                                   is_sprite=is_sprite,
+                                   location=location,
+                                   **dic)
+        # add texture coordinates varying variable
+        # self.add_attribute("tex_coords", (0., 0.))
+        if not is_sprite:
+            self.add_varying("varying_tex_coords", (0., 0.))
     
     def add_uniform(self, name, value):
+        if "tex_sampler" in name:
+            log_debug("discarding '%s' uniform because it is a \
+                        texture sampler" % name)
+            return
         dic = self._get_value_info(value)
-        self.uniforms.append(dict(
-            name=name,
-            **dic
-        ))
+        self.uniforms[name] = dict(name=name, **dic)
+        # self.is_ready = True
+        if name == "color":
+            self.ndim_color = dic["ndim"]
         
     def add_varying(self, name, value):
         dic = self._get_value_info(value)
-        self.varyings.append(dict(
-            name=name,
-            **dic
-        ))
+        self.varyings[name] = dict(name=name, **dic)
+        # self.is_ready = True
     
+    def set_vertex_core(self, core):
+        self.vertex_core = core
     
+    def set_fragment_core(self, core):
+        self.fragment_core = core
     
-    
+    # Declaration methods
+    # -------------------
     def get_attribute_declarations(self):
         declarations = ""
-        for attribute in self.attributes:
+        for name, attribute in self.attributes.iteritems():
             declarations += "layout(location = %d) in %s %s;\n" % \
                 (attribute["location"],
                  self._get_shader_type(attribute), 
@@ -192,7 +227,7 @@ class ShadersCreator(object):
         
     def get_uniform_declarations(self):
         declarations = ""
-        for uniform in self.uniforms:
+        for name, uniform in self.uniforms.iteritems():
             tab = ""
             if uniform["size"] is not None:
                 tab = "[%d]" % uniform["size"]
@@ -203,10 +238,17 @@ class ShadersCreator(object):
                  tab)
         return declarations
         
+    def get_texture_declarations(self):
+        declarations = ""
+        for name, texture in self.textures.iteritems():
+            # add texture declaration
+            declarations += "uniform sampler2D %s;\n" % (texture["name"])
+        return declarations
+        
     def get_varying_declarations(self):
         vs_declarations = ""
         fs_declarations = ""
-        for varying in self.varyings:
+        for name, varying in self.varyings.iteritems():
             s = "%%s %s %s;\n" % \
                 (self._get_shader_type(varying), 
                  varying["name"])
@@ -214,40 +256,90 @@ class ShadersCreator(object):
             fs_declarations += s % "in"
         return vs_declarations, fs_declarations
     
-    
-    
-        
+    # Core methods
+    # ------------
     def get_vertex_core(self):
         return self.vertex_core
         
     def get_fragment_core(self):
         return self.fragment_core
     
-    
-    
-    
-    
-    def set_vertex_core(self, core):
-        self.vertex_core = core
-    
-    def set_fragment_core(self, core):
-        self.fragment_core = core
-    
+    # Shader methods
+    # --------------
     def get_shaders(self):
         vs_varying_declarations, fs_varying_declarations = \
                                             self.get_varying_declarations()
+                
+        # Vertex shader
+        # -------------                           
         vs = VS_TEMPLATE
         vs = vs.replace('%ATTRIBUTE_DECLARATIONS%', self.get_attribute_declarations())
         vs = vs.replace('%UNIFORM_DECLARATIONS%', self.get_uniform_declarations())
         vs = vs.replace('%VARYING_DECLARATIONS%', vs_varying_declarations)
         vs = vs.replace('%CORE%', self.get_vertex_core())
         
+        if self.is_static:
+            vs = vs.replace('%GET_POSITION%', 
+                """gl_Position = vec4(position, 0., 1.);""")
+        else:
+            vs = vs.replace('%GET_POSITION%', 
+                """gl_Position = vec4(transform_position(position, scale, translation), 
+                        0., 1.);""")
+        
+        if self.ndim_color == 3:
+            vs = vs.replace('%GET_VARYING_COLOR%', 
+                """varying_color = vec4(color.xyz, 1.0);""")
+        elif self.ndim_color == 4:
+            vs = vs.replace('%GET_VARYING_COLOR%', 
+                """varying_color = color;""")
+        
+        
+        
+        # Fragment shader
+        # ---------------
         fs = FS_TEMPLATE
         fs = fs.replace('%UNIFORM_DECLARATIONS%', self.get_uniform_declarations())
+        fs = fs.replace('%TEXTURE_DECLARATIONS%', self.get_texture_declarations())
         fs = fs.replace('%VARYING_DECLARATIONS%', fs_varying_declarations)
         fs = fs.replace('%FRAGMENT_OUTPUT%', "out vec4 out_color;")
-        
         fs = fs.replace('%CORE%', self.get_fragment_core())
+        
+        # textures
+        if self.textures and not self.textures.items()[0][1]["is_sprite"]:
+            
+            vs = vs.replace('%GET_VARYING_COORDINATES%', 
+                    """varying_tex_coords = tex_coords;""")
+                    
+            vs = vs.replace('%GET_POINT_SIZE%', "")
+            
+            fs = fs.replace('%GET_OUT_COLOR%', 
+"""out_color = texture(tex_sampler0, varying_tex_coords) * varying_color;""")
+
+        # sprites
+        elif self.textures and self.textures.items()[0][1]["is_sprite"]:
+            
+            vs = vs.replace('%GET_VARYING_COORDINATES%', "")
+            vs = vs.replace('%GET_POINT_SIZE%', "gl_PointSize = point_size;")
+            
+            fs = fs.replace('%GET_OUT_COLOR%', 
+"""out_color = texture(tex_sampler0, gl_PointCoord) * varying_color;""")
+
+
+        else:
+           
+            vs = vs.replace('%GET_VARYING_COORDINATES%', "") 
+            
+            vs = vs.replace('%GET_POINT_SIZE%', "")
+            
+            fs = fs.replace('%GET_OUT_COLOR%', 
+                    """out_color = varying_color;""")
+        
+        
+    # gl_Position = vec4(transform_position(position, scale, translation), 
+                        # 0., 1.);
+    
+    # varying_color = vec4(color);
+        
         
         return vs, fs
 
@@ -260,93 +352,12 @@ class ShadersCreator(object):
         
         
 
-# # Textured rectangle
-# # ------------------
-    # textured_rectangle = {
-        # "vertex": """
-# %AUTODECLARATIONS%
-
-# void main()
-# {
-    # if (!is_static)
-        # gl_Position = gl_ModelViewProjectionMatrix * position;
-    # else
-        # gl_Position = position;
-    # gl_FrontColor = gl_Color;
-    
-    # gl_TexCoord[0] = texture_coordinates;
-# }
-        # """,
-        
-        # "fragment": """
-# uniform sampler2D tex_sampler0;
-
-# void main()
-# {
-    # gl_FragColor = texture2D(tex_sampler0, gl_TexCoord[0].st);
-# }
-        # """
-    # },
-    
-# # Sprites
-# # -------
-    # sprites={
-    # "vertex": """
-# %AUTODECLARATIONS%
-
-# void main()
-# {
-    # if (!is_static)
-        # gl_Position = gl_ModelViewProjectionMatrix * position;
-    # else
-        # gl_Position = position;
-    # gl_FrontColor = gl_Color;
-    
-    # gl_PointSize = point_size;
-# }
-# """,
-
-    # "fragment": """
-# uniform sampler2D tex_sampler0;
-
-# void main()
-# {
-    # gl_FragColor = texture2D(tex_sampler0, gl_PointCoord) * gl_Color;
-# }
-# """},
-
-# # Colored sprites
-# # ---------------
-    # sprites_color={
-    # "vertex": """
-# %AUTODECLARATIONS%
-
-# void main()
-# {
-    # if (!is_static)
-        # gl_Position = gl_ModelViewProjectionMatrix * position;
-    # else
-        # gl_Position = position;
-    # gl_FrontColor = color;
-    
-    # gl_PointSize = point_size;
-# }
-# """,
-
-    # "fragment": """
-# uniform sampler2D tex_sampler0;
-
-# void main()
-# {
-    # gl_FragColor = texture2D(tex_sampler0, gl_PointCoord) * gl_Color;
-# }
-# """},
-# )
-
-
 if __name__ == '__main__':
-    s = Shader()
+    s = ShadersCreator()
     s.add_uniform("t", 0.0)
-    s.add_attribute("color", (1.,1.,1.,1.))
-    s.add_varying("out_pos", (0.,) * 3)
+    s.add_attribute("position", (1.,1.,1.,1.), 0)
+    s.add_attribute("color", (1.,1.,1.), 1)
+    s.add_texture("tex_sampler0", None, 0)
+    s.add_attribute("tex_coords", (0., 0.), 2)
+    s.add_varying("out_pos", (0.,) * 4)
     print s

@@ -36,7 +36,7 @@ class MyPaintManager(PaintManager):
         
         # We generate the colored lines.
         # Try changing the values here: heat your graphics card up!
-        X, Y, colors = create_data(50, 20000)
+        X, Y, colors = create_data(50, 10000)
         
         # We plot all lines with a single call to `add_plot`.
         self.add_plot(X, Y, color=colors,

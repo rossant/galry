@@ -14,6 +14,8 @@ import numpy.random as rdn
 class MyPaintManager(PaintManager):
     def initialize(self):
         
+        self.parent.display_fps = True
+        
         # We define some data here.
         # Try to increase the number of points to see what your GPU is capable
         # of (be brave, try the million!).
@@ -23,6 +25,7 @@ class MyPaintManager(PaintManager):
         # We plot data with coordinates X and Y, rendered by default
         # as yellow points.
         self.add_plot(X, Y)
+        # self.parent.constrain_ratio = True
 
 # By default, you can navigate into the window with the following commands:
 #   * wheel scroll to zoom in/out,
