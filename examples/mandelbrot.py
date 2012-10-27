@@ -23,7 +23,7 @@ FS = """
 // returns the first iteration where the system escapes a box of size N.
 int mandelbrot_escape(vec2 pos, int iterations)
 {
-    vec2 z;
+    vec2 z = vec2(0., 0.);
     int n = 0;
     int N = 10;
     int N2 = N * N;
