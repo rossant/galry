@@ -146,8 +146,6 @@ class PaintManager(object):
         dataset["template"] = template
         
         dataset["primitive_type"] = primitive_type
-        # dataset["vertex_shader"], dataset["fragment_shader"] = \
-            # template.get_shader_codes()
         
         dataset["loader"] = DataLoader(size, template=template, bounds=bounds)        
         # default data
@@ -303,7 +301,7 @@ class PaintManager(object):
         # activate textures
         for name, texture in dl.textures.iteritems():
             textype = getattr(gl, "GL_TEXTURE_%dD" % texture["ndim"])
-            gl.glBindTexture(textype, texture["texture"])
+            gl.glBindTexture(textype, texture["location"])
             # gl.glActiveTexture(gl.GL_TEXTURE0 + 0);
         
         # deactivate shaders for this dataset

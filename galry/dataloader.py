@@ -71,7 +71,8 @@ def validate_data(data):
             data = data.reshape((-1, 1))
     return data
     
-    
+def validate_texture(data):
+    return np.array(255 * data, dtype=np.uint8)
     
     
 # VBO functions
@@ -359,22 +360,6 @@ class DataLoader(object):
                     vardic[name]["invalidated"] = True
             setattr(self, variable, vardic)
         
-
-        
-    # def set_default_data(self):
-        # """
-        
-        # """
-        # tpl = self.template
-        # for name, data in tpl.default_data.iteritems():
-            # # variable is attribute, uniform or texture
-            # variable = self.variables[name]
-            # getattr(self, variable)[name]["data"] = validate_data(data)
-            # if variable == "uniforms":
-                # getattr(self, variable)[name]["invalidated"] = True
-        
-
-        
     def set_data(self, **kwargs):
         """Set attribute/uniform/texture data. To be called at initialize time.
         No data is sent on the GPU here.
@@ -382,15 +367,13 @@ class DataLoader(object):
         """
         tpl = self.template
         for name, data in kwargs.iteritems():
-            # variable = None
-            # find what this variable is, among attribute, uniform or texture
-            # for s in ["attributes", "uniforms", "textures"]:
-                # if name in tpl[s]:
-                    # variable = s
-                    # break
             # variable is attribute, uniform or texture
             variable = self.variables[name]
-            getattr(self, variable)[name]["data"] = validate_data(data)
+            if variable == "textures":
+                data = validate_texture(data)
+            else:
+                data = validate_data(data)
+            getattr(self, variable)[name]["data"] = data
             if variable == "uniforms":
                 getattr(self, variable)[name]["invalidated"] = True
         

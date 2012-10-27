@@ -14,10 +14,14 @@ import numpy.random as rdn
 class MyPaintManager(PaintManager):
     def initialize(self):
         
+        m = n = 100
+        texture = rdn.rand(m, n, 3)
+        
         # We create an m x n texture as an m x n x 3 array.
         # We could also use matplotlib.pyplot.imread("image.png") to
         # load a PNG image as a RGB texture.
-        self.add_textured_rectangle(rdn.rand(100, 100, 3))
+        self.create_dataset(4, TextureTemplate, shape=(m, n), ncomponents=3)
+        self.set_data(tex_sampler=texture)
         
         # GalryWidget has a special attribute to constrain the viewport ratio 
         # when navigating or resizing the window. It can be useful when
