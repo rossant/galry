@@ -206,7 +206,7 @@ class GalryWidget(QGLWidget):
         
         # initialize data manager and shaders
         self.paint_manager.initialize()
-        self.paint_manager.initialize_shaders()
+        self.paint_manager.initialize_gpu()
         
         # Paint the background with the specified color (black by default)
         gl.glClearColor(*self.paint_manager.bgcolor)
@@ -281,7 +281,8 @@ class GalryWidget(QGLWidget):
                 # y0, y1 = -1. / a, 1. / a
                 vy = 1. / a
         self.viewport = (vx, vy)
-        self.paint_manager.set_viewport(*self.viewport)
+        # TODO
+        # self.paint_manager.set_data(viewport=self.viewport)
         
     def sizeHint(self):
         return QtCore.QSize(self.width, self.height)
