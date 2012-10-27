@@ -1,6 +1,8 @@
 Galry: high-performance interactive 2D visualization in Python
 ==============================================================
 
+  * data_template: integrate set_default_data into add_*
+
   * implement text with texture atlas
   * remove overlays
   * create RectangleTemplate

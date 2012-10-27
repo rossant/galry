@@ -28,15 +28,16 @@ class MyPaintManager(PaintManager):
         texture = create_texture()
         
         # Number of sprites.
-        n = 100000
+        n = 2000
         
         # Positions of the sprites.
-        X, Y = .2 * rdn.randn(2, n)
+        position = .2 * rdn.randn(n, 2)
         
         # Color of all sprites (with transparency).
-        colors = rdn.rand(n, 4)
+        color = rdn.rand(n, 4)
         
         # We add sprites.
-        self.add_sprites(X, Y, color=colors, texture=texture)
+        self.create_dataset(n, SpriteTemplate, texsize=texture.shape[0])
+        self.set_data(position=position, color=color, tex_sampler=texture)
 
 show_basic_window(paint_manager=MyPaintManager)
