@@ -141,22 +141,13 @@ def update_vbo(buffer, newdata, onset=None):
         
         
 def activate_buffer(vbo, location, ndim, do_activate):
+    # TODO: refactor this
     bind_vbo(vbo)
     if do_activate:
         gl.glEnableVertexAttribArray(location)
         gl.glVertexAttribPointer(location, ndim, gl.GL_FLOAT, gl.GL_FALSE, 0, None)
     else:
         gl.glDisableVertexAttribArray(location)
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
         
         
 
@@ -370,6 +361,20 @@ class DataLoader(object):
         
 
         
+    # def set_default_data(self):
+        # """
+        
+        # """
+        # tpl = self.template
+        # for name, data in tpl.default_data.iteritems():
+            # # variable is attribute, uniform or texture
+            # variable = self.variables[name]
+            # getattr(self, variable)[name]["data"] = validate_data(data)
+            # if variable == "uniforms":
+                # getattr(self, variable)[name]["invalidated"] = True
+        
+
+        
     def set_data(self, **kwargs):
         """Set attribute/uniform/texture data. To be called at initialize time.
         No data is sent on the GPU here.
@@ -484,9 +489,7 @@ class DataLoader(object):
  
     def upload_invalidated_uniform_data(self):
         for name, uniform in self.uniforms.iteritems():
-            # if uniform["invalidated"]:
             self.upload_uniform_data(name)
-                # uniform["invalidated"] = False
  
     # GL shader methods
     # -----------------

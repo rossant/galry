@@ -1,24 +1,13 @@
 Galry: high-performance interactive 2D visualization in Python
 ==============================================================
 
-Bug fixes
----------
-  * GLSL: gl_* are deprecated, remove matrix transformation, gl_translate,
-  etc and implement everything with shaders...
-  MAYBE create a shader class?
-  * texCoord[0] deprecated, rather use something like:
-  
-varying vec2 texCoord;
+  * implement text with texture atlas
+  * remove overlays
+  * create RectangleTemplate
+  * create TextTemplate
 
-void main(void)
-{
-   gl_Position = vec4(gl_Vertex.xy, 0.0, 1.0 );
-   texCoord = 0.5 * gl_Position.xy + vec2(0.5);     
-}
-  
-  
-  * identifier strings with '' instead of ""
-  
+
+
   
 Doc
 ---
@@ -27,9 +16,12 @@ Doc
 
 Code quality
 ------------
+  * identifier strings with '' instead of ""
   * PEP8
   * unit testing
   * test coverage
+  * lint
+  * prepare for Python 3
 
 Ideas
 -----

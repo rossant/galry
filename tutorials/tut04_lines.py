@@ -25,26 +25,26 @@ def create_data(m, n):
     # We shift the Y coordinates in each line.
     Y += .9 * np.linspace(-1., 1., m).reshape((-1, 1))
     
+    data = np.hstack((X.reshape((-1, 1)), Y.reshape(-1, 1)))
+    
     # `colors` is an m x 3 matrix, where each line contains the RGB components
     # of the corresponding line. We also could use an alpha channel
     # (transparency) with an m x 4 matrix.
     colors = rdn.rand(m, 3)
-    return X, Y, colors
+    return data, colors
 
 class MyPaintManager(PaintManager):
     def initialize(self):
-        
+        nplots = 20
+        nsamples = 10000
         # We generate the colored lines.
         # Try changing the values here: heat your graphics card up!
-        X, Y, colors = create_data(50, 10000)
+        position, colors = create_data(nplots, nsamples)
+        
+        self.create_dataset(len(position), PlotTemplate,
+            nplots=nplots, nsamples=nsamples)
         
         # We plot all lines with a single call to `add_plot`.
-        self.add_plot(X, Y, color=colors,
-        # The primitive type is precisely the OpenGL primitive type.
-        # This variable defines how successive points in memory are rendered
-        # on the screen: as points, triangles, successive lines segments, etc.
-        # Here we choose the last option: if there are N points, there are
-        # N-1 line segments.
-                      primitive_type=PrimitiveType.LineStrip)
+        self.set_data(position=position, colors=colors)
 
 show_basic_window(paint_manager=MyPaintManager)

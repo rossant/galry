@@ -9,7 +9,7 @@ from tools import enum, memoize, enforce_dtype
 # from shaders import ShadersCreator
 import ctypes
 from debugtools import log_debug, log_info, log_warn
-import datatemplate as tpl
+import templates as tpl
 from dataloader import DataLoader, NP_GL_TYPE_CONVERTER, activate_buffer
 from primitives import PrimitiveType, GL_PRIMITIVE_TYPE_CONVERTER
 
@@ -25,6 +25,8 @@ class PaintManager(object):
     # Background color.
     bgcolor = (0., 0., 0., 0.)
     
+    # Initialization methods
+    # ----------------------
     def __init__(self):
         # current absolute translation offset, used because glTranslate is
         # relative to the current position
@@ -39,6 +41,15 @@ class PaintManager(object):
         self.transient_overlays = []
         
         self.is_initialized = False
+
+    def initialize_gpu(self):
+        for dataset in self.datasets:
+            dataset["loader"].compile_shaders()
+            for variable in ["attribute", "uniform", "texture"]: 
+                names = getattr(dataset["loader"], variable + "s").keys()
+                dataset["loader"].upload_variables(*names)
+        self.is_initialized = True
+ 
         
     # Data creation methods
     # ---------------------
@@ -99,20 +110,34 @@ class PaintManager(object):
         """
         
         if not template_class:
-            template_class = tpl.DefaultDataTemplate
+            template_class = tpl.DefaultTemplate
             
-        template = template_class()
+        template = template_class(size)
+        if self.parent.constrain_ratio:
+            kwargs["constrain_ratio"] = True
         template.initialize(**kwargs)
         
-        if bounds is None:
-            bounds = np.array([0, size], np.int32)
-        else:
-            bounds = enforce_dtype(bounds, np.int32)
-            
+        
+        # we pass the default color to the template, only if it is not None
+        template.set_default_color(default_color)
+        
         if primitive_type is None:
-            primitive_type = PrimitiveType.Points
-            
-        template.set_rendering_options(default_color=default_color)
+            # if primitive_type is specified in create_dataset, we take it.
+            # otherwise, we take the one that may have been defined in the
+            # template (in template.set_rendering_options, called in
+            # initialize)
+            # finally, we fallback on Points
+            primitive_type = getattr(template, "primitive_type",
+                    PrimitiveType.Points)
+        
+        if bounds is None:
+            # if bounds is specified, we take it
+            # otherwise, we take the one that may have been defined in the
+            # template (in template.set_rendering_options, called in
+            # initialize)
+            # finally, we fallback on the default bounds
+            bounds = getattr(template, "bounds", [0, size])
+        bounds = np.array(bounds, np.int32)
         
         template.finalize()
         
@@ -125,9 +150,11 @@ class PaintManager(object):
             # template.get_shader_codes()
         
         dataset["loader"] = DataLoader(size, template=template, bounds=bounds)        
+        # default data
+        self.set_data(dataset=dataset, **template.default_data)
+        
         self.datasets.append(dataset)
         return dataset
-    
 
     def set_data(self, dataset=None, **kwargs):
         if dataset is None:
@@ -136,15 +163,9 @@ class PaintManager(object):
         if self.is_initialized:
             dataset["loader"].upload_variables(*kwargs.keys())
     
-    def initialize_gpu(self):
-        for dataset in self.datasets:
-            dataset["loader"].compile_shaders()
-            for variable in ["attribute", "uniform", "texture"]: 
-                names = getattr(dataset["loader"], variable + "s").keys()
-                dataset["loader"].upload_variables(*names)
-        self.is_initialized = True
-        
  
+    # Methods related to DefaultTemplate
+    # --------------------------------------
     def transform_view(self):
         """Change uniform variables to implement interactive navigation."""
         tx, ty = self.interaction_manager.get_translation()
@@ -155,6 +176,11 @@ class PaintManager(object):
             if not dataset["template"].is_static:
                 self.set_data(dataset=dataset, 
                         scale=scale, translation=translation)
+    
+    def set_viewport(self, viewport):
+        for dataset in self.datasets:
+            if dataset["template"].constrain_ratio:
+                self.set_data(dataset=dataset, viewport=viewport)
  
  
     # Overlay methods
@@ -207,9 +233,9 @@ class PaintManager(object):
         """
         self.add_permanent_overlay("text", text, position=position, color=color)
     
+    
     # Rendering methods
     # -----------------
-    
     def paint_dataset(self, dataset, primitive_type=None, #color=None,
                       **buffers_activations):
         """Paint a dataset.
@@ -305,6 +331,11 @@ class PaintManager(object):
           * color: the color of the text as a 3- or 4- tuple.
           
         """
+        # TODO: implement this in textures?
+        # advantages:
+        #   * simpler for handling interactive navigation
+        #   * more portable, more flexible
+        #   * no need to mess around with freeglut
         if color is not None:
             gl.glColor(*color)
         gl.glRasterPos2f(*position)
@@ -361,7 +392,6 @@ need to install freeglut." % (text, e.message))
         self.parent.updateGL()
         
         
-        
     # Cleanup methods
     # ---------------
     def cleanup_buffer(self, buffer):
@@ -393,6 +423,7 @@ need to install freeglut." % (text, e.message))
         """Cleanup all datasets."""
         for dataset in self.datasets:
             self.cleanup_dataset(dataset)
+        
         
     # Methods to be overriden
     # -----------------------

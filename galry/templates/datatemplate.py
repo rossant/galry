@@ -1,9 +1,4 @@
 
-
-__all__ = ['DataTemplate', 'DefaultDataTemplate', 'PlotDataTemplate']
-
-
-
 VS_TEMPLATE = """
 %VERTEX_HEADER%
 
@@ -83,7 +78,7 @@ def get_varying_declarations(varying):
 
 
 class DataTemplate(object):
-    def __init__(self):
+    def __init__(self, size):
         self.attributes = {}
         self.uniforms = {}
         self.textures = {}
@@ -95,9 +90,16 @@ class DataTemplate(object):
         self.fs_headers = []
         self.fs_mains = []
         
+        self.default_data = {}
+        
+        self.size = size
+        
         # self.primitive_type = None
         # self.bounds = None
         self.default_color = (1.,) * 4
+    
+    def set_default_data(self, name, data):
+        self.default_data[name] = data
     
     def add_attribute(self, name, location=None, **varinfo):
         if location is None:
@@ -115,7 +117,6 @@ class DataTemplate(object):
         if location is None:
             location = len(self.textures)
         self.textures[name] = dict(name=name, **texinfo)
-        
     
     def add_vertex_header(self, code):
         self.vs_headers.append(code)
@@ -129,17 +130,15 @@ class DataTemplate(object):
     def add_fragment_main(self, code):
         self.fs_mains.append(code)
     
-    
-    def set_rendering_options(self, default_color=None): 
-        # primitive_type=None, ,
-                              # bounds=None):
-        # if primitive_type is not None:
-            # self.primitive_type = primitive_type
+    def set_default_color(self, default_color=None): 
         if default_color is not None:
             self.default_color = default_color
-        # if bounds is not None:
-            # self.bounds = bounds
     
+    def set_rendering_options(self, primitive_type=None, bounds=None): 
+        if primitive_type is not None:
+            self.primitive_type = primitive_type
+        if bounds is not None:
+            self.bounds = bounds
     
     def get_shader_codes(self):
         
@@ -157,7 +156,7 @@ class DataTemplate(object):
         fs_header += "".join([get_texture_declaration(texture) for _, texture in self.textures.iteritems()])
         
         # Varyings
-        for varying in self.varyings:
+        for name, varying in self.varyings.iteritems():
             s1, s2 = get_varying_declarations(varying)
             vs_header += s1
             fs_header += s2
@@ -184,8 +183,6 @@ class DataTemplate(object):
         
         return vs, fs
     
-    
-    
     def initialize(self):
         """Initialize the template by making calls to self.add_*.
         
@@ -193,8 +190,6 @@ class DataTemplate(object):
         
         """
         pass
-    
-    
     
     def finalize(self):
         """Finalize the template to make sure that shaders are compilable.
@@ -211,63 +206,4 @@ class DataTemplate(object):
             out_color = %s;
             """ % _get_shader_vector(self.default_color))
     
-    
-    
-    
-    
-class DefaultDataTemplate(DataTemplate):
-    def add_transformation(self, is_static=False):
-        """Add static or dynamic position transformation."""
-        # dynamic navigation
-        if not is_static:
-            self.add_uniform("scale", vartype="float", ndim=2)
-            self.add_uniform("translation", vartype="float", ndim=2)
-            
-            self.add_vertex_header("""
-// Transform a position according to a given scaling and translation.
-vec2 transform_position(vec2 position, vec2 scale, vec2 translation)
-{
-return scale * (position + translation);
-}
-            """)
-            
-            self.add_vertex_main("""
-    gl_Position = vec4(transform_position(position, scale, translation), 
-                   0., 1.);""")
-        # static
-        else:
-            self.add_vertex_main("""
-    gl_Position = vec4(position, 0., 1.);""")
-        
-    def add_constrain_ratio(self, constrain_ratio=False):
-        if constrain_ratio:
-            self.add_uniform("viewport", vartype="float", ndim=2)
-            self.add_vertex_main("gl_Position.xy = gl_Position.xy / viewport;")
-        
-    def initialize(self, is_static=False, constrain_ratio=False):
-        
-        # self.add_attribute("position", vartype="float", ndim=2, location=0)
-        
-        self.is_static = is_static
-        self.constrain_ratio = constrain_ratio
-        
-        self.add_transformation(is_static)
-        self.add_constrain_ratio(constrain_ratio)
-        
-        # self.add_fragment_main("""
-        # out_color = %s;
-        # """ % _get_shader_vector(self.default_color))
-
-            
-            
-class PlotDataTemplate(object):
-    def initialize(self, nplots=1, colors=None, **kwargs):
-        
-        self.add_attribute("position", vartype="float", ndim=2)
-        
-        # TODO: write shaders that set the right color using indices
-        
-        # add navigation code
-        super(PlotDataTemplate, self).initialize(**kwargs)
-        
-        
+  

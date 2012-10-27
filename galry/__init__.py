@@ -17,11 +17,14 @@ if QtCore.QCoreApplication.instance() is None:
     del app
     
 from cursors import *
-from galrywidget import *
-from interactionmanager import *
-from interactionevents import *
-from useractions import *
-from paintmanager import *
-from bindingmanager import *
-from datanormalizer import *
 from tools import *
+from galrywidget import *
+from useractions import *
+from interactionevents import *
+from interactionmanager import *
+from bindingmanager import *
+from primitives import *
+from templates import *
+from dataloader import *
+from paintmanager import *
+from datanormalizer import *
