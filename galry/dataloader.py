@@ -460,7 +460,6 @@ class DataLoader(object):
         else:
             update_texture(texture["location"], texture["data"], texture["size"], 
                             texture["ndim"], texture["ncomponents"])
-            msg += gl.glGetShaderInfoLog(vertex_shader)
         
         
     def upload_variables(self, *names):
