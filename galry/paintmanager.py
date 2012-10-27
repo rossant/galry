@@ -752,7 +752,8 @@ class PaintManager(object):
         return ds
     
     def add_textured_rectangle(self, texture, points=None, is_static=False,
-                                vertex_shader=None, fragment_shader=None):
+                                vertex_shader=None, fragment_shader=None,
+                                **kwargs):
         """Helper function to add a textured rectangle (image).
         
         Arguments:
@@ -782,7 +783,7 @@ class PaintManager(object):
                                 primitive_type=PrimitiveType.TriangleStrip, 
                                 is_static=is_static,
                                 vertex_shader=vertex_shader,
-                                fragment_shader=fragment_shader)
+                                fragment_shader=fragment_shader, **kwargs)
                                 
         data = np.zeros((4,2), dtype=np.float32)
         data[0,:] = (x0, y0)
