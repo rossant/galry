@@ -16,8 +16,11 @@ class MyPaintManager(PaintManager):
         # Deactivate constraining the navigation into [-1, 1]^2 (the default).
         self.interaction_manager.constrain_navigation = False
         
+        n = 10000
+        
         # We add a plot with random points.
-        self.add_plot(*(.2 * rdn.randn(2, 10000)))
+        self.create_dataset(n)
+        self.set_data(position=.2 * rdn.randn(n, 2))
 
 # We define a customized binding by deriving a class from the base class
 # `ActionEventBindingSet`. This class links individual user actions to
