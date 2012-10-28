@@ -2,45 +2,13 @@ import numpy as np
 import os
 from default_template import DefaultTemplate
 from ..primitives import PrimitiveType
+from fontmaps import load_font
 import matplotlib.pyplot as plt
 from ..debugtools import log_debug, log_info, log_warn
 
-def load_texture(size, font=None):
-    if font is None:
-        font = "monospace"
-    possible_sizes = np.array([18, 20, 22, 24, 28, 32])
-    ind = np.nonzero(size - possible_sizes <= 0)[0]
-    if len(ind) == 0:
-        i = len(possible_sizes) - 1
-    else:
-        i = ind[0]
-    char_width = possible_sizes[i]
-    filename = "%s%d" % (font, char_width)
-    log_info("loading %s" % filename)
-    # get the absolute path of the file
-    path = os.path.dirname(os.path.realpath(__file__))
-    # load the texture from an image
-    font_atlas = plt.imread(os.path.join(path, "../fonts/%s.png" % filename))
-    return font_atlas, char_width
-
-CHARACTERS = """abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ12134567890.:,;'"(!?)+-*/= """
-n = int(np.ceil(np.sqrt(len(CHARACTERS))))
-
-def get_character_index(text, c):
-    try:
-        return CHARACTERS.index(c)
-    except:
-        return len(CHARACTERS) - 1
-
-def get_character_coordinates(text):
-    ind = [get_character_index(text, c) for c in text]
-    icoords = np.array([(np.mod(i, n), i / n) for i in ind])
-    return icoords
-    
 class TextTemplate(DefaultTemplate):
     def initialize(self, text="", fontsize=24, position=None, color=None,
                 **kwargs):
-        
         
         text_length = len(text)
         self.set_size(text_length)
@@ -52,58 +20,68 @@ class TextTemplate(DefaultTemplate):
         if color is None:
             color = self.default_color
         
-        point_size = float(fontsize)
+        texture, get_map = load_font(font="segoe", size=fontsize)
         
-        font_atlas, char_width = load_texture(fontsize)
-        total_width = float(font_atlas.shape[1])
-
-        icoords = get_character_coordinates(text)
+        map = get_map(text)
         index = np.arange(text_length)
-
+        
+        point_size = float(map[0,3] * texture.shape[1])
+        
         # add navigation code
         super(TextTemplate, self).initialize(**kwargs)
         
         self.set_rendering_options(primitive_type=PrimitiveType.Points)
 
-        self.add_compounds("text", fun=lambda text:
-                            dict(icoords=get_character_coordinates(text)))
-        
+        self.add_compounds("text", fun=lambda text: dict(
+                                        text_map=get_map(text)))
         self.add_attribute("position", vartype="float", ndim=2, default=position)
-        
         self.add_attribute("index", vartype="int", ndim=1, default=index)
+        self.add_attribute("text_map", vartype="float", ndim=4, default=map)
+        self.add_varying("flat_text_map", vartype="float", flat=True, ndim=4)
         
-        self.add_attribute("icoords", vartype="int", ndim=2, default=icoords)
+        # pure heuristic
+        letter_spacing = 100 + 18. * fontsize
+        self.add_uniform("letter_spacing", vartype="float", ndim=1,
+                            default=letter_spacing)
         
-        self.add_varying("varying_icoords", vartype="int", flat=True, ndim=2)
+        offset = np.hstack((0., np.cumsum(map[:, 2])[:-1]))
+        # offset = np.cumsum(map[:, 2] + .01)
+        self.add_attribute("offset", vartype="float", ndim=1, default=offset)
         
-        self.add_texture("tex_sampler", size=font_atlas.shape[:2], ndim=2,
-                            ncomponents=font_atlas.shape[2],
-                            default=font_atlas)
-        
+        self.add_texture("tex_sampler", size=texture.shape[:2], ndim=2,
+                            ncomponents=texture.shape[2],
+                            default=texture)
         self.add_uniform("point_size", vartype="float", ndim=1,
                             default=point_size)
-        
-        self.add_uniform("char_width", vartype="float", ndim=1,
-                            default=char_width)
-
-        self.add_uniform("total_width", vartype="float", ndim=1,
-                            default=total_width)
-        
-        self.add_uniform("text_length", vartype="int", ndim=1,
-                            default=text_length)
-
+        # self.add_uniform("text_length", vartype="int", ndim=1,
+                            # default=text_length)
         self.add_uniform("color", vartype="float", ndim=4,
                             default=color)
         
         self.add_vertex_main("""
-    float text_width = text_length * point_size * .9 / window_size.x;
-    gl_Position.x += (text_width / text_length) * (index - (text_length - 1) / 2.);
+    gl_Position.x += offset * letter_spacing / window_size.x;
     gl_PointSize = point_size;
-    varying_icoords = icoords;
+    flat_text_map = text_map;
         """)
         
         self.add_fragment_main("""
-    vec2 coord = char_width / total_width * (varying_icoords + gl_PointCoord);
-    out_color = texture(tex_sampler, coord) * color;
+    float x = gl_PointCoord.x;
+    float y = gl_PointCoord.y;
+    float w = flat_text_map.z;
+    float h = flat_text_map.w;
+    
+    float delta = h / w;
+    x = delta * x;
+    if ((x >= 0) && (x <= 1))
+    {
+        float xcoord = w * x;
+        float ycoord = h * y;
+        vec2 coord = flat_text_map.xy + vec2(xcoord, ycoord);
+        vec4 texcol = texture(tex_sampler, coord);
+        out_color = texcol * color;
+    }
+    else
+        out_color = vec4(0, 0, 0, 0);
+
         """)
        

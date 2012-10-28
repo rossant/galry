@@ -18,8 +18,8 @@ class MyPaintManager(PaintManager):
     def initialize(self):
         
         # We just add text in the center of the widget.
-        text = "Hello world!"
-        self.create_dataset(TextTemplate, text=text)
+        text = "Hello world! :)"
+        self.create_dataset(TextTemplate, text=text, position=(-.5,0.))
 
         self.interaction_manager.constrain_navigation = False
                 

@@ -48,9 +48,8 @@ class PaintManager(object):
             self.ds_fps = self.create_dataset(
                 size=len(text),
                 template_class=tpl.TextTemplate,
-                position=(-.82, .92),
+                position=(-.92, .92),
                 fontsize=18,
-                color=(1.,1.,1.,1.),
                 is_static=True,
                 text=text)
 

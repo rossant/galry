@@ -4,8 +4,6 @@ Galry: high-performance interactive 2D visualization in Python
   * create RectangleTemplate
 
 
-
-  
 Doc
 ---
   * automatic benchmark test
