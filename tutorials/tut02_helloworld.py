@@ -19,8 +19,10 @@ class MyPaintManager(PaintManager):
         
         # We just add text in the center of the widget.
         text = "Hello world!"
-        self.create_dataset(len(text), TextTemplate, text=text)
+        self.create_dataset(TextTemplate, text=text)
 
+        self.interaction_manager.constrain_navigation = False
+                
 # We show a basic QT window with a custom galry widget.
 # This widget has our custom `MyPaintManager` class as a paint manager.
 # The window has a size (500, 500) and a position (100, 100) on the screen.

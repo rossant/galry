@@ -7,6 +7,8 @@ class TextureTemplate(DefaultTemplate):
 
         assert shape is not None
     
+        self.set_size(4)
+    
         self.set_rendering_options(primitive_type=PrimitiveType.TriangleStrip)
         
         if points is None:

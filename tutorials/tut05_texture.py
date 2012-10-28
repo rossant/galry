@@ -20,7 +20,7 @@ class MyPaintManager(PaintManager):
         # We create an m x n texture as an m x n x 3 array.
         # We could also use matplotlib.pyplot.imread("image.png") to
         # load a PNG image as a RGB texture.
-        self.create_dataset(4, TextureTemplate, shape=(m, n), ncomponents=3)
+        self.create_dataset(TextureTemplate, shape=(m, n), ncomponents=3)
         self.set_data(tex_sampler=texture)
         
         # GalryWidget has a special attribute to constrain the viewport ratio 

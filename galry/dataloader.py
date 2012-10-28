@@ -334,6 +334,7 @@ class DataLoader(object):
         self.attributes = None
         self.uniforms = None
         self.textures = None
+        self.compounds = None
         
         self.bounds = bounds
         self.slices_count = int(np.ceil(size / float(MAX_VBO_SIZE)))
@@ -348,7 +349,7 @@ class DataLoader(object):
         # in the dataset, where each value is itself a dict with
         # all uniforms/attributes/textures.
         self.variables = {}
-        for variable in ["attributes", "uniforms", "textures"]:
+        for variable in ["attributes", "uniforms", "textures", "compounds"]:
             vardic = {}
             tpl = self.template
             for name, dic in getattr(tpl, variable).iteritems():
@@ -366,17 +367,27 @@ class DataLoader(object):
         
         """
         tpl = self.template
+        kwargs2 = kwargs.copy()
+        # find possible compounds and add them to kwargs
+        for name, data in kwargs2.iteritems():
+            if self.variables[name] == "compounds":
+                fun = self.compounds[name]["fun"]
+                kwargs.update(**fun(data))
+                del kwargs[name]
         for name, data in kwargs.iteritems():
             # variable is attribute, uniform or texture
             variable = self.variables[name]
+            dic = getattr(self, variable)[name]
             if variable == "textures":
                 data = validate_texture(data)
             else:
                 data = validate_data(data)
-            getattr(self, variable)[name]["data"] = data
+            if "preprocess" in variable:
+                data = dic["preprocess"](data)
+            dic["data"] = data
             if variable == "uniforms":
-                getattr(self, variable)[name]["invalidated"] = True
-        
+                dic["invalidated"] = True
+        return [name for name in kwargs.keys()]
 
 
         
@@ -391,7 +402,7 @@ class DataLoader(object):
         else:
             # default mask
             if mask is None:
-                mask = np.ones(size, dtype=bool)
+                mask = np.ones(self.size, dtype=bool)
             # is the current subVBO within the given [onset, offset]?
             within = False
             # update VBOs
@@ -399,7 +410,7 @@ class DataLoader(object):
                 newsubdata, pos, slice_size = data_sliced[slice_index]
                 vbo, _, _ = bf["vbos"][slice_index]
                 # subdata_bounds is the bounds (as a list) for the current subdata
-                subdata_bounds = bf["subdata_bounds"][slice_index]
+                subdata_bounds = self.subdata_bounds[slice_index]
                 # mask of updated indices in the subVBO
                 submask = mask[pos:pos + slice_size]
                 # if there is at least one True in the slice mask (submask)
@@ -465,7 +476,7 @@ class DataLoader(object):
     def upload_variables(self, *names):
         for name in names:
             var = self.variables[name]
-            if var == "uniforms":
+            if var == "uniforms" or var == "compounds":
                 continue
             getattr(self, "upload_%s_data" % var[:-1])(name)
  

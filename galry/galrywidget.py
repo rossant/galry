@@ -206,6 +206,7 @@ class GalryWidget(QGLWidget):
         
         # initialize data manager and shaders
         self.paint_manager.initialize()
+        self.paint_manager.initialize_default()
         self.paint_manager.initialize_gpu()
         
         # Paint the background with the specified color (black by default)
@@ -234,10 +235,7 @@ class GalryWidget(QGLWidget):
         
     def paint_fps(self):
         """Display the FPS in the top-right of the screen."""
-        fps = "FPS: %d" % int(self.fps_counter.get_fps())
-        # x, y = self.normalize_position(10, 20)
-        x, y = -.95, .92
-        self.paint_manager.paint_text(fps, (x, y), (1,1,0))
+        self.paint_manager.update_fps(int(self.fps_counter.get_fps()))
         
     def resizeGL(self, width, height):
         """Reinitialize the viewport.

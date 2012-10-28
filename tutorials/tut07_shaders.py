@@ -42,7 +42,7 @@ class MyPaintManager(PaintManager):
         # This dataset will be used to eventually render n points as a 
         # LineStrip (n-1 successive line segments).
         # We also specify a white color, and our custom shaders.
-        self.create_dataset(n, MyTemplate,
+        self.create_dataset(MyTemplate, size=n,
             primitive_type=PrimitiveType.LineStrip)
             
         self.set_data(initial_position=positions,

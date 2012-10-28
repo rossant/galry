@@ -19,7 +19,7 @@ class MyPaintManager(PaintManager):
         n = 10000
         
         # We add a plot with random points.
-        self.create_dataset(n)
+        self.create_dataset(size=n)
         self.set_data(position=.2 * rdn.randn(n, 2))
 
 # We define a customized binding by deriving a class from the base class

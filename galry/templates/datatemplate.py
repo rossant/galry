@@ -81,11 +81,12 @@ def get_varying_declarations(varying):
 
 
 class DataTemplate(object):
-    def __init__(self, size):
+    def __init__(self, size=None):
         self.attributes = {}
         self.uniforms = {}
         self.textures = {}
         self.varyings = {}
+        self.compounds = {}
         
         self.vs_headers = []
         self.vs_mains = []
@@ -101,25 +102,39 @@ class DataTemplate(object):
         # self.bounds = None
         self.default_color = (1., 1., 0., 1.)
     
+    def set_size(self, size):
+        self.size = size
+    
     def set_default_data(self, name, data):
         self.default_data[name] = data
     
-    def add_attribute(self, name, location=None, **varinfo):
+    def add_attribute(self, name, location=None, default=None, **varinfo):
         if location is None:
             location = len(self.attributes)
         # print name, varinfo
         self.attributes[name] = dict(name=name, location=location, **varinfo)
+        if default is not None:
+            self.set_default_data(name, default)
         
-    def add_uniform(self, name, **varinfo):
+    def add_uniform(self, name, default=None, **varinfo):
         self.uniforms[name] = dict(name=name, **varinfo)
+        if default is not None:
+            self.set_default_data(name, default)
         
-    def add_varying(self, name, **varinfo):
+    def add_varying(self, name, default=None, **varinfo):
         self.varyings[name] = dict(name=name, **varinfo)
+        if default is not None:
+            self.set_default_data(name, default)
         
-    def add_texture(self, name, location=None, **texinfo):
+    def add_texture(self, name, default=None, location=None, **texinfo):
         if location is None:
             location = len(self.textures)
         self.textures[name] = dict(name=name, **texinfo)
+        if default is not None:
+            self.set_default_data(name, default)
+    
+    def add_compounds(self, name, **varinfo):
+        self.compounds[name] = dict(name=name, **varinfo)
     
     def add_vertex_header(self, code):
         self.vs_headers.append(code)

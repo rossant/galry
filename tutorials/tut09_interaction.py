@@ -37,7 +37,7 @@ class MyPaintManager(PaintManager):
         # We update the buffer by specifying the name, dataset, and
         # the updated data. This array must have the exact same
         # dimensions as the original data in the buffer.
-        self.update_buffer("position", newdata, dataset=self.dataset)
+        self.set_data(position=newdata)
         
         # Toggle between gaussian and uniform laws.
         self.gaussian = not self.gaussian
@@ -46,7 +46,8 @@ class MyPaintManager(PaintManager):
         
         # We add a plot with random points.
         data = get_gaussian(self.n)
-        self.dataset = self.add_plot(data[:,0], data[:,1])
+        self.dataset = self.create_dataset(size=len(data))
+        self.set_data(position=data)
 
 # We define a new event as part of a new enumeration `MyEvents`.
 MyEvents = enum("ChangeLawEvent")

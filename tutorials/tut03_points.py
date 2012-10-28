@@ -18,14 +18,15 @@ class MyPaintManager(PaintManager):
         # of (be brave, try the million!).
         # The initial coordinate range of the window is [-1, 1]^2.
         # X, Y = 0.2 * rdn.randn(2, 10000)
-        data = 0.2 * rdn.randn(100000, 2)
+        data = 0.2 * rdn.randn(10000, 2)
         
         # We plot data with coordinates X and Y, rendered by default
         # as yellow points.
         # self.add_plot(X, Y)
-        self.create_dataset(len(data))
-        self.set_data(position=data)
+        ds = self.create_dataset(size=len(data))
+        self.set_data(position=data, dataset=ds)
         
+        self.parent.display_fps = True
 
 # By default, you can navigate into the window with the following commands:
 #   * wheel scroll to zoom in/out,

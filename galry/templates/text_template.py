@@ -25,19 +25,32 @@ def load_texture(size, font=None):
 
 CHARACTERS = """abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ12134567890.:,;'"(!?)+-*/= """
 n = int(np.ceil(np.sqrt(len(CHARACTERS))))
-    
+
+def get_character_index(text, c):
+    try:
+        return CHARACTERS.index(c)
+    except:
+        return len(CHARACTERS) - 1
+
 def get_character_coordinates(text):
-    ind = [CHARACTERS.index(c) for c in text]
+    ind = [get_character_index(text, c) for c in text]
     icoords = np.array([(np.mod(i, n), i / n) for i in ind])
     return icoords
     
 class TextTemplate(DefaultTemplate):
-    def initialize(self, text="", fontsize=24, position=None, **kwargs):
+    def initialize(self, text="", fontsize=24, position=None, color=None,
+                **kwargs):
+        
         
         text_length = len(text)
+        self.set_size(text_length)
+        
         if position is None:
             position = (0., 0.)
         position = np.tile(np.array(position).reshape((1, -1)), text_length)
+        
+        if color is None:
+            color = self.default_color
         
         point_size = float(fontsize)
         
@@ -52,35 +65,35 @@ class TextTemplate(DefaultTemplate):
         
         self.set_rendering_options(primitive_type=PrimitiveType.Points)
 
-        self.add_attribute("position", vartype="float", ndim=2)
-        self.set_default_data("position", position)
+        self.add_compounds("text", fun=lambda text:
+                            dict(icoords=get_character_coordinates(text)))
         
-        self.add_attribute("index", vartype="int", ndim=1)
-        self.set_default_data("index", index)
+        self.add_attribute("position", vartype="float", ndim=2, default=position)
         
-        self.add_attribute("icoords", vartype="int", ndim=2)
-        self.set_default_data("icoords", icoords)
+        self.add_attribute("index", vartype="int", ndim=1, default=index)
+        
+        self.add_attribute("icoords", vartype="int", ndim=2, default=icoords)
         
         self.add_varying("varying_icoords", vartype="int", flat=True, ndim=2)
         
         self.add_texture("tex_sampler", size=font_atlas.shape[:2], ndim=2,
-                            ncomponents=font_atlas.shape[2])
-        self.set_default_data("tex_sampler", font_atlas)
+                            ncomponents=font_atlas.shape[2],
+                            default=font_atlas)
         
-        self.add_uniform("point_size", vartype="float", ndim=1)
-        self.set_default_data("point_size", point_size)
+        self.add_uniform("point_size", vartype="float", ndim=1,
+                            default=point_size)
         
-        self.add_uniform("char_width", vartype="float", ndim=1)
-        self.set_default_data("char_width", char_width)
+        self.add_uniform("char_width", vartype="float", ndim=1,
+                            default=char_width)
 
-        self.add_uniform("total_width", vartype="float", ndim=1)
-        self.set_default_data("total_width", total_width)
+        self.add_uniform("total_width", vartype="float", ndim=1,
+                            default=total_width)
         
-        self.add_uniform("text_length", vartype="int", ndim=1)
-        self.set_default_data("text_length", text_length)
-        
-        self.add_uniform("color", vartype="float", ndim=4)
-        self.set_default_data("color", self.default_color)
+        self.add_uniform("text_length", vartype="int", ndim=1,
+                            default=text_length)
+
+        self.add_uniform("color", vartype="float", ndim=4,
+                            default=color)
         
         self.add_vertex_main("""
     float text_width = text_length * point_size * .9 / window_size.x;
