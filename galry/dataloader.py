@@ -494,6 +494,7 @@ class DataLoader(object):
         # check compilation error
         if not(result):
             msg = "Compilation error:"
+            msg += gl.glGetShaderInfoLog(vertex_shader)
             msg += vs
             raise RuntimeError(msg)
         

@@ -1,6 +1,8 @@
 Galry: high-performance interactive 2D visualization in Python
 ==============================================================
 
+  * create_dataset, default size in template
+
   * data_template: integrate set_default_data into add_*
 
   * create TextTemplate

@@ -259,7 +259,8 @@ class GalryWidget(QGLWidget):
             else:
                 vy = 1. / a
         self.viewport = (vx, vy)
-        self.paint_manager.set_viewport(self.viewport)
+        self.paint_manager.set_viewport(viewport=self.viewport,
+            window_size=(width, height))
         
     def sizeHint(self):
         return QtCore.QSize(self.width, self.height)

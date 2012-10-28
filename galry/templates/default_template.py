@@ -25,8 +25,9 @@ return scale * (position + translation);
     gl_Position = vec4(position, 0., 1.);""")
         
     def add_constrain_ratio(self, constrain_ratio=False):
+        self.add_uniform("viewport", vartype="float", ndim=2)
+        self.add_uniform("window_size", vartype="float", ndim=2)
         if constrain_ratio:
-            self.add_uniform("viewport", vartype="float", ndim=2)
             self.add_vertex_main("gl_Position.xy = gl_Position.xy / viewport;")
         
     def initialize(self, is_static=False, constrain_ratio=False):        

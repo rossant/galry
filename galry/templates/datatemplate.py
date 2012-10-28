@@ -70,6 +70,9 @@ def get_varying_declarations(varying):
          varying["name"])
     vs_declaration = s % "out"
     fs_declaration = s % "in"
+    if varying.get("flat", None):
+        vs_declaration = "flat " + vs_declaration
+        fs_declaration = "flat " + fs_declaration
     return vs_declaration, fs_declaration
 
 
@@ -96,7 +99,7 @@ class DataTemplate(object):
         
         # self.primitive_type = None
         # self.bounds = None
-        self.default_color = (1.,) * 4
+        self.default_color = (1., 1., 0., 1.)
     
     def set_default_data(self, name, data):
         self.default_data[name] = data
@@ -167,8 +170,6 @@ class DataTemplate(object):
         # Integrate shader headers
         vs = vs.replace("%VERTEX_HEADER%", vs_header)
         fs = fs.replace("%FRAGMENT_HEADER%", fs_header)
-        
-        
         
         # Vertex and fragment main code
         vs_main = ""

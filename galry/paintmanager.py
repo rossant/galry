@@ -175,10 +175,10 @@ class PaintManager(object):
                 self.set_data(dataset=dataset, 
                         scale=scale, translation=translation)
     
-    def set_viewport(self, viewport):
+    def set_viewport(self, viewport, window_size):
         for dataset in self.datasets:
-            if dataset["template"].constrain_ratio:
-                self.set_data(dataset=dataset, viewport=viewport)
+            self.set_data(dataset=dataset, viewport=viewport,
+                            window_size=window_size)
  
  
     # Overlay methods

@@ -18,7 +18,8 @@ class MyPaintManager(PaintManager):
     def initialize(self):
         
         # We just add text in the center of the widget.
-        self.add_text("Hello world!", position=(0., 0.))
+        text = "Hello world!"
+        self.create_dataset(len(text), TextTemplate, text=text)
 
 # We show a basic QT window with a custom galry widget.
 # This widget has our custom `MyPaintManager` class as a paint manager.
