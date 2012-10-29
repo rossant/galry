@@ -199,13 +199,15 @@ class DataTemplate(object):
         
         return vs, fs
     
-    def initialize(self):
+    def initialize(self; **kwargs):
         """Initialize the template by making calls to self.add_*.
         
         To be overriden.
         
         """
-        pass
+        # arguments in kwargs are for set_data
+        for name, data in kwargs.iteritems():
+            self.set_default_data(name, data)
     
     def finalize(self):
         """Finalize the template to make sure that shaders are compilable.

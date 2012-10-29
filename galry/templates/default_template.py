@@ -36,7 +36,9 @@ return scale * (position + translation);
         
         self.add_transformation(is_static)
         self.add_constrain_ratio(constrain_ratio)
+        
+        super(DefaultTemplate, self).initialize(**kwargs)
             
-        # arguments in kwargs are for set_data
-        for name, data in kwargs.iteritems():
-            self.set_default_data(name, data)
+        # # arguments in kwargs are for set_data
+        # for name, data in kwargs.iteritems():
+            # self.set_default_data(name, data)

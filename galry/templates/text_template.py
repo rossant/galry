@@ -7,15 +7,29 @@ import matplotlib.pyplot as plt
 from ..debugtools import log_debug, log_info, log_warn
 
 class TextTemplate(DefaultTemplate):
-    def initialize(self, text="", fontsize=24, position=None, color=None,
+    def position_compound(self, position=None):
+        if position is None:
+            position = (0., 0.)
+        position = np.tile(np.array(position).reshape((1, -1)), self.size)
+        return dict(position=position)
+    
+    def initialize(self, fontsize=24,
+                # position=None, color=None,
                 **kwargs):
+        
+        text = kwargs.get("text", "")
+        # text = kwargs.get("text", "")
+        # text = kwargs.get("text", "")
+        
+        if not text:
+            log_warn("please specify the text to display")
         
         text_length = len(text)
         self.set_size(text_length)
         
-        if position is None:
-            position = (0., 0.)
-        position = np.tile(np.array(position).reshape((1, -1)), text_length)
+        # if position is None:
+            # position = (0., 0.)
+        # position = np.tile(np.array(position).reshape((1, -1)), text_length)
         
         if color is None:
             color = self.default_color
@@ -34,6 +48,11 @@ class TextTemplate(DefaultTemplate):
 
         self.add_compound("text", fun=lambda text: dict(
                                         text_map=get_map(text)))
+
+        self.add_compound("text_position", fun=self.position_compound)
+        
+                                        
+                                        
         self.add_attribute("position", vartype="float", ndim=2, default=position)
         self.add_attribute("index", vartype="int", ndim=1, default=index)
         self.add_attribute("text_map", vartype="float", ndim=4, default=map)
