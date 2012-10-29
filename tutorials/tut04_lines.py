@@ -41,7 +41,7 @@ class MyPaintManager(PaintManager):
         # Try changing the values here: heat your graphics card up!
         position, colors = create_data(nplots, nsamples)
         
-        self.create_dataset(PlotTemplate, size=len(position),
+        self.create_dataset(ParallelSignalsTemplate, size=len(position),
             nplots=nplots, nsamples=nsamples)
         
         # We plot all lines with a single call to `add_plot`.

@@ -8,7 +8,10 @@ class ColoredPointsPaintManager(PaintManager):
         # generate random colors (with alpha channel)
         colors = rdn.rand(len(positions), 4)
         # add plot
-        self.add_plot(positions[:, 0], positions[:, 1], colors)
+        self.create_dataset(PlotTemplate,
+                            positions=positions,
+                            colors=colors
+                            )
 
 if __name__ == '__main__':
     # create window

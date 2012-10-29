@@ -30,16 +30,22 @@ class ConwayPaintManager(PaintManager):
         self.data = np.zeros((size,size,3), dtype=np.float32)
         self.data[:,:,0] = rdn.rand(size,size)<.2
         # create textured rectangle
-        self.texture = self.add_textured_rectangle(self.data)
+        # self.texture = self.add_textured_rectangle(self.data)
+        self.create_dataset(TextureTemplate, shape=self.data.shape[:2], ncomponents=3)
+        self.set_data(tex_sampler=self.data)
         # iteration text
         self.iteration = 0
-        self.add_permanent_overlay("text", lambda: "Iteration %04d" % self.iteration, (0, .95))
+        text = "Iteration %04d" % self.iteration
+        # TODO: bug with several textures
+        # self.it = self.create_dataset(TextTemplate, text=text)
+        # self.add_permanent_overlay("text", lambda: "Iteration %04d" % self.iteration, (0, .95))
         
     def update(self):
         # update the data
         self.data[:,:,0] = iterate(self.data[:,:,0])
+        self.set_data(tex_sampler=self.data, dataset=self.it)
         # update the texture
-        self.update_texture(self.texture, self.data)
+        # self.update_texture(self.texture, self.data)
         # update rendering
         self.updateGL()
         self.iteration += 1

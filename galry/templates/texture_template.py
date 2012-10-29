@@ -3,12 +3,11 @@ from default_template import DefaultTemplate
 from ..primitives import PrimitiveType
     
 class TextureTemplate(DefaultTemplate):
-    def initialize(self, shape=None, ndim=2, ncomponents=4, points=None, **kwargs):
+    def initialize(self, shape=None, ndim=2, ncomponents=4, points=None,
+                    # texture=None,
+                    **kwargs):
 
-        assert shape is not None
-    
         self.set_size(4)
-    
         self.set_rendering_options(primitive_type=PrimitiveType.TriangleStrip)
         
         if points is None:
@@ -35,7 +34,21 @@ class TextureTemplate(DefaultTemplate):
         self.add_attribute("tex_coords", vartype="float", ndim=2)
         self.set_default_data("tex_coords", tex_coords)
         
-        self.add_texture("tex_sampler", size=shape, ndim=ndim, ncomponents=ncomponents)
+        if "texture" in kwargs:
+            texture= kwargs["texture"]
+            shape = texture.shape[:2]
+            ncomponents = texture.shape[2]
+            
+            # self.add_texture("texture", size=shape, ndim=ndim,
+                # ncomponents=ncomponents, default=texture)
+        # else:
+        
+        self.add_texture("tex_sampler", size=shape, ndim=ndim,
+            ncomponents=ncomponents)
+        # HACK: to avoid conflict in GLSL shader with the "texture" function
+        # we redirect the "texture" variable here to "tex_sampler" which
+        # is the real name of the variable in the shader
+        self.add_compound("texture", fun=lambda data: dict(tex_sampler=data))
         
         self.add_varying("varying_tex_coords", vartype="float", ndim=2)
         

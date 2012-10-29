@@ -32,7 +32,7 @@ class TextTemplate(DefaultTemplate):
         
         self.set_rendering_options(primitive_type=PrimitiveType.Points)
 
-        self.add_compounds("text", fun=lambda text: dict(
+        self.add_compound("text", fun=lambda text: dict(
                                         text_map=get_map(text)))
         self.add_attribute("position", vartype="float", ndim=2, default=position)
         self.add_attribute("index", vartype="int", ndim=1, default=index)

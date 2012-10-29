@@ -9,7 +9,7 @@ class EarthPaintManager(PaintManager):
         # load the texture from an image thanks to matplotlib
         texture = plt.imread(os.path.join(path, "images/earth.png"))
         # add a textured rectangle
-        self.add_textured_rectangle(texture, (-.5, -.5, .5, .5))
+        self.create_dataset(TextureTemplate, texture=texture)
         
 class EarthPlot(GalryWidget):
     def initialize(self):

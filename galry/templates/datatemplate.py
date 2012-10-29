@@ -99,7 +99,7 @@ class DataTemplate(object):
         self.size = size
         
         # self.primitive_type = None
-        # self.bounds = None
+        self.bounds = None#[0, size]
         self.default_color = (1., 1., 0., 1.)
     
     def set_size(self, size):
@@ -133,7 +133,7 @@ class DataTemplate(object):
         if default is not None:
             self.set_default_data(name, default)
     
-    def add_compounds(self, name, **varinfo):
+    def add_compound(self, name, **varinfo):
         self.compounds[name] = dict(name=name, **varinfo)
     
     def add_vertex_header(self, code):

@@ -148,7 +148,9 @@ class PaintManager(object):
             # template (in template.set_rendering_options, called in
             # initialize)
             # finally, we fallback on the default bounds
-            bounds = getattr(template, "bounds", [0, size])
+            bounds = getattr(template, "bounds", None)
+            if bounds is None:
+                bounds = [0, size]
         bounds = np.array(bounds, np.int32)
         
         template.finalize()

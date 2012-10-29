@@ -4,6 +4,7 @@ import numpy as np
 import OpenGL.GL as gl
 from primitives import PrimitiveType, GL_PRIMITIVE_TYPE_CONVERTER
 from tools import enforce_dtype
+from debugtools import log_debug, log_info, log_warn
 
 __all__ = ['DataLoader']
 
@@ -393,7 +394,11 @@ class DataLoader(object):
         
     def upload_attribute_data(self, name, mask=None):    
         bf = self.attributes[name]
-        data = bf["data"]
+        data = bf.get("data", None)
+        if data is None:
+            log_info("No data found for attribute %s, skipping data uploading"\
+                % name)
+            return
         data_sliced = _slice_data(data, self.slices)
         # add data
         if "vbos" not in bf:
