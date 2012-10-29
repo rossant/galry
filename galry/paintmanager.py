@@ -48,10 +48,10 @@ class PaintManager(object):
             self.ds_fps = self.create_dataset(
                 size=len(text),
                 template_class=tpl.TextTemplate,
-                position=(-.92, .92),
                 fontsize=18,
                 is_static=True,
-                text=text)
+                )
+            self.set_data(pos=(-.92, .92), text=text, dataset=self.ds_fps)
 
     def initialize_gpu(self):
         for dataset in self.datasets:
@@ -154,14 +154,17 @@ class PaintManager(object):
         bounds = np.array(bounds, np.int32)
         
         template.finalize()
-        
+
         dataset = {}
         dataset["size"] = size
-        dataset["template"] = template
-        
         dataset["primitive_type"] = primitive_type
-        
+        dataset["template"] = template
         dataset["loader"] = DataLoader(size, template=template, bounds=bounds)        
+        # we redirect the elements in kwargs that are template variables
+        # to set_data
+        # self.set_data(dataset=dataset, **dict([(k, v) for (k, v) in \
+            # kwargs.iteritems() if k in template.variable_names]))
+        
         # default data
         self.set_data(dataset=dataset, **template.default_data)
         

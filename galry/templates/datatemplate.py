@@ -1,3 +1,4 @@
+import itertools
 
 VS_TEMPLATE = """
 %VERTEX_HEADER%
@@ -105,33 +106,34 @@ class DataTemplate(object):
     def set_size(self, size):
         self.size = size
     
-    def set_default_data(self, name, data):
-        self.default_data[name] = data
+    # def set_default_data(self, name, data):
+        # self.default_data[name] = data
     
     def add_attribute(self, name, location=None, default=None, **varinfo):
         if location is None:
             location = len(self.attributes)
-        # print name, varinfo
         self.attributes[name] = dict(name=name, location=location, **varinfo)
         if default is not None:
-            self.set_default_data(name, default)
+            self.set_default_data(**{name:default})
         
     def add_uniform(self, name, default=None, **varinfo):
         self.uniforms[name] = dict(name=name, **varinfo)
         if default is not None:
-            self.set_default_data(name, default)
+            self.set_default_data(**{name:default})
         
     def add_varying(self, name, default=None, **varinfo):
         self.varyings[name] = dict(name=name, **varinfo)
         if default is not None:
-            self.set_default_data(name, default)
+            self.set_default_data(**{name:default})
         
-    def add_texture(self, name, default=None, location=None, **texinfo):
-        if location is None:
-            location = len(self.textures)
-        self.textures[name] = dict(name=name, **texinfo)
+    def add_texture(self, name, default=None, #location=None,
+        **texinfo):
+        # if location is None:
+            # location = len(self.textures)
+        self.textures[name] = dict(name=name, #location=location,
+            **texinfo)
         if default is not None:
-            self.set_default_data(name, default)
+            self.set_default_data(**{name:default})
     
     def add_compound(self, name, **varinfo):
         self.compounds[name] = dict(name=name, **varinfo)
@@ -199,15 +201,17 @@ class DataTemplate(object):
         
         return vs, fs
     
-    def initialize(self; **kwargs):
+    def set_default_data(self, **kwargs):
+        """Set default data for template variables."""
+        for name, data in kwargs.iteritems():
+            self.default_data[name] = data
+    
+    def initialize(self, **kwargs):
         """Initialize the template by making calls to self.add_*.
         
         To be overriden.
         
         """
-        # arguments in kwargs are for set_data
-        for name, data in kwargs.iteritems():
-            self.set_default_data(name, data)
     
     def finalize(self):
         """Finalize the template to make sure that shaders are compilable.
@@ -224,4 +228,10 @@ class DataTemplate(object):
             out_color = %s;
             """ % _get_shader_vector(self.default_color))
     
-  
+        # get the list of all template variable names
+        vs = ["attributes", "uniforms", "textures", "compounds"]
+        self.variable_names = list(itertools.chain(*[getattr(self, v) \
+            for v in vs]))
+        
+        
+        

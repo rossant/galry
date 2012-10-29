@@ -15,12 +15,10 @@ class ParallelSignalsTemplate(DefaultTemplate):
         self.set_rendering_options(primitive_type=PrimitiveType.LineStrip,
             bounds=bounds)
         
-        self.add_attribute("position", vartype="float", ndim=2)
-        
-        self.add_attribute("plot_index", vartype="int", ndim=1, default=plot_index)
-        
+        self.add_attribute("position", vartype="float", ndim=2)        
+        self.add_attribute("plot_index", vartype="int", ndim=1,
+            default=plot_index)
         self.add_uniform("colors", vartype="float", ndim=3, size=nplots)
-        
         self.add_varying("plot_color", vartype="float", ndim=3)
         
         self.add_vertex_main("""

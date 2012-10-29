@@ -24,7 +24,7 @@ class MyPaintManager(PaintManager):
         # as yellow points.
         # self.add_plot(X, Y)
         ds = self.create_dataset(size=len(data))
-        self.set_data(position=data, dataset=ds)
+        self.set_data(position=data)
         
         self.parent.display_fps = True
 

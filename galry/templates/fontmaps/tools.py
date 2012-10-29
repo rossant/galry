@@ -101,11 +101,14 @@ def load_font(font=None, size=None):
     matrix = load_fnt(fnt)
     tex = load_png(png)
     texsize = tex.shape[:2]
-    get_map = lambda text: get_text_map(text, 
-                texsize=texsize, matrix=matrix)
-    return tex, get_map
+    get_map = lambda text: get_text_map(text, matrix=matrix)
+    # normalize the matrix so that coordinates are in [0,1]
+    size = np.array(np.tile(texsize, (1, 2)), dtype=np.float32)
+    matrix = np.array(matrix, dtype=np.float32)
+    matrix[:,1:] /= size
+    return tex, matrix, get_map
     
-def get_text_map(text, matrix=None, texsize=None):#, font=None, size=None):
+def get_text_map(text, matrix):#, texsize=None):#, font=None, size=None):
     """Return the text map of a string.
     
     Arguments:
@@ -119,9 +122,5 @@ def get_text_map(text, matrix=None, texsize=None):#, font=None, size=None):
     
     """
     chars = map(ord, (text))
-    # if matrix is None:
-        # png, fnt = get_font_filenames(font, size)
-        # matrix = load_fnt(fnt)
-    size = np.array(np.tile(texsize, (1, 2)), dtype=np.float32)
-    return matrix[chars,1:] / size
+    return matrix[chars,1:]
     

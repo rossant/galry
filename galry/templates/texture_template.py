@@ -28,20 +28,16 @@ class TextureTemplate(DefaultTemplate):
         tex_coords[2,:] = (0, 0)
         tex_coords[3,:] = (1, 0)
         
-        self.add_attribute("position", vartype="float", ndim=2)
-        self.set_default_data("position", position)
+        self.add_attribute("position", vartype="float", ndim=2,
+            default=position)
         
-        self.add_attribute("tex_coords", vartype="float", ndim=2)
-        self.set_default_data("tex_coords", tex_coords)
+        self.add_attribute("tex_coords", vartype="float", ndim=2,
+            default=tex_coords)
         
         if "texture" in kwargs:
             texture= kwargs["texture"]
             shape = texture.shape[:2]
             ncomponents = texture.shape[2]
-            
-            # self.add_texture("texture", size=shape, ndim=ndim,
-                # ncomponents=ncomponents, default=texture)
-        # else:
         
         self.add_texture("tex_sampler", size=shape, ndim=ndim,
             ncomponents=ncomponents)

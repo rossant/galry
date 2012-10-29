@@ -49,5 +49,4 @@ class MyPaintManager(PaintManager):
             # We set the frequency.
             frequency=20.)
         
-        
 show_basic_window(paint_manager=MyPaintManager)
