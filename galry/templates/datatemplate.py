@@ -15,6 +15,7 @@ OLDGLSL = sys.platform != "win32"
 
 if not OLDGLSL:
     VS_TEMPLATE = """
+#version 330
 %VERTEX_HEADER%
 void main()
 {
@@ -24,6 +25,7 @@ void main()
 """
 
     FS_TEMPLATE = """
+#version 330
 %FRAGMENT_HEADER%
 out vec4 out_color;
 void main()
