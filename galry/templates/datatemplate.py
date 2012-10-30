@@ -1,8 +1,21 @@
 import itertools
+import collections
+import sys
+from ..debugtools import log_info, info_level
 
-VS_TEMPLATE = """
+# HACK: Linux in VirtualBox uses OpenGL ES, which requires a special API
+# in GLSL. This variable is true when OpenGL ES version 120 is used
+# info_level()
+OLDGLSL = sys.platform != "win32"
+# log_info("OLDGLSL=%s" % str(OLDGLSL))
+
+
+
+
+
+if not OLDGLSL:
+    VS_TEMPLATE = """
 %VERTEX_HEADER%
-
 void main()
 {
     %VERTEX_MAIN%
@@ -10,28 +23,65 @@ void main()
 
 """
 
-
-FS_TEMPLATE = """
+    FS_TEMPLATE = """
 %FRAGMENT_HEADER%
-
 out vec4 out_color;
-
 void main()
 {
     %FRAGMENT_MAIN%
 }
+
 """
 
 
-def _get_shader_type(varinfo):
-    if varinfo["ndim"] == 1:
-        shader_type = varinfo["vartype"]
-    elif varinfo["ndim"] >= 2:
-        shader_type = "vec%d" % varinfo["ndim"]
-        if varinfo["vartype"] != "float":
-            shader_type = "i" + shader_type
-    return shader_type
 
+else:
+    VS_TEMPLATE = """
+#version 120
+%VERTEX_HEADER%
+void main()
+{
+    %VERTEX_MAIN%
+}
+
+"""
+
+    FS_TEMPLATE = """
+#version 120
+%FRAGMENT_HEADER%
+void main()
+{
+    vec4 out_color = vec4(1., 1., 1., 1.);
+    %FRAGMENT_MAIN%
+    gl_FragColor = out_color;
+}
+
+"""
+    
+
+    
+    
+    
+if not OLDGLSL:
+    def _get_shader_type(varinfo):
+        if varinfo["ndim"] == 1:
+            shader_type = varinfo["vartype"]
+        elif varinfo["ndim"] >= 2:
+            shader_type = "vec%d" % varinfo["ndim"]
+            if varinfo["vartype"] != "float":
+                shader_type = "i" + shader_type
+        return shader_type
+else:
+    def _get_shader_type(varinfo):
+        if varinfo["ndim"] == 1:
+            shader_type = "float" #varinfo["vartype"]
+        elif varinfo["ndim"] >= 2:
+            shader_type = "vec%d" % varinfo["ndim"]
+            # if varinfo["vartype"] != "float":
+                # shader_type = "i" + shader_type
+        return shader_type
+    
+    
 def _get_shader_vector(vec):
     return "vec%d%s" % (len(vec), str(vec))
     
@@ -41,11 +91,18 @@ def _get_shader_vector(vec):
     
 
 def get_attribute_declaration(attribute):
-    declaration = "layout(location = %d) in %s %s;\n" % \
-                    (attribute["location"],
-                     _get_shader_type(attribute), 
-                     attribute["name"])
+    if not OLDGLSL:
+        declaration = "layout(location = %d) in %s %s;\n" % \
+                        (attribute["location"],
+                         _get_shader_type(attribute), 
+                         attribute["name"])
+    else:
+        declaration = "attribute %s %s;\n" % \
+                        (_get_shader_type(attribute), 
+                         attribute["name"])
+        
     return declaration
+    
     
 def get_uniform_declaration(uniform):
     tab = ""
@@ -69,11 +126,19 @@ def get_varying_declarations(varying):
     s = "%%s %s %s;\n" % \
         (_get_shader_type(varying), 
          varying["name"])
-    vs_declaration = s % "out"
-    fs_declaration = s % "in"
-    if varying.get("flat", None):
-        vs_declaration = "flat " + vs_declaration
-        fs_declaration = "flat " + fs_declaration
+         
+    if not OLDGLSL:
+        vs_declaration = s % "out"
+        fs_declaration = s % "in"
+    else:
+        vs_declaration = s % "varying"
+        fs_declaration = s % "varying"
+    
+    if not OLDGLSL:
+        if varying.get("flat", None):
+            vs_declaration = "flat " + vs_declaration
+            fs_declaration = "flat " + fs_declaration
+        
     return vs_declaration, fs_declaration
 
 
@@ -83,7 +148,7 @@ def get_varying_declarations(varying):
 
 class DataTemplate(object):
     def __init__(self, size=None):
-        self.attributes = {}
+        self.attributes = collections.OrderedDict()
         self.uniforms = {}
         self.textures = {}
         self.varyings = {}
@@ -198,6 +263,9 @@ class DataTemplate(object):
         # Integrate shader headers
         vs = vs.replace("%VERTEX_MAIN%", vs_main)
         fs = fs.replace("%FRAGMENT_MAIN%", fs_main)
+        
+        vs = vs.replace(b"\r\n", b"\n")
+        fs = fs.replace(b"\r\n", b"\n")
         
         return vs, fs
     

@@ -3,8 +3,8 @@ Galry: high-performance interactive 2D visualization in Python
 
   * position => positions?
   * bug: multiple textures in multiple datasets
-  * bug zoombox
   * TimerWidget: with auto timer
+  * bug: linux pyside segmentation fault
   
 
 Doc

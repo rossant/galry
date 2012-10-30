@@ -26,7 +26,7 @@ class MyPaintManager(PaintManager):
         ds = self.create_dataset(size=len(data))
         self.set_data(position=data)
         
-        self.parent.display_fps = True
+        # self.parent.display_fps = True
 
 # By default, you can navigate into the window with the following commands:
 #   * wheel scroll to zoom in/out,

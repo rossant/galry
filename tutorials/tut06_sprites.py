@@ -16,7 +16,7 @@ def create_texture():
     """This function creates a cross-like texture."""
     
     # We use an alpha channel for transparency of the cross outside the cross
-    # itself.
+    # itself. 
     texture = np.zeros((15, 15, 4))
     texture[7, :, :] = texture[:, 7, :] = 1
     return texture

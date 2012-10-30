@@ -5,6 +5,7 @@ import OpenGL.GL as gl
 from primitives import PrimitiveType, GL_PRIMITIVE_TYPE_CONVERTER
 from tools import enforce_dtype
 from debugtools import log_debug, log_info, log_warn
+from templates.datatemplate import OLDGLSL
 
 __all__ = ['DataLoader']
 
@@ -85,7 +86,7 @@ def validate_texture(data):
 # will be zero, so you might just have very weird results! Make sure to test.
 MAX_VBO_SIZE = 65000
 
-def create_vbo(data):
+def create_vbo(data, location=None):
     """Create an OpenGL Vertex Buffer Object.
     
     The VBO creation uses the PyOpenGL array extension or not, depending on 
@@ -104,12 +105,13 @@ def create_vbo(data):
         buffer = glvbo.VBO(data)
     else:
         buffer = gl.glGenBuffers(1)
-        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, buffer)
+        # gl.glBindBuffer(gl.GL_ARRAY_BUFFER, buffer)
+        bind_vbo(buffer, location=location)
         gl.glBufferData(gl.GL_ARRAY_BUFFER, data, 
                         gl.GL_DYNAMIC_DRAW)
     return buffer
     
-def bind_vbo(buffer):
+def bind_vbo(buffer, location=None):
     """Bind a VBO.
     
     Use this function before using a VBO (like updating the data or rendering
@@ -122,9 +124,12 @@ def bind_vbo(buffer):
     if USE_PYOPENGL_ARRAY:
         buffer.bind()
     else:
+        if OLDGLSL:
+            assert location is not None
+            gl.glEnableVertexAttribArray(location)
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, buffer)
 
-def update_vbo(buffer, newdata, onset=None):
+def update_vbo(buffer, newdata, onset=None, location=None):
     """Update a VBO.
     
     Arguments:
@@ -138,13 +143,13 @@ def update_vbo(buffer, newdata, onset=None):
         onset = 0
     # convert onset into bytes count
     onset *= newdata.shape[1] * newdata.itemsize
-    bind_vbo(buffer)
+    bind_vbo(buffer, location=location)
     gl.glBufferSubData(gl.GL_ARRAY_BUFFER, onset, newdata)
         
         
 def activate_buffer(vbo, location, ndim, do_activate):
     # TODO: refactor this
-    bind_vbo(vbo)
+    bind_vbo(vbo, location=location)
     if do_activate:
         gl.glEnableVertexAttribArray(location)
         gl.glVertexAttribPointer(location, ndim, gl.GL_FLOAT, gl.GL_FALSE, 0, None)
@@ -253,7 +258,7 @@ def _set_vbo(vbo, location, ndim, dtype=None, gltype=None):
         if dtype is None:
             dtype = np.float32
         gltype = NP_GL_TYPE_CONVERTER[dtype]
-    bind_vbo(vbo)
+    bind_vbo(vbo, location=location)
     gl.glEnableVertexAttribArray(location)
     gl.glVertexAttribPointer(location, ndim, gltype, gl.GL_FALSE, 0, None)
     
@@ -398,7 +403,8 @@ class DataLoader(object):
 
 
         
-    def upload_attribute_data(self, name, mask=None):    
+    def upload_attribute_data(self, name, mask=None):  
+        # print self.template.attributes["position"]  
         bf = self.attributes[name]
         data = bf.get("data", None)
         if data is None:
@@ -408,7 +414,11 @@ class DataLoader(object):
         data_sliced = _slice_data(data, self.slices)
         # add data
         if "vbos" not in bf:
-            bf["vbos"] = [(create_vbo(subdata), pos, size) for subdata, pos, size in data_sliced]
+            if not OLDGLSL:
+                bf["vbos"] = [(create_vbo(subdata), pos, size) for subdata, pos, size in data_sliced]
+            else:
+                # print bf["location"], self.template.attributes["position"] , name
+                bf["vbos"] = [(create_vbo(subdata, bf["location"]), pos, size) for subdata, pos, size in data_sliced]
         # or update data
         else:
             # default mask
@@ -429,7 +439,8 @@ class DataLoader(object):
                     # this subVBO contains updated indices
                     subonset = submask.argmax()
                     suboffset = len(submask) - 1 - submask[::-1].argmax()
-                    update_vbo(vbo, newsubdata[subonset:suboffset + 1], subonset)
+                    update_vbo(vbo, newsubdata[subonset:suboffset + 1], subonset,
+                        location=bf["location"])
         
     def upload_uniform_data(self, name):
         # define GL uniform
@@ -485,6 +496,7 @@ class DataLoader(object):
         
         
     def upload_variables(self, *names):
+        # print self.template.attributes["position"]
         for name in names:
             var = self.variables[name]
             if var == "uniforms" or var == "compounds":
@@ -533,6 +545,7 @@ class DataLoader(object):
             msg += fs
             raise RuntimeError(msg)
         
+        
         # create shader program with shaders
         program = gl.glCreateProgram()
         gl.glAttachShader(program, vertex_shader)
@@ -545,7 +558,14 @@ class DataLoader(object):
             msg = "Shader program linking error:"
             msg += gl.glGetProgramInfoLog(program)
             raise RuntimeError(msg)
-
+        
+        
+        # OLDGLSL: explicitely link attribute locations to names
+        if OLDGLSL:
+            for name, attr in self.template.attributes.iteritems():
+                attr["location"] = gl.glGetAttribLocation(program, name)
+                self.attributes[name]["location"] = gl.glGetAttribLocation(program, name)
+        
         self.shaders_program = program
         
     def activate_shaders(self):

@@ -1,6 +1,7 @@
 import numpy as np
 import os
 from default_template import DefaultTemplate
+from datatemplate import OLDGLSL
 from ..primitives import PrimitiveType
 from fontmaps import load_font
 import matplotlib.pyplot as plt
@@ -24,27 +25,18 @@ class TextTemplate(DefaultTemplate):
     def initialize(self, font="segoe", fontsize=24, **kwargs):
         self.set_rendering_options(primitive_type=PrimitiveType.Points)
 
-        # text = kwargs.get("text", "")
-        # if not text:
-            # log_warn("please specify the text to display")
-        
         text_length = self.size
-        # self.set_size(text_length)
-        
-        # font = kwargs.get("font", "segoe")
-        # fontsize = kwargs.get("fontsize", 24)
         self.initialize_font(font, fontsize)
         
-        index = np.arange(text_length)
         point_size = float(self.matrix[:,4].max() * self.texture.shape[1])
-        # print point_size, self.matrix#[:,-1].max()
+
         # add navigation code
         super(TextTemplate, self).initialize(**kwargs)
         
         # template attributes and varyings
         self.add_attribute("position", vartype="float", ndim=2,
             default=np.zeros((text_length, 2)))
-        self.add_attribute("index", vartype="int", ndim=1, default=index)
+            
         self.add_attribute("offset", vartype="float", ndim=1)#, default=offset)
         self.add_attribute("text_map", vartype="float", ndim=4)#, default=map)
         self.add_varying("flat_text_map", vartype="float", flat=True, ndim=4)
@@ -73,7 +65,11 @@ class TextTemplate(DefaultTemplate):
     flat_text_map = text_map;
         """)
         
-        self.add_fragment_main("""
+        
+        
+        
+        # if not OLDGLSL:
+        fragment = """
     float x = gl_PointCoord.x;
     float y = gl_PointCoord.y;
     float w = flat_text_map.z;
@@ -92,8 +88,12 @@ class TextTemplate(DefaultTemplate):
     else
         out_color = vec4(0, 0, 0, 0);
 
-    // DEBUG
-    //out_color = vec4(0, 0, 1, 1);
-    //out_color.xw = 1.;  
-        """)
-       
+        """
+        
+        # OLDGLSL does not know the texture function
+        if OLDGLSL:
+            fragment = fragment.replace("texture(", "texture%dD(" % 2)
+        
+        self.add_fragment_main(fragment)
+        
+        

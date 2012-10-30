@@ -53,6 +53,7 @@ class PaintManager(object):
                 )
             self.set_data(pos=(-.92, .92), text=text, dataset=self.ds_fps)
 
+        # navigation rectangle
         self.ds_navigation_rectangle = self.create_dataset(tpl.RectanglesTemplate,
             is_static=True)
         self.set_data(colors=self.navigation_rectangle_color, dataset=self.ds_navigation_rectangle)

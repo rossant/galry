@@ -3,8 +3,7 @@
 from debugtools import *
 
 # import PyQT or Pyside
-from python_qt_binding import QtCore, QtDeclarative, QtGui, \
-    QtMultimedia, QtNetwork, QtOpenGL, QtXml
+from python_qt_binding import QtCore, QtDeclarative, QtGui, QtOpenGL
 
 # HACK: we need to create a QT application before importing cursors,
 # because one of the cursors makes use of QPixmap which requires 

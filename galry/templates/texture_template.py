@@ -1,5 +1,6 @@
 import numpy as np
 from default_template import DefaultTemplate
+from datatemplate import OLDGLSL
 from ..primitives import PrimitiveType
     
 class TextureTemplate(DefaultTemplate):
@@ -52,10 +53,16 @@ class TextureTemplate(DefaultTemplate):
     varying_tex_coords = tex_coords;
         """)
         
-        self.add_fragment_main("""
+        fragment = """
     out_color = texture(tex_sampler, varying_tex_coords);
-        """)
+        """
         
+        # OLDGLSL does not know the texture function
+        if OLDGLSL:
+            fragment = fragment.replace("texture(", "texture%dD(" % 2)
+            
+        self.add_fragment_main(fragment)
+            
         # add navigation code
         super(TextureTemplate, self).initialize(**kwargs)
         
