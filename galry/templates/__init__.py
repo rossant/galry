@@ -5,5 +5,6 @@ from texture_template import TextureTemplate
 from sprite_template import SpriteTemplate
 from text_template import TextTemplate
 from parallelsignals_template import ParallelSignalsTemplate
+from rectangles_template import RectanglesTemplate
 
 

@@ -368,6 +368,12 @@ class DataLoader(object):
         
         """
         tpl = self.template
+        
+        # special case: primitive_type
+        if "primitive_type" in kwargs:
+            tpl.set_rendering_options(primitive_type=kwargs["primitive_type"])
+            del kwargs["primitive_type"]
+        
         kwargs2 = kwargs.copy()
         # find possible compounds and add them to kwargs
         for name, data in kwargs2.iteritems():

@@ -16,29 +16,14 @@ class PlotTemplate(DefaultTemplate):
         assert nprimitives
         assert nsamples
         
-        # infer size from positions if positions are given
-        # if positions is not None:
-            # self.set_size(positions.shape[0])
-            
         # set position attribute
-        self.add_attribute("position", vartype="float", ndim=2,
-            # default=np.zeros((self.size, 2))
-            )
+        self.add_attribute("position", vartype="float", ndim=2)
             
-        # bounds = np.arange(0, self.size + 1, nsamples)
-        # self.set_rendering_options(bounds=bounds)
-            
-        # infer number of color components
-        # if colors is None:
-            # colors_ndim = len(self.default_color)
-            # colors = self.default_color
-        # elif isinstance(colors, np.ndarray):
-            # colors_ndim = colors.shape[1]
+        bounds = np.arange(0, self.size + 1, nsamples)
+        self.set_rendering_options(bounds=bounds)
             
         # single color case: no need for a color buffer, just use default color
         if single_color:
-            # colors_ndim = len(colors)
-            # self.set_default_color(colors)
             self.add_uniform("color", vartype="float", ndim=colors_ndim,
                 default=self.default_color)
             
@@ -70,8 +55,6 @@ class PlotTemplate(DefaultTemplate):
             out_color = varying_color;
                 """)
                 
-        
-        
         # add navigation code
         super(PlotTemplate, self).initialize(**kwargs)
         

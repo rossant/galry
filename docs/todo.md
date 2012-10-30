@@ -1,7 +1,6 @@
 Galry: high-performance interactive 2D visualization in Python
 ==============================================================
 
-  * create RectangleTemplate
   * position => positions?
   * bug: multiple textures in multiple datasets
   * bug zoombox
