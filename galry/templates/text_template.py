@@ -29,7 +29,7 @@ class TextTemplate(DefaultTemplate):
             # log_warn("please specify the text to display")
         
         text_length = self.size
-        self.set_size(text_length)
+        # self.set_size(text_length)
         
         # font = kwargs.get("font", "segoe")
         # fontsize = kwargs.get("fontsize", 24)

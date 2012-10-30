@@ -37,15 +37,14 @@ class ConwayPaintManager(PaintManager):
         self.iteration = 0
         text = "Iteration %04d" % self.iteration
         # TODO: bug with several textures
-        # self.it = self.create_dataset(TextTemplate, text=text)
-        # self.add_permanent_overlay("text", lambda: "Iteration %04d" % self.iteration, (0, .95))
+        # self.it = self.create_dataset(TextTemplate, size=len(text))
+        # self.set_data(text=text, dataset=self.it)
         
     def update(self):
         # update the data
         self.data[:,:,0] = iterate(self.data[:,:,0])
-        self.set_data(tex_sampler=self.data, dataset=self.it)
+        self.set_data(tex_sampler=self.data)#, dataset=self.it)
         # update the texture
-        # self.update_texture(self.texture, self.data)
         # update rendering
         self.updateGL()
         self.iteration += 1

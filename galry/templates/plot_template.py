@@ -3,7 +3,7 @@ from default_template import DefaultTemplate
 from ..primitives import PrimitiveType
     
 class PlotTemplate(DefaultTemplate):
-    def initialize(self, colors_ndim=4, single_color=True, **kwargs):
+    def initialize(self, colors_ndim=4, single_color=False, **kwargs):
         
         # infer size from positions if positions are given
         # if positions is not None:
