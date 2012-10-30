@@ -40,9 +40,14 @@ class HistogramPaintManager(PaintManager):
         values = rdn.rand(1, 50)
         # compute histogram points
         X, Y = get_histogram_points(values)
+        position = np.hstack((X.reshape((-1, 1)),
+            Y.reshape((-1, 1))))
         # add the bar plot
-        self.add_plot(X, Y,
-                primitive_type=PrimitiveType.TriangleStrip)
+        self.create_dataset(PlotTemplate, size=X.size, single_color=True,
+            nsamples=5,
+                primitive_type=PrimitiveType.TriangleStrip
+                )
+        self.set_data(position=position)
 
 if __name__ == '__main__':
     # create window
