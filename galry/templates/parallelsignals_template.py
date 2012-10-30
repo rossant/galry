@@ -3,7 +3,7 @@ from default_template import DefaultTemplate
 from ..primitives import PrimitiveType
     
 class ParallelSignalsTemplate(DefaultTemplate):
-    def initialize(self, nplots=None, nsamples=None, colors=None, **kwargs):
+    def initialize(self, nplots=None, nsamples=None, **kwargs):
         
         assert nplots is not None
         assert nsamples is not None

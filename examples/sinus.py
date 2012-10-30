@@ -7,9 +7,20 @@ class SinusPaintManager(PaintManager):
         x = np.linspace(-1., 1., 1000)
         y1 = 0.5 * np.sin(20 * x)
         y2 = 0.5 * np.cos(20 * x)
+        positions = np.empty((2 * len(x), 2))
+        positions[:1000,0] = x
+        positions[1000:,0] = x
+        positions[:1000,1] = y1
+        positions[1000:,1] = y2
         # add two plots with two different colors
-        self.add_plot(x, y1, (1,0,0), primitive_type=PrimitiveType.LineStrip)
-        self.add_plot(x, y2, (1,1,0), primitive_type=PrimitiveType.LineStrip)
+        
+        colors = np.ones((2, 3))
+        colors[0,1:3] = 0
+        colors[1,2] = 0
+        
+        self.create_dataset(ParallelSignalsTemplate, size=len(positions), 
+            nplots=2, nsamples=1000)
+        self.set_data(position=positions, colors=colors)
 
 if __name__ == '__main__':
     # create window

@@ -33,7 +33,10 @@ class CorrelationMatrixPaintManager(PaintManager):
         # colorize the texture
         texture = colormap(data)
         # show the texture
-        self.add_textured_rectangle(texture)
+        self.create_dataset(TextureTemplate, shape=(n, n),
+            ncomponents=texture.shape[2],
+            )
+        self.set_data(tex_sampler=texture)
     
 if __name__ == '__main__':
     show_basic_window(paint_manager=CorrelationMatrixPaintManager)

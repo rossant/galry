@@ -8,8 +8,9 @@ class ArtPaintManager(PaintManager):
         # random colors
         colors = rdn.rand(len(positions),4)
         # add plot with triangles, 3 consecutive points define a single triangle
-        self.add_plot(positions[:,0], positions[:,1], colors,
+        self.create_dataset(PlotTemplate, size=len(positions), single_color=False,
                       primitive_type=PrimitiveType.Triangles)
+        self.set_data(position=positions, color=colors)
 
 if __name__ == '__main__':
     # create window

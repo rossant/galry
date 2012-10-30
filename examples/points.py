@@ -6,7 +6,8 @@ class PointsPaintManager(PaintManager):
         # generate random points
         positions = .25 * rdn.randn(100000, 2)
         # add plot
-        self.add_plot(positions[:, 0], positions[:, 1])
+        self.create_dataset(PlotTemplate, size=len(positions))
+        self.set_data(position=positions)
 
 if __name__ == '__main__':
     show_basic_window(paint_manager=PointsPaintManager)

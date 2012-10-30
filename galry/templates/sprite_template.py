@@ -5,7 +5,7 @@ from ..primitives import PrimitiveType
 class SpriteTemplate(DefaultTemplate):
     def initialize(self, texsize=None, ncomponents=4, **kwargs):
 
-        assert type(texsize) == int
+        # assert type(texsize) == int
         shape = (texsize, texsize)
         
         self.set_rendering_options(primitive_type=PrimitiveType.Points)

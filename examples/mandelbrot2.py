@@ -29,6 +29,8 @@ class MandelbrotTemplate(DefaultTemplate):
         
         self.add_attribute("position", vartype="float", ndim=2,
             default=position)
+            
+        self.add_uniform("iterations", vartype="int", ndim=1)
         
         self.add_attribute("tex_coords", vartype="float", ndim=2,
             default=tex_coords)
@@ -71,7 +73,7 @@ int mandelbrot_escape(vec2 pos, int iterations)
         
         self.add_fragment_main("""
     // maximum number of iterations
-    int iterations = 100;
+    //int iterations = 100;
     
     // this vector contains the coordinates of the current pixel
     // varying_tex_coords contains a position in [0,1]^2
@@ -90,15 +92,26 @@ int mandelbrot_escape(vec2 pos, int iterations)
         
         super(MandelbrotTemplate, self).initialize(**kwargs)
 
+"""
+.559015
+.382174
+"""
 
 class MandelbrotPaintManager(PaintManager):
     def initialize(self):
         # create the textured rectangle and specify the shaders
         self.create_dataset(MandelbrotTemplate)
-        self.set_data()
+        self.set_data(iterations=100)
 
+class MandelbrotInteractionManager(InteractionManager):
+    def process_zoom_event(self, event, parameter):
+        super(MandelbrotInteractionManager, self).process_zoom_event(event, parameter)
+        if event == InteractionEvents.ZoomEvent:
+            self.paint_manager.set_data(iterations=int(500*np.log(1+self.sx)))
+        
 if __name__ == '__main__':
     print "Zoom in!"
     window = show_basic_window(paint_manager=MandelbrotPaintManager,
+                               interaction_manager=MandelbrotInteractionManager,
                                constrain_ratio=True)
     
