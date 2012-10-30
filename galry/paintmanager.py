@@ -24,6 +24,7 @@ class PaintManager(object):
     
     # Background color.
     bgcolor = (0., 0., 0., 0.)
+    navigation_rectangle_color = (1.,1.,1.,.25)
     
     # Initialization methods
     # ----------------------
@@ -45,14 +46,17 @@ class PaintManager(object):
     def initialize_default(self):
         if self.parent.display_fps:
             text = "FPS: 000"
-            self.ds_fps = self.create_dataset(
+            self.ds_fps = self.create_dataset(tpl.TextTemplate,
                 size=len(text),
-                template_class=tpl.TextTemplate,
                 fontsize=18,
                 is_static=True,
                 )
             self.set_data(pos=(-.92, .92), text=text, dataset=self.ds_fps)
 
+        self.ds_navigation_rectangle = self.create_dataset(tpl.RectanglesTemplate,
+            is_static=True)
+        self.set_data(colors=self.navigation_rectangle_color, dataset=self.ds_navigation_rectangle)
+            
     def initialize_gpu(self):
         for dataset in self.datasets:
             dataset["loader"].compile_shaders()
@@ -61,6 +65,15 @@ class PaintManager(object):
                 dataset["loader"].upload_variables(*names)
         self.is_initialized = True
  
+    
+    # Navigation rectangle methods
+    # ----------------------------
+    def show_navigation_rectangle(self, coordinates):
+        self.set_data(coordinates=coordinates, dataset=self.ds_navigation_rectangle)
+            
+    def hide_navigation_rectangle(self):
+        self.set_data(coordinates=(0.,) * 4, dataset=self.ds_navigation_rectangle)
+
         
     # Data creation methods
     # ---------------------
@@ -200,57 +213,7 @@ class PaintManager(object):
     def update_fps(self, fps):
         self.set_data(dataset=self.ds_fps, text="FPS: %03d" % fps)
  
-    # Overlay methods
-    # ---------------
-    # def add_transient_overlay(self, name, *args, **kwargs):
-        # """Add transient overlay.
-        
-        # This function adds an overlay in only one rendering pass.
-        # It should be called during the life of the widget.
-        
-        # Arguments:
-          # * name: the name of the overlay. The engine will call the 
-           # `paint_[name]` method at the next rendering pass.
-          # * static=False: whether this overlay should have a fixed position
-            # on the screen or not.
-          # * *args, **kwargs: arguments of that paint method.
-        
-        # """
-        # self.transient_overlays.append((name, args, kwargs))
-    
-    # def add_permanent_overlay(self, name, *args, **kwargs):
-        # """Add permanent overlay.
-        
-        # This function adds an overlay in all rendering passes.
-        # WARNING: it should only be called at initialization, otherwise
-        # an infinite number of permanent overlays will be created.
-        
-        # Arguments:
-          # * name: the name of the overlay. The engine will call the 
-           # `paint_[name]` method in all rendering passes.
-          # * static=False: whether this overlay should have a fixed position
-            # on the screen or not.
-          # * *args, **kwargs: arguments of that paint method.
-        
-        # """
-        # self.permanent_overlays.append((name, args, kwargs))
-    
-    # def add_text(self, text, position=(0,0), color=None):
-        # """Add text as a permanent overlay.
-        
-        # WARNING: To be called at initialization time only.
-        
-        # Arguments:
-          # * text: a string, or a function returning a string (useful when the
-            # text needs to be dynamic).
-          # * position=(0,0): the position of the text in the window relative 
-            # coordinates (in [-1,1]^2).
-          # * color=None: the color of the text, yellow by default.
-        
-        # """
-        # self.add_permanent_overlay("text", text, position=position, color=color)
-    
-    
+ 
     # Rendering methods
     # -----------------
     def paint_dataset(self, dataset, primitive_type=None, #color=None,
@@ -326,56 +289,6 @@ class PaintManager(object):
         # deactivate shaders for this dataset
         dl.deactivate_shaders()
     
-    # def paint_overlays(self, static=True):
-        # """Paint permanent and transient overlays.
-        
-        # Arguments:
-          # * static=True: whether to paint static or non-static overlays.
-        
-        # """
-        # for overlay in self.permanent_overlays + self.transient_overlays:
-            # name, args, kwargs = overlay
-            # static_overlay = kwargs.get("static", True)
-            # if static_overlay == static:
-                # getattr(self, "paint_" + name)(*args, **kwargs)    
-       
-    # def paint_text(self, text, position, color=None):
-        # """Paint a text.
-        
-        # Arguments:
-          # * text: a string with the text to paint.
-          # * position: a 2-tuple with the coordinates of the text.
-          # * color: the color of the text as a 3- or 4- tuple.
-          
-        # """
-        # # TODO: implement this in textures?
-        # # advantages:
-        # #   * simpler for handling interactive navigation
-        # #   * more portable, more flexible
-        # #   * no need to mess around with freeglut
-        # if color is not None:
-            # gl.glColor(*color)
-        # gl.glRasterPos2f(*position)
-        # if callable(text):
-            # text = text()
-        # try:
-            # glut.glutBitmapString(glut.GLUT_BITMAP_HELVETICA_12, text)
-        # except Exception as e:
-            # log_warn("an error occurred when display text '%s': %s. You probably \
-# need to install freeglut." % (text, e.message))
-        
-    # def paint_rectangle(self, points, color=None):
-        # """Paint a rectangle.
-        
-        # Arguments:
-          # * points: the rectangle coordinates as `(x0, y0, x1, y1)`.
-          # * color=None: the rectangle fill color as a 3- or 4- tuple.
-        
-        # """
-        # if color is not None:
-            # gl.glColor(*color)
-        # gl.glRectf(*points)
-    
     def paint_all(self):
         """Render everything on the screen.
         
@@ -389,20 +302,6 @@ class PaintManager(object):
         # plot all datasets
         for dataset in self.datasets:
             self.paint_dataset(dataset)
-        
-        # paint non static overlays
-        # self.paint_overlays(static=False)
-        
-        # Interactive transformation OFF
-        # ------------------------------
-        # cancel the transformation (static position after this line)
-        # gl.glLoadIdentity()
-        
-        # paint static overlays
-        # self.paint_overlays(static=True)
-        
-        # remove transient overlays
-        # self.transient_overlays = []
         
     def updateGL(self):
         """Update rendering."""

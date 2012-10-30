@@ -47,6 +47,7 @@ class InteractionManager(object):
         # when zoombox event finished: set_relative_viewbox
         if (self.navigation_rectangle is not None):
             self.set_relative_viewbox(*self.navigation_rectangle)
+            self.paint_manager.hide_navigation_rectangle()
         self.navigation_rectangle = None
         self.cursor = None
     
@@ -165,14 +166,18 @@ class InteractionManager(object):
           * parameter: the box coordinates (xmin, ymin, xmax, ymax)
         
         """
-        # do nothing if the box is too small
-        if ((np.abs(parameter[2] - parameter[0]) > .05) and \
-             np.abs(parameter[3] - parameter[1]) > .05):
-            self.navigation_rectangle = parameter
-            self.paint_manager.add_transient_overlay("rectangle", self.navigation_rectangle, 
-                        (.5, .5, .5, .5))
-        else:
-            self.navigation_rectangle = None
+        # # do nothing if the box is too small
+        # if ((np.abs(parameter[2] - parameter[0]) > .05) and \
+             # np.abs(parameter[3] - parameter[1]) > .05):
+        self.navigation_rectangle = parameter
+            # self.paint_manager.add_transient_overlay("rectangle", self.navigation_rectangle, 
+                        # (.5, .5, .5, .5))
+            # self.paint_manager.set_data(dataset=self.paint_manager.ds_navigation_rectangle,
+                # coordinates=self.navigation_rectangle)
+        self.paint_manager.show_navigation_rectangle(parameter)
+        # else:
+            # self.navigation_rectangle = None
+            # self.paint_manager.hide_navigation_rectangle()
     
     def reset_zoom(self):
         """Reset the zoom."""
