@@ -66,7 +66,7 @@ else:
 logger = setup_logging(level)
 
 # DEBUG
-# info_level()
+info_level()
 
 
 

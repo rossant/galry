@@ -4,9 +4,9 @@ import numpy.random as rdn
 
 
 class MandelbrotTemplate(DefaultTemplate):
-    def initialize(self, **kwargs):
+    
+    def base_mandelbrot(self):
         
-
         self.set_size(4)
         self.set_rendering_options(primitive_type=PrimitiveType.TriangleStrip)
         
@@ -27,29 +27,29 @@ class MandelbrotTemplate(DefaultTemplate):
         tex_coords[2,:] = (0, 0)
         tex_coords[3,:] = (1, 0)
         
+        self.add_uniform("iterations", vartype="int", ndim=1, data=100)
+        
         self.add_attribute("position", vartype="float", ndim=2,
             data=position)
-        
         self.add_attribute("tex_coords", vartype="float", ndim=2,
             data=tex_coords)
+            
         self.add_varying("varying_tex_coords", vartype="float", ndim=2)
-        
         
         self.add_vertex_main("""
     varying_tex_coords = tex_coords;
         """)
-        
         
         self.add_fragment_header("""
 // take a position and a number of iterations, and
 // returns the first iteration where the system escapes a box of size N.
 int mandelbrot_escape(vec2 pos, int iterations)
 {
-    vec2 z = vec2(0, 0);
+    vec2 z = vec2(0., 0.);
     int n = 0;
     int N = 10;
     int N2 = N * N;
-    float r2;
+    float r2 = 0.;
     for (int i = 0; i < iterations; i++)
     {
         float zx = z.x * z.x - z.y * z.y + pos.x;
@@ -66,36 +66,30 @@ int mandelbrot_escape(vec2 pos, int iterations)
 }
         """)
         
-        
-        
-        
         self.add_fragment_main("""
-    // maximum number of iterations
-    int iterations = 100;
-    
     // this vector contains the coordinates of the current pixel
     // varying_tex_coords contains a position in [0,1]^2
-    vec2 pos = vec2(0, 0);
-    pos.x = -2 + varying_tex_coords.x * 3;
-    pos.y = -1.5 + 3 * varying_tex_coords.y;
+    vec2 pos = vec2(-2.0 + 3. * varying_tex_coords.x, 
+                    -1.5 + 3. * varying_tex_coords.y);
     
     // run mandelbrot system
     int n = mandelbrot_escape(pos, iterations);
     
+    float c = log(float(n)) / log(float(iterations));
+    
     // compute the red value as a function of n
-    out_color.r = log(n) / log(iterations);
+    out_color = vec4(c, 0., 0., 1.);
         """)
-        
-        
-        
-        super(MandelbrotTemplate, self).initialize(**kwargs)
+    
+    def initialize(self, **kwargs):
+        self.base_mandelbrot()
+        self.initialize_default(**kwargs)
 
 
 class MandelbrotPaintManager(PaintManager):
     def initialize(self):
         # create the textured rectangle and specify the shaders
         self.create_dataset(MandelbrotTemplate)
-        self.set_data()
 
 if __name__ == '__main__':
     print "Zoom in!"

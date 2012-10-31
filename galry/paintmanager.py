@@ -68,10 +68,12 @@ class PaintManager(object):
     # ----------------------------
     def show_navigation_rectangle(self, coordinates):
         self.set_data(coordinates=coordinates, dataset=self.ds_navigation_rectangle)
+        # pass
             
     def hide_navigation_rectangle(self):
         self.set_data(coordinates=(0.,) * 4, dataset=self.ds_navigation_rectangle)
-
+        # pass
+        
         
     # Data creation methods
     # ---------------------

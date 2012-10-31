@@ -19,22 +19,14 @@ class ParallelSignalsTemplate(DefaultTemplate):
         
         self.add_attribute("position", vartype="float", ndim=2)
 
-        # if OLDGLSL, plot index cannot be an int because attributes
-        # can only be float.
-        if not OLDGLSL:
-            self.add_attribute("plot_index", vartype="int", ndim=1,
-                data=plot_index)
-        else:
-            plot_index = np.array(plot_index, dtype=np.float32)
-            self.add_attribute("plot_index", vartype="float", ndim=1,
-                data=plot_index)
+        self.add_attribute("plot_index", vartype="int", ndim=1,
+            data=plot_index)
             
         self.add_uniform("colors", vartype="float", ndim=3, size=nplots)
         self.add_varying("plot_color", vartype="float", ndim=3)
         
         self.add_vertex_main("""
     plot_color = colors[int(plot_index)];
-    //plot_color = vec3(plot_index, 1., 1.);
         """)
         
         self.add_fragment_main("""
@@ -42,6 +34,7 @@ class ParallelSignalsTemplate(DefaultTemplate):
         """)
         
         # add navigation code
-        super(ParallelSignalsTemplate, self).initialize(**kwargs)
+        # super(ParallelSignalsTemplate, self).initialize(**kwargs)
+        self.initialize_default(**kwargs)
         
         

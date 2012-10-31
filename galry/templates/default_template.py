@@ -30,14 +30,17 @@ return scale * (position + translation);
         if constrain_ratio:
             self.add_vertex_main("gl_Position.xy = gl_Position.xy / viewport;")
         
-    def initialize(self, is_static=False, constrain_ratio=False, **kwargs):        
+    def initialize_default(self, is_static=False, constrain_ratio=False, **kwargs):        
         self.is_static = is_static
         self.constrain_ratio = constrain_ratio
         
         self.add_transformation(is_static)
         self.add_constrain_ratio(constrain_ratio)
         
-        super(DefaultTemplate, self).initialize(**kwargs)
+        
+    def initialize(self, **kwargs):
+        self.initialize_default(**kwargs)
+        # super(DefaultTemplate, self).initialize(**kwargs)
             
         # # arguments in kwargs are for set_data
         # for name, data in kwargs.iteritems():

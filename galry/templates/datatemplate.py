@@ -16,6 +16,8 @@ OLDGLSL = sys.platform != "win32"
 if not OLDGLSL:
     VS_TEMPLATE = """
 #version 330
+precision mediump float;
+
 %VERTEX_HEADER%
 void main()
 {
@@ -26,6 +28,8 @@ void main()
 
     FS_TEMPLATE = """
 #version 330
+precision mediump float;
+
 %FRAGMENT_HEADER%
 out vec4 out_color;
 void main()
@@ -40,6 +44,8 @@ void main()
 else:
     VS_TEMPLATE = """
 #version 120
+//precision mediump float;
+
 %VERTEX_HEADER%
 void main()
 {
@@ -50,6 +56,8 @@ void main()
 
     FS_TEMPLATE = """
 #version 120
+//precision mediump float;
+
 %FRAGMENT_HEADER%
 void main()
 {
@@ -64,23 +72,24 @@ void main()
     
     
     
-if not OLDGLSL:
-    def _get_shader_type(varinfo):
+# if not OLDGLSL:
+def _get_shader_type(varinfo):
+    if varinfo["ndim"] == 1:
+        shader_type = varinfo["vartype"]
+    elif varinfo["ndim"] >= 2:
+        shader_type = "vec%d" % varinfo["ndim"]
+        if varinfo["vartype"] != "float":
+            shader_type = "i" + shader_type
+    return shader_type
+    
+# for OLDGLSL: no int possible in attributes or varyings, so we force float
+# for uniforms, no problem with int
+if OLDGLSL:
+    def _get_shader_type_noint(varinfo):
         if varinfo["ndim"] == 1:
-            shader_type = varinfo["vartype"]
+            shader_type = "float"
         elif varinfo["ndim"] >= 2:
             shader_type = "vec%d" % varinfo["ndim"]
-            if varinfo["vartype"] != "float":
-                shader_type = "i" + shader_type
-        return shader_type
-else:
-    def _get_shader_type(varinfo):
-        if varinfo["ndim"] == 1:
-            shader_type = "float" #varinfo["vartype"]
-        elif varinfo["ndim"] >= 2:
-            shader_type = "vec%d" % varinfo["ndim"]
-            # if varinfo["vartype"] != "float":
-                # shader_type = "i" + shader_type
         return shader_type
     
     
@@ -100,7 +109,7 @@ def get_attribute_declaration(attribute):
                          attribute["name"])
     else:
         declaration = "attribute %s %s;\n" % \
-                        (_get_shader_type(attribute), 
+                        (_get_shader_type_noint(attribute), 
                          attribute["name"])
         
     return declaration
@@ -125,9 +134,14 @@ def get_texture_declaration(texture):
 def get_varying_declarations(varying):
     vs_declaration = ""
     fs_declaration = ""
+    
+    if not OLDGLSL:
+        shadertype = _get_shader_type(varying)
+    else:
+        shadertype = _get_shader_type_noint(varying)
+    
     s = "%%s %s %s;\n" % \
-        (_get_shader_type(varying), 
-         varying["name"])
+        (shadertype, varying["name"])
          
     if not OLDGLSL:
         vs_declaration = s % "out"
@@ -207,14 +221,18 @@ class DataTemplate(object):
     def add_vertex_header(self, code):
         self.vs_headers.append(code)
         
-    def add_vertex_main(self, code):
-        self.vs_mains.append(code)
+    def add_vertex_main(self, code, index=None):
+        if index is None:
+            index = len(self.vs_mains)
+        self.vs_mains.insert(index, code)
         
     def add_fragment_header(self, code):
         self.fs_headers.append(code)
         
-    def add_fragment_main(self, code):
-        self.fs_mains.append(code)
+    def add_fragment_main(self, code, index=None):
+        if index is None:
+            index = len(self.fs_mains)
+        self.fs_mains.insert(index, code)
     
     def set_default_color(self, default_color=None): 
         if default_color is not None:
@@ -265,8 +283,17 @@ class DataTemplate(object):
         vs = vs.replace("%VERTEX_MAIN%", vs_main)
         fs = fs.replace("%FRAGMENT_MAIN%", fs_main)
         
+        # Make sure there are no Windows carriage returns
         vs = vs.replace(b"\r\n", b"\n")
         fs = fs.replace(b"\r\n", b"\n")
+        
+        # OLDGLSL does not know the texture function
+        # TODO: handle non-2D textures...
+        if OLDGLSL:
+            fs = fs.replace("texture(", "texture%dD(" % 2)
+    
+        # log_info(vs)
+        # log_info(fs)
         
         return vs, fs
     
@@ -296,6 +323,8 @@ class DataTemplate(object):
             self.add_fragment_main("""
             out_color = %s;
             """ % _get_shader_vector(self.default_color))
+    
+        
     
         # get the list of all template variable names
         vs = ["attributes", "uniforms", "textures", "compounds"]

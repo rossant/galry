@@ -57,5 +57,6 @@ class PlotTemplate(DefaultTemplate):
                 """)
                 
         # add navigation code
-        super(PlotTemplate, self).initialize(**kwargs)
+        # super(PlotTemplate, self).initialize(**kwargs)
+        self.initialize_default(**kwargs)
         

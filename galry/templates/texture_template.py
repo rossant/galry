@@ -58,12 +58,13 @@ class TextureTemplate(DefaultTemplate):
         """
         
         # OLDGLSL does not know the texture function
-        if OLDGLSL:
-            fragment = fragment.replace("texture(", "texture%dD(" % 2)
+        # if OLDGLSL:
+            # fragment = fragment.replace("texture(", "texture%dD(" % 2)
             
         self.add_fragment_main(fragment)
             
         # add navigation code
-        super(TextureTemplate, self).initialize(**kwargs)
+        # super(TextureTemplate, self).initialize(**kwargs)
+        self.initialize_default(**kwargs)
         
         

@@ -71,6 +71,10 @@ def validate_data(data):
         # enforce 2 dimensions for the array
         if data.ndim == 1:
             data = data.reshape((-1, 1))
+    # print data, type(data)
+    # if type(data) == float:
+        # log_info("converting" + str(data))
+        # data = np.float32(data)
     return data
     
 def validate_texture(data):
@@ -126,6 +130,9 @@ def bind_vbo(buffer, location=None):
     else:
         if OLDGLSL:
             assert location is not None
+            if location == -1:
+                # raise RuntimeError("this buffer has not a valid location")
+                return
             gl.glEnableVertexAttribArray(location)
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, buffer)
 
@@ -430,6 +437,11 @@ class DataLoader(object):
             raise RuntimeError("No data found for attribute %s, skipping data uploading"\
                 % name)
             # return
+        
+        # OLDGLSL: only float type possible for attributes
+        if OLDGLSL:
+            data = np.array(data, dtype=np.float32)
+        
         data_sliced = _slice_data(data, self.slices)
         # add data
         if "vbos" not in bf:
@@ -533,7 +545,7 @@ class DataLoader(object):
         # print self.template.attributes["position"]
         # we go through all invalidated data
         names = [k for (k, v) in self.invalidated.iteritems() if v]
-        log_info("uploading " + ", ".join(names))
+        # log_info("uploading " + ", ".join(names))
         for name in names:
             var = self.variables[name]
             # if var == "uniforms" or var == "compounds":

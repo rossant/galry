@@ -31,7 +31,8 @@ class TextTemplate(DefaultTemplate):
         point_size = float(self.matrix[:,4].max() * self.texture.shape[1])
 
         # add navigation code
-        super(TextTemplate, self).initialize(**kwargs)
+        # super(TextTemplate, self).initialize(**kwargs)
+        self.initialize_default(**kwargs)
         
         # template attributes and varyings
         self.add_attribute("position", vartype="float", ndim=2,
@@ -91,8 +92,8 @@ class TextTemplate(DefaultTemplate):
         """
         
         # OLDGLSL does not know the texture function
-        if OLDGLSL:
-            fragment = fragment.replace("texture(", "texture%dD(" % 2)
+        # if OLDGLSL:
+            # fragment = fragment.replace("texture(", "texture%dD(" % 2)
         
         self.add_fragment_main(fragment)
         

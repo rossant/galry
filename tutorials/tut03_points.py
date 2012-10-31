@@ -25,7 +25,7 @@ class MyPaintManager(PaintManager):
         # self.add_plot(X, Y)
         ds = self.create_dataset(PlotTemplate, size=len(data))
         self.set_data(position=data)
-        
+        # hey there
         # self.parent.display_fps = False
 
 # By default, you can navigate into the window with the following commands:

@@ -42,6 +42,7 @@ class RectanglesTemplate(PlotTemplate):
         
         super(RectanglesTemplate, self).initialize(single_color=False,
             nprimitives=nprimitives, **kwargs)
+        # self.initialize_default(**kwargs)
             
         self.add_compound("coordinates", fun=self.coordinates_compound)
         self.add_compound("colors", fun=self.colors_compound)
