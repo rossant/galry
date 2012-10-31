@@ -39,8 +39,8 @@ def _select_qt_binding(binding_name=None):
     global QT_BINDING, QT_BINDING_VERSION
 
     # order of default bindings can be changed here
-    # DEFAULT_BINDING_ORDER = ['pyside', 'pyqt']  # PySide first
-    DEFAULT_BINDING_ORDER = ['pyqt', 'pyside']  # PyQt first
+    DEFAULT_BINDING_ORDER = ['pyside', 'pyqt']  # PySide first
+    # DEFAULT_BINDING_ORDER = ['pyqt', 'pyside']  # PyQt first
 
     # determine binding preference
     if binding_name is not None:

@@ -1,12 +1,12 @@
 Galry: high-performance interactive 2D visualization in Python
 ==============================================================
 
-  * position => positions?
-  * bug: multiple textures in multiple datasets
-  * TimerWidget: with auto timer
   * bug: linux pyside segmentation fault
   * test with pyside on windows and linux
+  
+  * TimerWidget: with auto timer
   * improve windows parameters: self.interaction_manager.constrain_navigation
+  * position => positions?
 
 Doc
 ---

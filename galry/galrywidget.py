@@ -15,6 +15,7 @@ from debugtools import DEBUG, log_debug, log_info, log_warn
 import interactionmanager
 import paintmanager
 from tools import FpsCounter, show_window
+import cursors
 
 __all__ = [
 'GalryWidget',
@@ -79,6 +80,8 @@ class GalryWidget(QGLWidget):
     # ----------------------
     def __init__(self, format=None, **kwargs):
         super(GalryWidget, self).__init__(format)
+        
+        cursors.load()
         
         # capture key events
         self.setFocusPolicy(Qt.StrongFocus)
