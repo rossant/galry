@@ -1,6 +1,6 @@
 import numpy as np
 from default_template import DefaultTemplate
-from datatemplate import OLDGLSL
+# from datatemplate import OLDGLSL
 from ..primitives import PrimitiveType
     
 class SpriteTemplate(DefaultTemplate):

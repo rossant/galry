@@ -1,7 +1,7 @@
 import numpy as np
 import os
 from default_template import DefaultTemplate
-from datatemplate import OLDGLSL
+# from datatemplate import OLDGLSL
 from ..primitives import PrimitiveType
 from fontmaps import load_font
 import matplotlib.pyplot as plt
