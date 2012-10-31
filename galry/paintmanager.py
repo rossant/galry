@@ -51,7 +51,7 @@ class PaintManager(object):
                 fontsize=18,
                 is_static=True,
                 )
-            self.set_data(pos=(-.92, .92), text=text, dataset=self.ds_fps)
+            self.set_data(pos=(-.80, .92), text=text, dataset=self.ds_fps)
 
         # navigation rectangle
         self.ds_navigation_rectangle = self.create_dataset(tpl.RectanglesTemplate,

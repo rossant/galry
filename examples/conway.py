@@ -23,27 +23,32 @@ def iterate(Z):
     part2 = ((Z == 0) & (N == 3))
     Z = (part1 | part2).astype(int)
     return Z
-
+    
 class ConwayPaintManager(PaintManager):
+
+    def get_iteration_text(self):
+        return "Iteration %05d" % self.iteration
+        
     def initialize(self):
         # initial data
         self.data = np.zeros((size,size,3), dtype=np.float32)
         self.data[:,:,0] = rdn.rand(size,size)<.2
         # create textured rectangle
-        # self.texture = self.add_textured_rectangle(self.data)
-        self.create_dataset(TextureTemplate, shape=self.data.shape[:2], ncomponents=3)
+        self.create_dataset(TextureTemplate, shape=self.data.shape[:2],
+            ncomponents=3)
         self.set_data(tex_sampler=self.data)
         # iteration text
         self.iteration = 0
-        text = "Iteration %04d" % self.iteration
-        # TODO: bug with several textures
-        # self.it = self.create_dataset(TextTemplate, size=len(text))
-        # self.set_data(text=text, dataset=self.it)
+        text = self.get_iteration_text()
+        self.it = self.create_dataset(TextTemplate, fontsize=18, 
+            size=len(text), is_static=True)
+        self.set_data(text=text, pos=(0., .95), dataset=self.it)
         
     def update(self):
         # update the data
         self.data[:,:,0] = iterate(self.data[:,:,0])
-        self.set_data(tex_sampler=self.data)#, dataset=self.it)
+        self.set_data(tex_sampler=self.data)
+        self.set_data(text=self.get_iteration_text(), dataset=self.it)
         # update the texture
         # update rendering
         self.updateGL()

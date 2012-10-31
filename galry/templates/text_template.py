@@ -17,7 +17,8 @@ class TextTemplate(DefaultTemplate):
     def text_compound(self, text):
         text_map = self.get_map(text)
         offset = np.hstack((0., np.cumsum(text_map[:, 2])[:-1]))    
-        return dict(text_map=self.get_map(text), offset=offset)
+        
+        return dict(text_map=self.get_map(text), offset=offset, text_width=offset[-1])
     
     def initialize_font(self, font, fontsize):
         self.texture, self.matrix, self.get_map = load_font(font, fontsize)
@@ -59,9 +60,11 @@ class TextTemplate(DefaultTemplate):
                             data=point_size)
         self.add_uniform("color", vartype="float", ndim=4,
             data=self.default_color)
-        
+        self.add_uniform("text_width", vartype="float", ndim=1)
+
+        # vertex shader
         self.add_vertex_main("""
-    gl_Position.x += offset * letter_spacing / window_size.x;
+    gl_Position.x += (offset - text_width / 2) * letter_spacing / window_size.x;
     gl_PointSize = point_size;
     flat_text_map = text_map;
         """)
@@ -69,7 +72,7 @@ class TextTemplate(DefaultTemplate):
         
         
         
-        # if not OLDGLSL:
+        # fragment shader
         fragment = """
     float x = gl_PointCoord.x;
     float y = gl_PointCoord.y;
@@ -90,10 +93,6 @@ class TextTemplate(DefaultTemplate):
         out_color = vec4(0, 0, 0, 0);
 
         """
-        
-        # OLDGLSL does not know the texture function
-        # if OLDGLSL:
-            # fragment = fragment.replace("texture(", "texture%dD(" % 2)
         
         self.add_fragment_main(fragment)
         
