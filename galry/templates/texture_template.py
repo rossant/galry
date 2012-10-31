@@ -30,10 +30,10 @@ class TextureTemplate(DefaultTemplate):
         tex_coords[3,:] = (1, 0)
         
         self.add_attribute("position", vartype="float", ndim=2,
-            default=position)
+            data=position)
         
         self.add_attribute("tex_coords", vartype="float", ndim=2,
-            default=tex_coords)
+            data=tex_coords)
         
         if "texture" in kwargs:
             texture= kwargs["texture"]

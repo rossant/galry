@@ -65,6 +65,11 @@ else:
     level = logging.WARNING
 logger = setup_logging(level)
 
+# DEBUG
+info_level()
+
+
+
 
 if __name__ == '__main__':
     log_debug("hello world")

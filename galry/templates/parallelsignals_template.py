@@ -23,11 +23,11 @@ class ParallelSignalsTemplate(DefaultTemplate):
         # can only be float.
         if not OLDGLSL:
             self.add_attribute("plot_index", vartype="int", ndim=1,
-                default=plot_index)
+                data=plot_index)
         else:
             plot_index = np.array(plot_index, dtype=np.float32)
             self.add_attribute("plot_index", vartype="float", ndim=1,
-                default=plot_index)
+                data=plot_index)
             
         self.add_uniform("colors", vartype="float", ndim=3, size=nplots)
         self.add_varying("plot_color", vartype="float", ndim=3)

@@ -14,9 +14,9 @@ class ParticleTemplate(DefaultTemplate):
         size = float(max(particle.shape))
         
         # create the dataset
-        self.add_uniform("point_size", vartype="float", ndim=1, default=size)
-        self.add_uniform("t", vartype="float", ndim=1, default=0.)
-        self.add_uniform("g", vartype="float", ndim=1, default=0.)
+        self.add_uniform("point_size", vartype="float", ndim=1, data=size)
+        self.add_uniform("t", vartype="float", ndim=1, data=0.)
+        self.add_uniform("g", vartype="float", ndim=1, data=0.)
         self.add_uniform("tmax", vartype="float", ndim=1)
         self.add_uniform("tlocmax", vartype="float", ndim=1)
         
@@ -31,7 +31,7 @@ class ParticleTemplate(DefaultTemplate):
         
         # add particle texture
         self.add_texture("tex_sampler", size=particle.shape[:2],
-            ncomponents=particle.shape[2], ndim=2, default=particle)
+            ncomponents=particle.shape[2], ndim=2, data=particle)
             
         self.add_vertex_main(
 """

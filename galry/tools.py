@@ -85,15 +85,15 @@ def run_all_scripts(dir=".", autodestruct=True, condition=None):
     if condition is None:
         condition = lambda file: file.endswith(".py") and not file.startswith("_")
     os.chdir(dir)
-    for file in os.listdir(dir):
-        if condition(file):
-            print "Running %s..." % file
-            args = ["python", file]
-            if autodestruct:
-                args += ["autodestruct"]
-            subprocess.call(args)
-            print "Done!"
-            print
+    files = sorted([file for file in os.listdir(dir) if condition(file)])
+    for file in files:
+        print "Running %s..." % file
+        args = ["python", file]
+        if autodestruct:
+            args += ["autodestruct"]
+        subprocess.call(args)
+        print "Done!"
+        print
 
 def enforce_dtype(arr, dtype, msg=""):
     """Force the dtype of a Numpy array."""

@@ -28,10 +28,10 @@ class MandelbrotTemplate(DefaultTemplate):
         tex_coords[3,:] = (1, 0)
         
         self.add_attribute("position", vartype="float", ndim=2,
-            default=position)
+            data=position)
         
         self.add_attribute("tex_coords", vartype="float", ndim=2,
-            default=tex_coords)
+            data=tex_coords)
         self.add_varying("varying_tex_coords", vartype="float", ndim=2)
         
         

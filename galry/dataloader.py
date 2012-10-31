@@ -342,6 +342,8 @@ class DataLoader(object):
         self.textures = None
         self.compounds = None
         
+        self.invalidated = {}
+        
         self.bounds = bounds
         self.slices_count = int(np.ceil(size / float(MAX_VBO_SIZE)))
         self.slices = _get_slices(size)
@@ -355,6 +357,7 @@ class DataLoader(object):
         # in the dataset, where each value is itself a dict with
         # all uniforms/attributes/textures.
         self.variables = {}
+        alldata = {}
         for variable in ["attributes", "uniforms", "textures", "compounds"]:
             vardic = {}
             tpl = self.template
@@ -362,10 +365,17 @@ class DataLoader(object):
                 self.variables[name] = variable
                 # copy the variables in the template to the dataset
                 vardic[name] = dict(**dic)
+                # if "default" in dic:
+                if "data" in dic:
+                    alldata[name] = dic["data"]
                 # add uniform invalidation
-                if variable == "uniforms":
-                    vardic[name]["invalidated"] = True
+                # if variable == "uniforms":
+                    # vardic[name]["invalidated"] = True
+                # if variable != "compounds":
+                    # self.invalidated[name] = True
             setattr(self, variable, vardic)
+        
+        self.set_data(**alldata)
         
     def set_data(self, **kwargs):
         """Set attribute/uniform/texture data. To be called at initialize time.
@@ -380,13 +390,16 @@ class DataLoader(object):
             del kwargs["primitive_type"]
         
         kwargs2 = kwargs.copy()
-        # find possible compounds and add them to kwargs
+        # first, find possible compounds and add them to kwargs
         for name, data in kwargs2.iteritems():
             if self.variables[name] == "compounds":
                 fun = self.compounds[name]["fun"]
                 kwargs.update(**fun(data))
                 del kwargs[name]
+        
+        # now, we have the actual list of variables to update
         for name, data in kwargs.iteritems():
+            # print "hey", name, data
             # variable is attribute, uniform or texture
             variable = self.variables[name]
             dic = getattr(self, variable)[name]
@@ -394,12 +407,18 @@ class DataLoader(object):
                 data = validate_texture(data)
             else:
                 data = validate_data(data)
+            # the special variable property "preprocess" is used to preprocess
+            # the data given in set_data
             if "preprocess" in variable:
                 data = dic["preprocess"](data)
             dic["data"] = data
-            if variable == "uniforms":
-                dic["invalidated"] = True
-        return [name for name in kwargs.keys()]
+            # if variable == "uniforms":
+                # dic["invalidated"] = True
+            # print id(self), name, getattr(self, variable)[name].get("data", None)
+            # we tell the loader that the data of name has changed and that is
+            # should be updated later
+            self.invalidated[name] = True
+        # return [name for name in kwargs.keys()]
 
 
         
@@ -408,9 +427,9 @@ class DataLoader(object):
         bf = self.attributes[name]
         data = bf.get("data", None)
         if data is None:
-            log_info("No data found for attribute %s, skipping data uploading"\
+            raise RuntimeError("No data found for attribute %s, skipping data uploading"\
                 % name)
-            return
+            # return
         data_sliced = _slice_data(data, self.slices)
         # add data
         if "vbos" not in bf:
@@ -452,13 +471,17 @@ class DataLoader(object):
         float_suffix = {True: 'f', False: 'i'}
         array_suffix = {True: 'v', False: ''}
         
-        if not uniform["invalidated"]:
-            return
+        # if not uniform["invalidated"]:
+            # return
+            
         vartype = uniform["vartype"]
         size = uniform.get("size", None)
+        
         data = uniform.get("data", None)
         if data is None:
-            return
+            raise RuntimeError("No data found for uniform %s, skipping data uploading"\
+                % name)
+            # return
         
         # TODO: register function name at initialization time
         
@@ -495,17 +518,32 @@ class DataLoader(object):
                             texture["ndim"], texture["ncomponents"])
         
         
-    def upload_variables(self, *names):
+    # def upload_variables(self, *names):
+        # print names
+        # # print self.template.attributes["position"]
+        # for name in names:
+            # var = self.variables[name]
+            # if var == "uniforms" or var == "compounds":
+                # continue
+            # getattr(self, "upload_%s_data" % var[:-1])(name)
+            
+    def upload_data(self):
+        """Upload all invalidated data."""
+        # print names
         # print self.template.attributes["position"]
+        # we go through all invalidated data
+        names = [k for (k, v) in self.invalidated.iteritems() if v]
+        log_info("uploading " + ", ".join(names))
         for name in names:
             var = self.variables[name]
-            if var == "uniforms" or var == "compounds":
-                continue
+            # if var == "uniforms" or var == "compounds":
+                # continue
             getattr(self, "upload_%s_data" % var[:-1])(name)
+            self.invalidated[name] = False
  
-    def upload_invalidated_uniform_data(self):
-        for name, uniform in self.uniforms.iteritems():
-            self.upload_uniform_data(name)
+    # def upload_invalidated_uniform_data(self):
+        # for name, uniform in self.uniforms.iteritems():
+            # self.upload_uniform_data(name)
  
     # GL shader methods
     # -----------------

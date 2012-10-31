@@ -18,7 +18,7 @@ class PlotTemplate(DefaultTemplate):
         
         # set position attribute
         self.add_attribute("position", vartype="float", ndim=2, 
-            default=np.zeros((self.size, 2)))
+            data=np.zeros((self.size, 2)))
             
         bounds = np.arange(0, self.size + 1, nsamples)
         self.set_rendering_options(bounds=bounds)
@@ -26,7 +26,7 @@ class PlotTemplate(DefaultTemplate):
         # single color case: no need for a color buffer, just use default color
         if single_color:
             self.add_uniform("color", vartype="float", ndim=colors_ndim,
-                default=self.default_color)
+                data=self.default_color)
             
             if colors_ndim == 3:
                 self.add_fragment_main("""
@@ -40,7 +40,7 @@ class PlotTemplate(DefaultTemplate):
         # multiple colors case: color attribute
         else:
             self.add_attribute("color", vartype="float", ndim=colors_ndim,
-                default=np.tile(self.default_color[:colors_ndim], (self.size, 1)))
+                data=np.tile(self.default_color[:colors_ndim], (self.size, 1)))
             self.add_varying("varying_color", vartype="float", ndim=colors_ndim)
             
             self.add_vertex_main("""

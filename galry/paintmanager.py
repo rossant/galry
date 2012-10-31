@@ -61,9 +61,6 @@ class PaintManager(object):
     def initialize_gpu(self):
         for dataset in self.datasets:
             dataset["loader"].compile_shaders()
-            for variable in ["attribute", "uniform", "texture"]: 
-                names = getattr(dataset["loader"], variable + "s").keys()
-                dataset["loader"].upload_variables(*names)
         self.is_initialized = True
  
     
@@ -180,7 +177,7 @@ class PaintManager(object):
             # kwargs.iteritems() if k in template.variable_names]))
         
         # default data
-        self.set_data(dataset=dataset, **template.default_data)
+        # self.set_data(dataset=dataset, **template.default_data)
         
         self.datasets.append(dataset)
         return dataset
@@ -188,9 +185,10 @@ class PaintManager(object):
     def set_data(self, dataset=None, **kwargs):
         if dataset is None:
             dataset = self.datasets[0]
-        vars_to_update = dataset["loader"].set_data(**kwargs)
-        if self.is_initialized:
-            dataset["loader"].upload_variables(*vars_to_update)
+        # vars_to_update = dataset["loader"].set_data(**kwargs)
+        dataset["loader"].set_data(**kwargs)
+        # if self.is_initialized:
+            # dataset["loader"].upload_variables(*vars_to_update)
     
  
     # Methods related to DefaultTemplate
@@ -249,8 +247,8 @@ class PaintManager(object):
         # activate shaders for this dataset
         dl.activate_shaders()
         
-        # update invalidated uniforms
-        dl.upload_invalidated_uniform_data()
+        # update invalidated data
+        dl.upload_data()
         
         # go through all slices
         for slice_index in xrange(dl.slices_count):

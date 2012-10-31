@@ -35,7 +35,7 @@ class TextTemplate(DefaultTemplate):
         
         # template attributes and varyings
         self.add_attribute("position", vartype="float", ndim=2,
-            default=np.zeros((text_length, 2)))
+            data=np.zeros((text_length, 2)))
             
         self.add_attribute("offset", vartype="float", ndim=1)#, default=offset)
         self.add_attribute("text_map", vartype="float", ndim=4)#, default=map)
@@ -44,7 +44,7 @@ class TextTemplate(DefaultTemplate):
         # texture
         self.add_texture("tex_sampler", size=self.texture.shape[:2], ndim=2,
                             ncomponents=self.texture.shape[2],
-                            default=self.texture)
+                            data=self.texture)
         
         # compound variables
         self.add_compound("text", fun=self.text_compound)
@@ -53,11 +53,11 @@ class TextTemplate(DefaultTemplate):
         # pure heuristic
         letter_spacing = 100 + 18. * fontsize
         self.add_uniform("letter_spacing", vartype="float", ndim=1,
-                            default=letter_spacing)
+                            data=letter_spacing)
         self.add_uniform("point_size", vartype="float", ndim=1,
-                            default=point_size)
+                            data=point_size)
         self.add_uniform("color", vartype="float", ndim=4,
-            default=self.default_color)
+            data=self.default_color)
         
         self.add_vertex_main("""
     gl_Position.x += offset * letter_spacing / window_size.x;

@@ -14,7 +14,7 @@ class SpriteTemplate(DefaultTemplate):
         self.add_attribute("color", vartype="float", ndim=4)
         
         self.add_texture("tex_sampler", size=shape, ndim=2, ncomponents=ncomponents)
-        self.add_uniform("point_size", vartype="float", ndim=1, default=texsize)
+        self.add_uniform("point_size", vartype="float", ndim=1, data=texsize)
         self.add_varying("varying_color", vartype="float", ndim=4)
         
         self.add_vertex_main("""
