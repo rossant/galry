@@ -259,17 +259,19 @@ class PaintManager(object):
             
             # activate or deactivate buffers
             for name, do_activate in buffers_activations.iteritems():
-                # self.activate_buffer(dataset, name, slice_index, do_activate)
-                
                 buffer = dataset["loader"].attributes[name]
                 location = buffer["location"]
                 ndim = buffer["ndim"]
                 vbo, pos, size = buffer["vbos"][slice_index]
-                
                 activate_buffer(vbo, location, ndim, do_activate)
-                
-                
-                
+
+            # activate textures
+            for name, texture in dl.textures.iteritems():
+                textype = getattr(gl, "GL_TEXTURE_%dD" % texture["ndim"])
+                gl.glBindTexture(textype, texture["location"])
+                tex = texture["location"]-1
+                # gl.glActiveTexture(gl.GL_TEXTURE0 + tex);
+                 
             # just use a part of the buffer is bounds has 2 elements
             if len(slice_bounds) == 2:
                 gl.glDrawArrays(gl_primitive_type, slice_bounds[0], slice_bounds[1] - slice_bounds[0])
@@ -280,12 +282,6 @@ class PaintManager(object):
                 count = np.diff(slice_bounds)
                 primcount = len(slice_bounds) - 1
                 gl.glMultiDrawArrays(gl_primitive_type, first, count, primcount)
-        
-        # activate textures
-        for name, texture in dl.textures.iteritems():
-            textype = getattr(gl, "GL_TEXTURE_%dD" % texture["ndim"])
-            gl.glBindTexture(textype, texture["location"])
-            # gl.glActiveTexture(gl.GL_TEXTURE0 + 0);
         
         # deactivate shaders for this dataset
         dl.deactivate_shaders()

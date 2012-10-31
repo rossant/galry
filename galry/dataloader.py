@@ -406,7 +406,6 @@ class DataLoader(object):
         
         # now, we have the actual list of variables to update
         for name, data in kwargs.iteritems():
-            # print "hey", name, data
             # variable is attribute, uniform or texture
             variable = self.variables[name]
             dic = getattr(self, variable)[name]
@@ -419,13 +418,10 @@ class DataLoader(object):
             if "preprocess" in variable:
                 data = dic["preprocess"](data)
             dic["data"] = data
-            # if variable == "uniforms":
-                # dic["invalidated"] = True
             # print id(self), name, getattr(self, variable)[name].get("data", None)
             # we tell the loader that the data of name has changed and that is
             # should be updated later
             self.invalidated[name] = True
-        # return [name for name in kwargs.keys()]
 
 
         
@@ -524,21 +520,12 @@ class DataLoader(object):
         if "location" not in texture:
             texture["location"] = create_texture(texture["data"], texture["size"], texture["ndim"], 
                             texture["ncomponents"])
+            # print id(self), name, texture
         # or update data
         else:
             update_texture(texture["location"], texture["data"], texture["size"], 
                             texture["ndim"], texture["ncomponents"])
         
-        
-    # def upload_variables(self, *names):
-        # print names
-        # # print self.template.attributes["position"]
-        # for name in names:
-            # var = self.variables[name]
-            # if var == "uniforms" or var == "compounds":
-                # continue
-            # getattr(self, "upload_%s_data" % var[:-1])(name)
-            
     def upload_data(self):
         """Upload all invalidated data."""
         # print names
@@ -553,11 +540,8 @@ class DataLoader(object):
             getattr(self, "upload_%s_data" % var[:-1])(name)
             self.invalidated[name] = False
  
-    # def upload_invalidated_uniform_data(self):
-        # for name, uniform in self.uniforms.iteritems():
-            # self.upload_uniform_data(name)
- 
-    # GL shader methods
+
+ # GL shader methods
     # -----------------
     def compile_shaders(self):
         """Compile the shaders.
