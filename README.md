@@ -1,5 +1,5 @@
-Welcome to Galry: an high performance interactive 2D visualization package in Python
-====================================================================================
+Welcome to Galry: high performance interactive 2D visualization in Python
+=========================================================================
 
 **Important note: Galry is still an experimental project with an unstable
 programming interface that is likely to change at any time. Do not use it in
@@ -9,12 +9,21 @@ production yet.**
 What is Galry?
 --------------
 
-Galry is an **high performance interactive 2D
-visualization package in Python**. It is based on PyOpenGL and Numpy and is
-meant to work on any platform (Window/Linux/MacOS).
+Galry is a **high performance interactive 2D visualization package in 
+Python**. It lets you visualize and navigate into very large 2D plots (signals,
+points, textures...) in real time, by using the graphics card as much as
+possible (with OpenGL).
+On a 2012 computer with a recent 250$ graphics card, one can interactively
+visualize as much as **100 million points** at a reasonable framerate.
 
-Mandatory dependencies include Python 2.7, Numpy, PyQT or PySide, PyOpenGL,
-matplotlib.
+Galry is not meant to generate high-quality plots (like matplotlib), and is
+more "low-level". It can be used to write complex interactive visualization
+GUIs that deal with large 2D datasets (only with QT for now).
+
+It is based on PyOpenGL and Numpy and is
+meant to work on any platform (Window/Linux/MacOS).
+Mandatory dependencies include Python 2.7, Numpy, either PyQt4 or PySide,
+PyOpenGL, matplotlib.
 
 Optional dependencies include IPython, hdf5, PyOpenCL (the last two are not
 currently used but may be in the future).
@@ -49,26 +58,17 @@ graphics card. We can approximately assess the performance of Galry by
 measuring the number of frames per second (FPS) when navigating in a scene
 containing a large number of points.
 
-*More systematic and automatic  benchmark methods will be considered in the 
+Here are some results with a basic benchmark consisting of an N points plot
+(`benchmarks/benchmark01_points.py`). 
+*More systematic and automatic benchmark methods will be considered in the 
 near future.*
 
-Here are some results with a basic benchmark consisting of an N points plot
-(`benchmarks/benchmark01_points.py`).
-
-On a 2012 desktop computer with an high-end AMD Radeon HD 7870 graphics card:
+On a 2012 desktop computer with a high-end AMD Radeon HD 7870 graphics card:
 
   * N = 10 million points: ~125 FPS
   * N = 20 million points: ~80 FPS
   * N = 50 million points: ~35 FPS
   * N = 100 million points: ~15 FPS
-
-On a 2009 laptop with a low-end AMD Radeon Mobility HD 3650 graphics card:
-
-  * N = 1 million points: ~70 FPS
-  * N = 2 million points: ~35 FPS
-  * N = 5 million points: ~15 FPS
-  * N = 10 million points: ~7 FPS
-
 
 The [benchmark page](https://github.com/rossant/galry/wiki/Benchmarks) contains 
 more details. Users are invited to do their own benchmark.
@@ -144,7 +144,20 @@ is transformed into pixels through vertex and fragment shaders.
 How to get started?
 -------------------
 
-Once you've read this introduction, there are several sources of documentation:
+At the time of writing, the code is still quite experimental and is not
+guaranteed to work on any platform. The programming interface is still
+unstable and might change without any further notice. Installation may be
+difficult depending on the OS and the graphics card drivers. But feel
+free to experiment with it or to take a look to the documentation.
+
+The `master` branch contains the latest "stable" version, whereas the
+development version is in the `dev` branch.
+
+The [installation page](https://github.com/rossant/galry/wiki/Installation)
+also contains details on how to install Galry. 
+
+There are several sources of documentation, all available in the `docs` folder.
+Examples and tutorials are in separated folders.
 
   * The user guide: a high-level overview of the library. It's a good starting 
     point if you prefer a top-down approach.
@@ -158,11 +171,6 @@ Once you've read this introduction, there are several sources of documentation:
     
   * The API reference: once you know the fundamentals, use the reference
     if you want to go deeper into Galry.
-    
-The [installation page](https://github.com/rossant/galry/wiki/Installation) also contains details on how
-installing Galry. As of now, Galry is still an experimental library and
-installation may not be straightforward depending on your software and
-hardware setup.
     
     
 How did this project start?
