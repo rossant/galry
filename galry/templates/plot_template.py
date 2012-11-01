@@ -18,7 +18,7 @@ class PlotTemplate(DefaultTemplate):
         
         # set position attribute
         self.add_attribute("position", vartype="float", ndim=2, 
-            data=np.zeros((self.size, 2)))
+                           data=np.zeros((self.size, 2)))
             
         bounds = np.arange(0, self.size + 1, nsamples)
         self.set_rendering_options(bounds=bounds)

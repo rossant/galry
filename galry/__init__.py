@@ -17,3 +17,4 @@ from templates import *
 from dataloader import *
 from paintmanager import *
 from datanormalizer import *
+from plot import *
