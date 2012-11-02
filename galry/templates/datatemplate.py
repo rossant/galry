@@ -98,11 +98,91 @@ if OLDGLSL:
 def _get_shader_vector(vec):
     return "vec%d%s" % (len(vec), str(vec))
     
+
+
     
+VARINFO_DICT = {
+    float: 'float',
+    np.float32: 'float',
+    np.float64: 'float',
+    np.dtype('float32'): 'float',
+    np.dtype('float64'): 'float',
     
+    int: 'int',
+    np.int32: 'int',
+    np.int64: 'int',
+    np.dtype('int32'): 'int',
+    np.dtype('int64'): 'int',
     
+    bool: 'bool',
+    np.bool: 'bool',
+
+}
+
+def _get_vartype(scalar):
+    return VARINFO_DICT[type(scalar)]
+    
+def _get_varinfo(data):
+    """Infer variable information (type, number of components) from data."""
+    
+    # handle scalars
+    if not hasattr(data, '__len__'):
+        return dict(vartype=_get_vartype(data), ndim=1, size=None)
+    
+    # convert lists into array
+    if type(data) == list:
+        data = np.array(data)
+        
+    # handle tuples
+    if type(data) == tuple:
+        return dict(vartype=_get_vartype(data[0]),
+            ndim=len(data), size=None)
+    
+    # handle arrays
+    if isinstance(data, np.ndarray):
+        vartype = VARINFO_DICT[data.dtype]
+        if data.ndim == 1:
+            ndim = 1
+            size = len(data)
+        elif data.ndim == 2:
+            ndim = data.shape[1]
+            size = data.shape[0]
+        return dict(vartype=vartype, ndim=ndim, size=size)
+    
+def _get_texinfo(data):
+    ndim = 2
+    assert data.ndim == 3
+    size = data.shape[:2]
+    ncomponents = data.shape[2]
+    return dict(size=size, ndim=ndim, ncomponents=ncomponents)
+    
+def _update_varinfo(varinfo, data):
+    """Update incomplete varinfo dict from data."""
+    varinfo_data = _get_varinfo(data)
+    if "vartype" not in varinfo:
+        varinfo.update(vartype=varinfo_data['vartype'])
+    if "ndim" not in varinfo:
+        varinfo.update(ndim=varinfo_data['ndim'])
+    if "size" not in varinfo:
+        varinfo.update(size=varinfo_data['size'])
+    return varinfo
+    
+def _update_texinfo(texinfo, data):
+    """Update incomplete texinfo dict from data."""
+    texinfo_data = _get_texinfo(data)
+    if "ncomponents" not in texinfo:
+        texinfo.update(ncomponents=texinfo_data['ncomponents'])
+    if "ndim" not in texinfo:
+        texinfo.update(ndim=texinfo_data['ndim'])
+    if "size" not in texinfo:
+        texinfo.update(size=texinfo_data['size'])
+    return texinfo
     
 
+    
+    
+    
+    
 def get_attribute_declaration(attribute):
     if not OLDGLSL:
         declaration = "layout(location = %d) in %s %s;\n" % \
@@ -195,16 +275,22 @@ class DataTemplate(object):
     def add_attribute(self, name, location=None, **varinfo):
         if location is None:
             location = len(self.attributes)
+        if "data" in varinfo:
+            varinfo = _update_varinfo(varinfo, varinfo["data"])
         self.attributes[name] = dict(name=name, location=location, **varinfo)
         # if default is not None:
             # self.set_default_data(**{name:default})
         
     def add_uniform(self, name, **varinfo): #data=None, **varinfo):
+        if "data" in varinfo:
+            varinfo = _update_varinfo(varinfo, varinfo["data"])
         self.uniforms[name] = dict(name=name, **varinfo)
         # if default is not None:
             # self.set_default_data(**{name:default})
         
     def add_varying(self, name, **varinfo): #data=None, **varinfo):
+        if "data" in varinfo:
+            varinfo = _update_varinfo(varinfo, varinfo["data"])
         self.varyings[name] = dict(name=name, **varinfo)
         # if default is not None:
             # self.set_default_data(**{name:default})
@@ -212,6 +298,8 @@ class DataTemplate(object):
     def add_texture(self, name, **texinfo):#data=None, #location=None,
         # if location is None:
             # location = len(self.textures)
+        if "data" in texinfo:
+            texinfo = _update_texinfo(texinfo, texinfo["data"])
         self.textures[name] = dict(name=name, #location=location,
             **texinfo)
         # if default is not None:
