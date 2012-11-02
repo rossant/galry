@@ -22,9 +22,16 @@ class TextTemplate(DefaultTemplate):
     
     def initialize_font(self, font, fontsize):
         self.texture, self.matrix, self.get_map = load_font(font, fontsize)
+
+    def get_initialize_arguments(self, **data):
+        text = data.get("text", None)
+        assert text
+        # self.size = len(text)
+        return dict(size=len(text))
         
-    def initialize(self, font="segoe", fontsize=24, **kwargs):
-        self.set_rendering_options(primitive_type=PrimitiveType.Points)
+    def initialize(self, size=None, font="segoe", fontsize=24, **kwargs):
+        self.size = size
+        self.primitive_type = PrimitiveType.Points
 
         text_length = self.size
         self.initialize_font(font, fontsize)

@@ -28,23 +28,42 @@ class RectanglesTemplate(PlotTemplate):
         
         return dict(position=position)
     
-    def colors_compound(self, data):
-        if type(data) is tuple:
-            data = np.array(data, dtype=np.float32).reshape((1, -1))
-        data = np.repeat(data, 4, axis=0)
-        return dict(color=data)
-    
-    def initialize(self, nprimitives=1, **kwargs):
-        self.set_size(4 * nprimitives)
-        bounds = np.arange(0, self.size + 1, 4)
-        self.set_rendering_options(primitive_type=PrimitiveType.TriangleStrip,
-            bounds=bounds)
+    # def colors_compound(self, data):
+        # if type(data) is tuple:
+            # data = np.array(data, dtype=np.float32).reshape((1, -1))
+        # data = np.repeat(data, 4, axis=0)
+        # return dict(color=data)
+
+    def get_initialize_arguments(self, **data):
         
-        super(RectanglesTemplate, self).initialize(single_color=False,
+        coordinates = data.get("coordinates", (0.,) * 4)
+        assert coordinates is not None
+        
+        if type(coordinates) is tuple:
+            coordinates = np.array(coordinates, dtype=np.float32).reshape((1, -1))
+        
+        nprimitives = coordinates.shape[0]
+        
+        return dict(nprimitives=nprimitives)
+        
+    def initialize(self, nprimitives=1, **kwargs):
+        
+        self.size = 4 * nprimitives
+        self.primitive_type = PrimitiveType.TriangleStrip
+        self.bounds = np.arange(0, self.size + 1, 4)
+        
+        if nprimitives == 1:
+            single_color = True
+        else:
+            single_color = False
+        
+        super(RectanglesTemplate, self).initialize(single_color=single_color,
+            use_color_array=True,
             nprimitives=nprimitives, **kwargs)
         # self.initialize_default(**kwargs)
             
-        self.add_compound("coordinates", fun=self.coordinates_compound)
-        self.add_compound("colors", fun=self.colors_compound)
+        self.add_compound("coordinates", fun=self.coordinates_compound, 
+            data=(0.,) * 4)
+        # self.add_compound("colors", fun=self.colors_compound)
         
         

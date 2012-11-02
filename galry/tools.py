@@ -1,4 +1,5 @@
 import sys
+import inspect
 import os
 import numpy as np
 import time
@@ -16,14 +17,15 @@ except:
     numexpr = None
     
 __all__ = [
-'enum',
-'extend_enum',
-'show_window',
-'run_all_scripts',
-'enforce_dtype',
-'repeat1D_fast',
-'tile1D_fast',
-'FpsCounter',
+    'enum',
+    'extend_enum',
+    'get_intermediate_classes',
+    'show_window',
+    'run_all_scripts',
+    'enforce_dtype',
+    'repeat1D_fast',
+    'tile1D_fast',
+    'FpsCounter',
 ]
     
 # Enumerations are just like global variables where each member
@@ -50,6 +52,11 @@ def extend_enum(enum_base, enum_new):
     """
     d = dict(enum_base._dict, **enum_new._dict)
     return type('Enum', (), d)
+    
+def get_intermediate_classes(cls, baseclass):
+    classes = inspect.getmro(cls)
+    classes = [c for c in classes if issubclass(c, baseclass)]
+    return classes
     
 def show_window(window, **kwargs):
     """Create a QT window in Python, or interactively in IPython with QT GUI

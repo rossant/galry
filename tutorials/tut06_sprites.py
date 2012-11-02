@@ -37,7 +37,7 @@ class MyPaintManager(PaintManager):
         color = rdn.rand(n, 4)
         
         # We add sprites.
-        self.create_dataset(SpriteTemplate, size=n, texsize=texture.shape[0])
-        self.set_data(position=position, color=color, tex_sampler=texture)
+        self.create_dataset(SpriteTemplate, position=position, color=color, 
+            texture=texture)
 
 show_basic_window(paint_manager=MyPaintManager)

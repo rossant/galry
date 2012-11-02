@@ -340,9 +340,12 @@ def update_texture(tex, newdata, size, ndim, ncomponents):
 
 
 class DataLoader(object):
-    def __init__(self, size, template=None, bounds=None):
-        self.size = size
+    def __init__(self, template=None):#, size=None, bounds=None):
         self.template = template
+        
+        self.size = template.size
+        self.bounds = template.bounds
+        
         
         self.attributes = None
         self.uniforms = None
@@ -351,13 +354,12 @@ class DataLoader(object):
         
         self.invalidated = {}
         
-        self.bounds = bounds
-        self.slices_count = int(np.ceil(size / float(MAX_VBO_SIZE)))
-        self.slices = _get_slices(size)
-        self.subdata_bounds = [_slice_bounds(bounds, pos, size) for pos, size in self.slices]
+        self.slices_count = int(np.ceil(self.size / float(MAX_VBO_SIZE)))
+        self.slices = _get_slices(self.size)
+        self.subdata_bounds = [_slice_bounds(self.bounds, pos, size) \
+            for pos, size in self.slices]
         
         self.initialize_variables()
-        
         
     def initialize_variables(self):
         # initialize "uniforms", "attributes" or "textures" keys
@@ -392,9 +394,9 @@ class DataLoader(object):
         tpl = self.template
         
         # special case: primitive_type
-        if "primitive_type" in kwargs:
-            tpl.set_rendering_options(primitive_type=kwargs["primitive_type"])
-            del kwargs["primitive_type"]
+        # if "primitive_type" in kwargs:
+            # tpl.set_rendering_options(primitive_type=kwargs["primitive_type"])
+            # del kwargs["primitive_type"]
         
         kwargs2 = kwargs.copy()
         # first, find possible compounds and add them to kwargs
@@ -403,7 +405,7 @@ class DataLoader(object):
                 fun = self.compounds[name]["fun"]
                 kwargs.update(**fun(data))
                 del kwargs[name]
-        
+
         # now, we have the actual list of variables to update
         for name, data in kwargs.iteritems():
             # variable is attribute, uniform or texture

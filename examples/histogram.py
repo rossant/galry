@@ -43,11 +43,9 @@ class HistogramPaintManager(PaintManager):
         position = np.hstack((X.reshape((-1, 1)),
             Y.reshape((-1, 1))))
         # add the bar plot
-        self.create_dataset(PlotTemplate, size=X.size, single_color=True,
-            nsamples=5,
-                primitive_type=PrimitiveType.TriangleStrip
-                )
-        self.set_data(position=position)
+        self.create_dataset(PlotTemplate, nsamples=5,
+            primitive_type=PrimitiveType.TriangleStrip,
+            position=position)
 
 if __name__ == '__main__':
     # create window

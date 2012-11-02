@@ -19,8 +19,8 @@ class MyPaintManager(PaintManager):
         n = 10000
         
         # We add a plot with random points.
-        self.create_dataset(size=n)
-        self.set_data(position=.2 * rdn.randn(n, 2))
+        self.create_dataset(PlotTemplate, position=.2 * rdn.randn(n, 2),
+            primitive_type=PrimitiveType.Points)
 
 # We define a customized binding by deriving a class from the base class
 # `ActionEventBindingSet`. This class links individual user actions to

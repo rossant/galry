@@ -17,10 +17,17 @@ class MyPaintManager(PaintManager):
     # to be overriden here.
     def initialize(self):
         
-        # We just add text in the center of the widget.
+        # We add text at the center of the widget.
         text = "Hello world! :)"
-        self.create_dataset(TextTemplate, size=len(text))
-        self.set_data(text=text)
+        
+        # Here we add a dataset on the screen. A dataset is an object drawn
+        # on the screen that consists in a homogeneous set of primitives.
+        # A text, a set of rectangles, triangles, points, curves, textures
+        # are examples of datasets. A dataset is defined by its template, which
+        # describes how this object is rendered on the screen. The template 
+        # can have several slots containing data or parameters, that can be
+        # filled here with the `set_data` method.
+        self.create_dataset(TextTemplate, text=text)
 
         self.interaction_manager.constrain_navigation = False
                 

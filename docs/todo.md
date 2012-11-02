@@ -1,13 +1,13 @@
 Galry: high-performance interactive 2D visualization in Python
 ==============================================================
 
+
   * bug: linux pyside segmentation fault
   
   * TimerWidget: with auto timer
   * improve windows parameters: self.interaction_manager.constrain_navigation
   * position => positions?
   * add_*: infer type from data
-  * self.add_*s with **kwargs
   * update doc
   * user preferences, with DEBUG option
   * high level interface

@@ -23,8 +23,8 @@ class MyPaintManager(PaintManager):
         # We plot data with coordinates X and Y, rendered by default
         # as yellow points.
         # self.add_plot(X, Y)
-        ds = self.create_dataset(PlotTemplate, size=len(data))
-        self.set_data(position=data)
+        ds = self.create_dataset(PlotTemplate, position=data, 
+            primitive_type=PrimitiveType.Points)
         
         self.parent.display_fps = True
 

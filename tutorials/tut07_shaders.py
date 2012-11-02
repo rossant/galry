@@ -18,9 +18,17 @@ import numpy as np
 # It also passes the default color to the fragment shader.
 
 class MyTemplate(DefaultTemplate):
+    def get_initialize_arguments(self, **data):
+        pos = data.get("initial_position", None)
+        self.size = pos.shape[0]
+        return {}
+        
+        
     def initialize(self, **kwargs):
         self.add_attribute("initial_position", vartype="float", ndim=2)
+        
         self.add_uniform("frequency", vartype="float", ndim=1)
+        
         self.add_vertex_main("""
     float x = initial_position.x;
     vec2 position = vec2(x, sin(frequency * x));
@@ -39,13 +47,9 @@ class MyPaintManager(PaintManager):
         positions[:,0] = np.linspace(-1., 1., n)
         
         # We create a dataset of size n.
-        # This dataset will be used to eventually render n points as a 
-        # LineStrip (n-1 successive line segments).
         # We also specify a white color, and our custom shaders.
-        self.create_dataset(MyTemplate, size=n,
-            primitive_type=PrimitiveType.LineStrip)
-            
-        self.set_data(initial_position=positions,
+        self.create_dataset(MyTemplate,
+            initial_position=positions,
             # We set the frequency.
             frequency=20.)
         

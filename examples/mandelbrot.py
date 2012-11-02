@@ -7,8 +7,8 @@ class MandelbrotTemplate(DefaultTemplate):
     
     def base_mandelbrot(self):
         
-        self.set_size(4)
-        self.set_rendering_options(primitive_type=PrimitiveType.TriangleStrip)
+        self.size = 4
+        self.primitive_type = PrimitiveType.TriangleStrip
         
         points = (-1, -1, 1, 1)
         x0, y0, x1, y1 = points

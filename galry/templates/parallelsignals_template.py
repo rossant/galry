@@ -4,6 +4,16 @@ from default_template import DefaultTemplate
 from ..primitives import PrimitiveType
     
 class ParallelSignalsTemplate(DefaultTemplate):
+    
+    
+    # def get_initialize_arguments(self, **data):
+        # position = data.get("position", None)
+        # assert position
+        # nprimitives, nsamples = position.shape
+        
+        # return dict(single_color=single_color, colors_ndim=colors_ndim,nplots=nplots, nsamples=nsamples)
+    
+    
     def initialize(self, nplots=None, nsamples=None, **kwargs):
         
         assert nplots is not None
@@ -14,8 +24,8 @@ class ParallelSignalsTemplate(DefaultTemplate):
         plot_index = np.repeat(np.arange(nplots), nsamples)
         
         
-        self.set_rendering_options(primitive_type=PrimitiveType.LineStrip,
-            bounds=bounds)
+        self.primitive_type = PrimitiveType.LineStrip
+        self.bounds = bounds
         
         self.add_attribute("position", vartype="float", ndim=2)
 

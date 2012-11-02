@@ -22,7 +22,7 @@ class ParticleTemplate(DefaultTemplate):
         """
     
     def base_fountain(self):
-        
+        self.primitive_type = PrimitiveType.Points
         # load texture
         path = os.path.dirname(os.path.realpath(__file__))
         particle = plt.imread(os.path.join(path, "images/particle.png"))
@@ -82,6 +82,11 @@ class ParticleTemplate(DefaultTemplate):
 """
     out_color = texture(tex_sampler, gl_PointCoord) * varying_color;
 """)
+
+    def get_initialize_arguments(self, **data):
+        initial_positions = data.get("initial_positions", None)
+        self.size = initial_positions.shape[0]
+        # return {}
         
     def initialize(self,  **kwargs):
         self.base_fountain()
@@ -119,8 +124,7 @@ class ParticlePaintManager(PaintManager):
         delays = 10 * rdn.rand(n)
         
         # create the dataset
-        self.create_dataset(ParticleTemplate, size=n)
-        self.set_data(
+        self.create_dataset(ParticleTemplate, 
             t=self.t, 
             initial_positions=positions,
             velocities=velocities,

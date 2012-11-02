@@ -2,6 +2,8 @@ import itertools
 import collections
 import sys
 from ..debugtools import log_info, info_level
+from ..primitives import PrimitiveType
+import numpy as np
 
 # HACK: Linux in VirtualBox uses OpenGL ES, which requires a special API
 # in GLSL. This variable is true when OpenGL ES version 120 is used
@@ -163,7 +165,7 @@ def get_varying_declarations(varying):
 
 
 class DataTemplate(object):
-    def __init__(self, size=None):
+    def __init__(self):#, size=None):
         self.attributes = collections.OrderedDict()
         self.uniforms = {}
         self.textures = {}
@@ -178,14 +180,14 @@ class DataTemplate(object):
         
         # self.default_data = {}
         
-        self.size = size
-        
-        # self.primitive_type = None
-        self.bounds = None#[0, size]
+        # self.size = size
+        self.size = None
+        self.primitive_type = None
+        self.bounds = None #[0, size]
         self.default_color = (1., 1., 0., 1.)
     
-    def set_size(self, size):
-        self.size = size
+    # def set_size(self, size):
+        # self.size = size
     
     # def set_default_data(self, name, data):
         # self.default_data[name] = data
@@ -234,15 +236,15 @@ class DataTemplate(object):
             index = len(self.fs_mains)
         self.fs_mains.insert(index, code)
     
-    def set_default_color(self, default_color=None): 
-        if default_color is not None:
-            self.default_color = default_color
+    # def set_default_color(self, default_color=None): 
+        # if default_color is not None:
+            # self.default_color = default_color
     
-    def set_rendering_options(self, primitive_type=None, bounds=None): 
-        if primitive_type is not None:
-            self.primitive_type = primitive_type
-        if bounds is not None:
-            self.bounds = bounds
+    # def set_rendering_options(self, primitive_type=None, bounds=None): 
+        # if primitive_type is not None:
+            # self.primitive_type = primitive_type
+        # if bounds is not None:
+            # self.bounds = bounds
     
     def get_shader_codes(self):
         
@@ -302,6 +304,22 @@ class DataTemplate(object):
         # for name, data in kwargs.iteritems():
             # self.default_data[name] = data
     
+    def get_initialize_arguments(self, **data):
+        """Get the arguments for initialize as a function of the data specified
+        in `create_dataset`.
+        
+        To be overriden.
+        
+        Arguments:
+          * data: keyword arguments with the data to pass to `set_data`.
+        
+        Returns:
+          * kwargs: a dictionary of arguments to pass to `initialize`.
+        
+        """
+        return {}
+        
+    
     def initialize(self, **kwargs):
         """Initialize the template by making calls to self.add_*.
         
@@ -316,6 +334,22 @@ class DataTemplate(object):
         shader sources, like custom template replacements at runtime.
         
         """
+        
+        assert type(self.size) == int
+        # assert self.size is not None
+        
+        
+        # default rendering options
+        if self.primitive_type is None:
+            self.primitive_type = PrimitiveType.LineStrip
+        if self.bounds is None:
+            self.bounds = [0, self.size]
+        self.bounds = np.array(self.bounds, dtype=np.int32)
+        
+        # if not self.default_color:
+            # self.default_color = (1., 1., 0., 1.)
+            
+        
         if not self.attributes:
             self.add_attribute("position", vartype="float", ndim=2, location=0)
         

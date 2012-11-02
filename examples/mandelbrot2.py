@@ -9,8 +9,7 @@ def get_iterations(zoom=1):
 class MandelbrotPaintManager(PaintManager):
     def initialize(self):
         # create the textured rectangle and specify the shaders
-        self.create_dataset(MandelbrotTemplate)
-        self.set_data(iterations=get_iterations())
+        self.create_dataset(MandelbrotTemplate, iterations=get_iterations())
 
 class MandelbrotInteractionManager(InteractionManager):
     def process_zoom_event(self, event, parameter):

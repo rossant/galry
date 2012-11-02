@@ -34,15 +34,12 @@ class ConwayPaintManager(PaintManager):
         self.data = np.zeros((size,size,3), dtype=np.float32)
         self.data[:,:,0] = rdn.rand(size,size)<.2
         # create textured rectangle
-        self.create_dataset(TextureTemplate, shape=self.data.shape[:2],
-            ncomponents=3)
-        self.set_data(tex_sampler=self.data)
+        self.create_dataset(TextureTemplate, texture=self.data)
         # iteration text
         self.iteration = 0
         text = self.get_iteration_text()
         self.it = self.create_dataset(TextTemplate, fontsize=18, 
-            size=len(text), is_static=True)
-        self.set_data(text=text, pos=(0., .95), dataset=self.it)
+            text=text, pos=(0., .95), is_static=True)
         
     def update(self):
         # update the data

@@ -41,14 +41,14 @@ class MyPaintManager(PaintManager):
         # Try changing the values here: heat your graphics card up!
         # If you have a high-end 2012 graphics card, you can try 
         # 1,000 x 100,000 = 100,000,000 points.
-        nplots = 100
+        nprimitives = 10
         nsamples = 1000
-        position, colors = create_data(nplots, nsamples)
+        position, color = create_data(nprimitives, nsamples)
         
-        self.create_dataset(ParallelSignalsTemplate, size=len(position),
-            nplots=nplots, nsamples=nsamples)
+        self.create_dataset(PlotTemplate, nprimitives=nprimitives, 
+            nsamples=nsamples)
         
         # We plot all lines with a single call to `add_plot`.
-        self.set_data(position=position, colors=colors)
+        self.set_data(position=position, color=color)
 
 show_basic_window(paint_manager=MyPaintManager)

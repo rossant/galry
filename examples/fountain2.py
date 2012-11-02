@@ -47,8 +47,7 @@ class Particle2PaintManager(PaintManager):
         delays = 10 * rdn.rand(n)
         
         # create the dataset
-        self.create_dataset(Particle2Template, size=n)
-        self.set_data(
+        self.create_dataset(Particle2Template, 
             t=self.t, 
             initial_positions=positions,
             velocities=velocities,

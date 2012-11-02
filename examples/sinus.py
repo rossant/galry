@@ -18,9 +18,11 @@ class SinusPaintManager(PaintManager):
         colors[0,1:3] = 0
         colors[1,2] = 0
         
-        self.create_dataset(ParallelSignalsTemplate, size=len(positions), 
-            nplots=2, nsamples=1000)
-        self.set_data(position=positions, colors=colors)
+        self.create_dataset(PlotTemplate,
+            nprimitives=2,
+            nsamples=1000,
+            position=positions,
+            color=colors)
 
 if __name__ == '__main__':
     # create window

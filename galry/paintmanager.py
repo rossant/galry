@@ -1,10 +1,12 @@
 import sys
+import inspect
+import itertools
 import time
 import numpy as np
 import OpenGL.GL as gl
 import OpenGL.arrays.vbo as glvbo
 import OpenGL.GLUT as glut
-from tools import enum, memoize, enforce_dtype
+from tools import enum, memoize, enforce_dtype, get_intermediate_classes
 # from default_shaders import DEFAULT_SHADERS
 # from shaders import ShadersCreator
 import ctypes
@@ -14,6 +16,35 @@ from dataloader import DataLoader, NP_GL_TYPE_CONVERTER, activate_buffer
 from primitives import PrimitiveType, GL_PRIMITIVE_TYPE_CONVERTER
 
 __all__ = ['PaintManager']
+
+
+
+def get_template_initargs(template_class):
+    """Return the list of accepted keyword arguments for the initialize method
+    of `template_class`, including those of all the parent template classes.
+    
+    Arguments:
+      * template_class: a class deriving from `DataTemplate`.
+    
+    Returns:
+      * the list of all accepted keyword arguments of `initialize` and
+        `initialize_default` of the template classes and its parent classes,
+        up to the base `DataTemplate` class.
+    
+    """
+    tplclasses = get_intermediate_classes(template_class, tpl.DataTemplate)[:-1]
+    # this is the list of all accepted keyword arguments in the initialize
+    # method of the template class and all its parent classes
+    initargs = []
+    for c in tplclasses:
+        if hasattr(c, "initialize"):
+            initargs += inspect.getargspec(c.initialize).args
+        if hasattr(c, "initialize_default"):
+            initargs += inspect.getargspec(c.initialize_default).args
+    initargs = list(set(initargs))
+    if 'self' in initargs:
+        initargs.remove('self')
+    return initargs
 
 
     
@@ -55,11 +86,81 @@ class PaintManager(object):
 
         # navigation rectangle
         self.ds_navigation_rectangle = self.create_dataset(tpl.RectanglesTemplate,
-            is_static=True)
-        self.set_data(colors=self.navigation_rectangle_color, dataset=self.ds_navigation_rectangle)
+            is_static=True, color=self.navigation_rectangle_color,
+            visible=False, )
+            
+    def initialize_dataset(self, dataset):
+        # keyword arguments passed in create_dataset
+        kwargs = dataset["kwargs"]
+        
+        # keyword arguments passed in set_data
+        datakwargs = dataset["datakwargs"]
+        
+        # get the template class, not instanciated yet
+        template_class = dataset["template_class"]
+        
+        # in kwargs, there can be arguments for template.initialize, others
+        # for set_data. We distinguish them here by looking at the arguments
+        # accepted by the `initialize` method of the template class and all 
+        # its parent classes.
+        initargs = get_template_initargs(template_class)
+
+        # special handling of a few keyword arguments, which need
+        # to be processed separately: they are not to be passed to `initialize`
+        specialargs = ['bounds', 'primitive_type', 'default_color']
+        
+        # those kwargs not in initargs go in set_data
+        kwargs2 = kwargs.copy()
+        for arg in kwargs2:
+            if arg not in specialargs and arg not in initargs:
+                datakwargs[arg] = kwargs.pop(arg)
+        
+        # we create the template class object here
+        tpl = template_class()
+        
+        # now, kwargs contains the keyword arguments for initialize
+        # but other arguments are needed from get_initialize_arguments
+        supargs = tpl.get_initialize_arguments(**datakwargs)
+        if supargs:
+            kwargs.update(supargs)
+        
+        # special handling of a few keyword arguments, which we need to
+        # directly pass as attribute values to the template before calling
+        # initialize        
+        for arg in specialargs:
+            if arg in kwargs:
+                # if one of those arg was passed in `create_dataset`, we set
+                # the corresponding attribute in the template before we call
+                # `initialize`.
+                val = kwargs.pop(arg)
+                setattr(tpl, arg, val)
+                # we also record that property in the dataset    
+                dataset[arg] = val
+            
+        # initialize the template object
+        tpl.initialize(**kwargs)
+        
+        # finalize the template
+        tpl.finalize()
+        
+        # set the special argument values in the dataset
+        for arg in specialargs:
+            val = getattr(tpl, arg)
+            dataset[arg] = val
+        
+        dataset["template"] = tpl
+        
+        # create the loader
+        dl = DataLoader(tpl)
+        # datakwargs contains all the data arguments specified in
+        # `create_dataset` or `set_data`.
+        dl.set_data(**datakwargs)
+        dataset["loader"] = dl
+        
             
     def initialize_gpu(self):
         for dataset in self.datasets:
+            self.initialize_dataset(dataset)
             dataset["loader"].compile_shaders()
         self.is_initialized = True
  
@@ -67,23 +168,26 @@ class PaintManager(object):
     # Navigation rectangle methods
     # ----------------------------
     def show_navigation_rectangle(self, coordinates):
-        self.set_data(coordinates=coordinates, dataset=self.ds_navigation_rectangle)
-        # pass
+        self.ds_navigation_rectangle["visible"] = True
+        self.set_data(coordinates=coordinates,
+            dataset=self.ds_navigation_rectangle)
             
     def hide_navigation_rectangle(self):
-        self.set_data(coordinates=(0.,) * 4, dataset=self.ds_navigation_rectangle)
-        # pass
+        self.ds_navigation_rectangle["visible"] = False
+        # self.set_data(coordinates=(0.,) * 4,
+            # dataset=self.ds_navigation_rectangle)
         
         
     # Data creation methods
     # ---------------------
     def create_dataset(self,
                        template_class=None,
-                       size=None,
+                       visible=True,
+                       # size=None,
                        # rendering options
-                       bounds=None,
-                       primitive_type=None,
-                       default_color=None,
+                       # bounds=None,
+                       # primitive_type=None,
+                       # default_color=None,
                        **kwargs):
         """Create a dataset.
         
@@ -137,42 +241,45 @@ class PaintManager(object):
         if not template_class:
             template_class = tpl.DefaultTemplate
             
-        template = template_class(size=size)
+        # template = template_class(size=size)
         if self.parent.constrain_ratio:
             kwargs["constrain_ratio"] = True
-        template.initialize(**kwargs)
-        size = template.size
+        # template.initialize(**kwargs)
+        # size = template.size
         
         # we pass the default color to the template, only if it is not None
-        template.set_default_color(default_color)
+        # template.set_default_color(default_color)
         
-        if primitive_type is None:
-            # if primitive_type is specified in create_dataset, we take it.
-            # otherwise, we take the one that may have been defined in the
-            # template (in template.set_rendering_options, called in
-            # initialize)
-            # finally, we fallback on Points
-            primitive_type = getattr(template, "primitive_type",
-                    PrimitiveType.Points)
+        # if primitive_type is None:
+            # # if primitive_type is specified in create_dataset, we take it.
+            # # otherwise, we take the one that may have been defined in the
+            # # template (in template.set_rendering_options, called in
+            # # initialize)
+            # # finally, we fallback on Points
+            # primitive_type = getattr(template, "primitive_type",
+                    # PrimitiveType.Points)
         
-        if bounds is None:
-            # if bounds is specified, we take it
-            # otherwise, we take the one that may have been defined in the
-            # template (in template.set_rendering_options, called in
-            # initialize)
-            # finally, we fallback on the default bounds
-            bounds = getattr(template, "bounds", None)
-            if bounds is None:
-                bounds = [0, size]
-        bounds = np.array(bounds, np.int32)
+        # if bounds is None:
+            # # if bounds is specified, we take it
+            # # otherwise, we take the one that may have been defined in the
+            # # template (in template.set_rendering_options, called in
+            # # initialize)
+            # # finally, we fallback on the default bounds
+            # bounds = getattr(template, "bounds", None)
+            # if bounds is None:
+                # bounds = [0, size]
+        # bounds = np.array(bounds, np.int32)
         
-        template.finalize()
+        # template.finalize()
 
         dataset = {}
-        dataset["size"] = size
-        dataset["primitive_type"] = primitive_type
-        dataset["template"] = template
-        dataset["loader"] = DataLoader(size, template=template, bounds=bounds)        
+        dataset["visible"] = visible
+        # dataset["size"] = size
+        # dataset["primitive_type"] = primitive_type
+        dataset["template_class"] = template_class
+        dataset["kwargs"] = kwargs
+        dataset["datakwargs"] = {}
+        # dataset["loader"] = DataLoader(size, template=template, bounds=bounds)        
         # we redirect the elements in kwargs that are template variables
         # to set_data
         # self.set_data(dataset=dataset, **dict([(k, v) for (k, v) in \
@@ -187,11 +294,15 @@ class PaintManager(object):
     def set_data(self, dataset=None, **kwargs):
         if dataset is None:
             dataset = self.datasets[0]
-        # vars_to_update = dataset["loader"].set_data(**kwargs)
-        dataset["loader"].set_data(**kwargs)
-        # if self.is_initialized:
-            # dataset["loader"].upload_variables(*vars_to_update)
-    
+        # this case happens during `create_dataset`: we just update the dataset
+        # with the data so that it can be handled later
+        if not self.is_initialized:
+            dataset["datakwargs"].update(**kwargs)
+        # this case happens after initialization, we update the data loader 
+        # with the new data, no data transfer happens (it happens in 
+        # `dataloader.upload_data` called in `paintGL`).
+        else:
+            dataset["loader"].set_data(**kwargs)
  
     # Methods related to DefaultTemplate
     # --------------------------------------
@@ -298,7 +409,8 @@ class PaintManager(object):
         
         # plot all datasets
         for dataset in self.datasets:
-            self.paint_dataset(dataset)
+            if dataset.get("visible", True):
+                self.paint_dataset(dataset)
         
     def updateGL(self):
         """Update rendering."""
@@ -314,8 +426,9 @@ class PaintManager(object):
           * buffer: a buffer object.
           
         """
-        bfs = [b[0] for b in buffer["vbos"]]
-        gl.glDeleteBuffers(len(bfs), bfs)
+        if "vbos" in buffer:
+            bfs = [b[0] for b in buffer["vbos"]]
+            gl.glDeleteBuffers(len(bfs), bfs)
     
     def cleanup_dataset(self, dataset):
         """Cleanup the dataset by deleting the associated shader program.
@@ -328,7 +441,7 @@ class PaintManager(object):
         try:
             gl.glDeleteProgram(program)
         except Exception as e:
-            log_warn("error when deleting shader program")
+            log_info("error when deleting shader program")
         for buffer in dataset["loader"].attributes.itervalues():
             self.cleanup_buffer(buffer)
         

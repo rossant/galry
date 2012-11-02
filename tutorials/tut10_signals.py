@@ -15,13 +15,12 @@ class MyPaintManager(PaintManager):
     def initialize(self):
         
         # We define a white noise signal on [-1, 1].
-        n = 50000
+        n = 10000
         x = np.linspace(-1., 1., n)
         y = .2 * rdn.randn(n)
         data = np.hstack((x.reshape((-1, 1)), y.reshape((-1, 1))))
-        self.dataset = self.create_dataset(size=n,
-                                    primitive_type=PrimitiveType.LineStrip)
-        self.set_data(position=data)
+        self.dataset = self.create_dataset(PlotTemplate, 
+            position=data)
                                     
 # We define two custom interaction events. They occur on the receiver side,
 # when widget B needs to synchronize its navigation according to widget A,

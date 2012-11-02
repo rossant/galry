@@ -4,12 +4,18 @@ from default_template import DefaultTemplate
 from ..primitives import PrimitiveType
     
 class TextureTemplate(DefaultTemplate):
-    def initialize(self, shape=None, ndim=2, ncomponents=4, points=None,
-                    # texture=None,
-                    **kwargs):
-
-        self.set_size(4)
-        self.set_rendering_options(primitive_type=PrimitiveType.TriangleStrip)
+    def get_initialize_arguments(self, **data):
+        
+        texture = data.get("texture", None)
+        assert texture is not None
+        
+        shape = texture.shape[:2]
+        ndim = 2
+        ncomponents = texture.shape[2]
+        
+        return dict(shape=shape, ndim=ndim, ncomponents=ncomponents)
+    
+    def points_compound(self, points=None):
         
         if points is None:
             points = (-1, -1, 1, 1)
@@ -22,6 +28,19 @@ class TextureTemplate(DefaultTemplate):
         position[1,:] = (x1, y0)
         position[2,:] = (x0, y1)
         position[3,:] = (x1, y1)
+
+        return dict(position=position)
+        
+    def texture_compound(self, texture):
+        if texture.shape[0] != texture.shape[1]:
+            raise ValueError("Non-square textures are not supported.")
+        return dict(tex_sampler=texture)
+    
+    def initialize(self, shape=None, ndim=2, ncomponents=4, #points=None,
+                    **kwargs):
+
+        self.size = 4
+        self.primitive_type = PrimitiveType.TriangleStrip
                                 
         tex_coords = np.zeros((4,2))
         tex_coords[0,:] = (0, 1)
@@ -29,8 +48,9 @@ class TextureTemplate(DefaultTemplate):
         tex_coords[2,:] = (0, 0)
         tex_coords[3,:] = (1, 0)
         
-        self.add_attribute("position", vartype="float", ndim=2,
-            data=position)
+        self.add_attribute("position", vartype="float", ndim=2)
+        self.add_compound("points", fun=self.points_compound,
+            data=(-1., -1., 1., 1.))
         
         self.add_attribute("tex_coords", vartype="float", ndim=2,
             data=tex_coords)
@@ -45,7 +65,7 @@ class TextureTemplate(DefaultTemplate):
         # HACK: to avoid conflict in GLSL shader with the "texture" function
         # we redirect the "texture" variable here to "tex_sampler" which
         # is the real name of the variable in the shader
-        self.add_compound("texture", fun=lambda data: dict(tex_sampler=data))
+        self.add_compound("texture", fun=self.texture_compound)
         
         self.add_varying("varying_tex_coords", vartype="float", ndim=2)
         
@@ -57,14 +77,10 @@ class TextureTemplate(DefaultTemplate):
     out_color = texture(tex_sampler, varying_tex_coords);
         """
         
-        # OLDGLSL does not know the texture function
-        # if OLDGLSL:
-            # fragment = fragment.replace("texture(", "texture%dD(" % 2)
             
         self.add_fragment_main(fragment)
             
         # add navigation code
-        # super(TextureTemplate, self).initialize(**kwargs)
         self.initialize_default(**kwargs)
         
         
