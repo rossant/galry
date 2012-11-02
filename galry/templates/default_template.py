@@ -29,14 +29,18 @@ return scale * (position + translation);
         self.add_uniform("window_size", vartype="float", ndim=2)
         if constrain_ratio:
             self.add_vertex_main("gl_Position.xy = gl_Position.xy / viewport;")
-        
+
+    def get_initialize_arguments(self, **data):
+        position = data.get("position", None)
+        if position is not None:
+            self.size = position.shape[0]
+            
     def initialize_default(self, is_static=False, constrain_ratio=False, **kwargs):        
         self.is_static = is_static
         self.constrain_ratio = constrain_ratio
         
         self.add_transformation(is_static)
         self.add_constrain_ratio(constrain_ratio)
-        
         
     def initialize(self, **kwargs):
         self.initialize_default(**kwargs)
