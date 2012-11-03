@@ -113,7 +113,11 @@ class PaintManager(object):
         kwargs2 = kwargs.copy()
         for arg in kwargs2:
             if arg not in specialargs and arg not in initargs:
-                datakwargs[arg] = kwargs.pop(arg)
+                val = kwargs.pop(arg)
+                # we do not update the value if it has been specified in
+                # set_data, which comes after create_dataset (kwargs)
+                if arg not in datakwargs:
+                    datakwargs[arg] = val
         
         # we create the template class object here
         tpl = template_class()

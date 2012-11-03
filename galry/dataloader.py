@@ -25,40 +25,40 @@ DEFAULT_COLOR = (1., 1., 1., 1.)
 
 
 
-def _get_vartype(pytype):
-    if (pytype == float) | (pytype == np.float32):
-        vartype = 'float'
-    elif (pytype == int) | (pytype == np.int32):
-        vartype = 'int'
-    elif pytype == bool:
-        vartype = 'bool'
-    else:
-        vartype = None
-    return vartype
+# def _get_vartype(pytype):
+    # if (pytype == float) | (pytype == np.float32):
+        # vartype = 'float'
+    # elif (pytype == int) | (pytype == np.int32):
+        # vartype = 'int'
+    # elif pytype == bool:
+        # vartype = 'bool'
+    # else:
+        # vartype = None
+    # return vartype
   
-def _get_varinfo(value):
-    """Give information about any numeric variable."""
-    # array
-    if isinstance(value, np.ndarray):
-        vartype = _get_vartype(value.dtype)
-        if value.ndim == 1:
-            size, ndim = value.size, 1
-        elif value.ndim == 2:
-            size, ndim = value.shape
-        elif value.ndim == 3:
-            w, h, ndim = value.shape
-            size = w, h
-    # tuple
-    elif type(value) is tuple:
-        vartype = _get_vartype(type(value[0]))
-        ndim = len(value)
-        size = None
-    # scalar value
-    else:
-        vartype = _get_vartype(type(value))
-        ndim = 1
-        size = None
-    return dict(vartype=vartype, ndim=ndim, size=size)
+# def _get_varinfo(value):
+    # """Give information about any numeric variable."""
+    # # array
+    # if isinstance(value, np.ndarray):
+        # vartype = _get_vartype(value.dtype)
+        # if value.ndim == 1:
+            # size, ndim = value.size, 1
+        # elif value.ndim == 2:
+            # size, ndim = value.shape
+        # elif value.ndim == 3:
+            # w, h, ndim = value.shape
+            # size = w, h
+    # # tuple
+    # elif type(value) is tuple:
+        # vartype = _get_vartype(type(value[0]))
+        # ndim = len(value)
+        # size = None
+    # # scalar value
+    # else:
+        # vartype = _get_vartype(type(value))
+        # ndim = 1
+        # size = None
+    # return dict(vartype=vartype, ndim=ndim, size=size)
 
 def validate_data(data):
     if isinstance(data, np.ndarray):
@@ -71,10 +71,6 @@ def validate_data(data):
         # enforce 2 dimensions for the array
         if data.ndim == 1:
             data = data.reshape((-1, 1))
-    # print data, type(data)
-    # if type(data) == float:
-        # log_info("converting" + str(data))
-        # data = np.float32(data)
     return data
     
 def validate_texture(data):
@@ -495,19 +491,30 @@ class DataLoader(object):
         
         # TODO: register function name at initialization time
         
-        # find function name
-        funname = "glUniform%d%s%s" % (uniform["ndim"], \
-                                       float_suffix[vartype == "float"], \
-                                       array_suffix[size is not None])
-
-        # find function arguments
         args = (uniform["location"],)
-        if size is not None:
-            args += (size, data)
-        elif uniform["ndim"] > 1:
-            args += data
-        elif uniform["ndim"] == 1:
-            args += (data,)
+        
+        # scalar or vector uniform
+        if type(uniform["ndim"]) == int:
+            # find function name
+            funname = "glUniform%d%s%s" % (uniform["ndim"], \
+                                           float_suffix[vartype == "float"], \
+                                           array_suffix[size is not None])
+
+            # find function arguments
+            if size is not None:
+                args += (size, data)
+            elif uniform["ndim"] == 1:
+                args += (data,)
+            elif uniform["ndim"] > 1:
+                args += data
+                
+        # matrix uniform
+        elif type(uniform["ndim"]) == tuple:
+            # find function name
+            funname = "glUniformMatrix%dfv" % (uniform["ndim"][0])
+            args += (1, False, data)
+            
+        
         # get the function from its name
         fun = getattr(gl, funname)
         # call the function

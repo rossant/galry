@@ -17,8 +17,8 @@ class TextTemplate(DefaultTemplate):
     def text_compound(self, text):
         text_map = self.get_map(text)
         offset = np.hstack((0., np.cumsum(text_map[:, 2])[:-1]))    
-        
-        return dict(text_map=self.get_map(text), offset=offset, text_width=offset[-1])
+        text_map = self.get_map(text.ljust(self.size, ' '))
+        return dict(text_map=text_map, offset=offset, text_width=offset[-1])
     
     def initialize_font(self, font, fontsize):
         self.texture, self.matrix, self.get_map = load_font(font, fontsize)

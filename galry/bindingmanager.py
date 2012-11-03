@@ -4,7 +4,7 @@ import numpy as np
 from interactionevents import InteractionEvents as events
 from useractions import UserActions as actions
 
-__all__ = ['BindingManager', 'ActionEventBindingSet', 'DefaultBindingSet']
+__all__ = ['BindingManager', 'BindingSet', 'DefaultBindingSet']
 
 class BindingManager(object):
     """Manager several sets of bindings (or interaction modes) and allows
@@ -61,7 +61,7 @@ class BindingManager(object):
         self.index = np.mod(self.index + 1, len(self.bindings))
         return self.get()
   
-class ActionEventBindingSet(object):
+class BindingSet(object):
     """Base class for action-events bindings set.
     
     An instance of this class contains all bindings between user actions, and
@@ -135,7 +135,7 @@ class ActionEventBindingSet(object):
         """
         return self.binding.get((action, key_modifier, key), (None, None))
      
-class DefaultBindingSet(ActionEventBindingSet):
+class DefaultBindingSet(BindingSet):
     """A default set of bindings for interactive navigation.
     
     This binding set makes use of the keyboard and the mouse.

@@ -77,7 +77,7 @@ class ParticleInteractionManager(InteractionManager):
         
 ParticleEvents = enum("ChangeVelocitiesEvent")
 
-class ParticleBindings(ActionEventBindingSet):
+class ParticleBindings(BindingSet):
     def initialize(self):
         # we link the mouse move action to the change velocities event
         self.set(UserActions.MouseMoveAction, ParticleEvents.ChangeVelocitiesEvent,

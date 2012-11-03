@@ -23,10 +23,10 @@ class MyPaintManager(PaintManager):
             primitive_type=PrimitiveType.Points)
 
 # We define a customized binding by deriving a class from the base class
-# `ActionEventBindingSet`. This class links individual user actions to
+# `BindingSet`. This class links individual user actions to
 # interaction events. It defines an interaction mode, with a base mouse cursor,
 # and a set of bindings.
-class MyBinding(ActionEventBindingSet):
+class MyBinding(BindingSet):
     
     # The initialize method can be overriden and defines the bindings by
     # making calls to the `set` method.

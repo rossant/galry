@@ -8,8 +8,9 @@ import numpy as np
 # HACK: Linux in VirtualBox uses OpenGL ES, which requires a special API
 # in GLSL. This variable is true when OpenGL ES version 120 is used
 # info_level()
-OLDGLSL = sys.platform != "win32"
-# log_info("OLDGLSL=%s" % str(OLDGLSL))
+# OLDGLSL = sys.platform != "win32"
+OLDGLSL = False
+log_info("OLDGLSL=%s" % str(OLDGLSL))
 
 
 
@@ -76,12 +77,16 @@ void main()
     
 # if not OLDGLSL:
 def _get_shader_type(varinfo):
-    if varinfo["ndim"] == 1:
-        shader_type = varinfo["vartype"]
-    elif varinfo["ndim"] >= 2:
-        shader_type = "vec%d" % varinfo["ndim"]
-        if varinfo["vartype"] != "float":
-            shader_type = "i" + shader_type
+    if type(varinfo["ndim"]) == int:
+        if varinfo["ndim"] == 1:
+            shader_type = varinfo["vartype"]
+        elif varinfo["ndim"] >= 2:
+            shader_type = "vec%d" % varinfo["ndim"]
+            if varinfo["vartype"] != "float":
+                shader_type = "i" + shader_type
+    # matrix: (2,2) or (3,3) or (4,4)
+    elif type(varinfo["ndim"]) == tuple:
+        shader_type = "mat%d" % varinfo["ndim"][0]
     return shader_type
     
 # for OLDGLSL: no int possible in attributes or varyings, so we force float
@@ -92,6 +97,9 @@ if OLDGLSL:
             shader_type = "float"
         elif varinfo["ndim"] >= 2:
             shader_type = "vec%d" % varinfo["ndim"]
+        # matrix: (2,2) or (3,3) or (4,4)
+        elif type(varinfo["ndim"]) == tuple:
+            shader_type = "mat%d" % varinfo["ndim"][0]
         return shader_type
     
     

@@ -36,10 +36,21 @@ class TextureTemplate(DefaultTemplate):
             raise ValueError("Non-square textures are not supported.")
         return dict(tex_sampler=texture)
     
+    def initialize_fragment(self):
+        
+        fragment = """
+    out_color = texture(tex_sampler, varying_tex_coords);
+        """
+            
+        self.add_fragment_main(fragment)
+
+        
+    
     def initialize(self, shape=None, ndim=2, ncomponents=4, #points=None,
                     **kwargs):
 
         self.size = 4
+        self.texsize = shape
         self.primitive_type = PrimitiveType.TriangleStrip
                                 
         tex_coords = np.zeros((4,2))
@@ -69,16 +80,14 @@ class TextureTemplate(DefaultTemplate):
         
         self.add_varying("varying_tex_coords", vartype="float", ndim=2)
         
+
         self.add_vertex_main("""
     varying_tex_coords = tex_coords;
         """)
         
-        fragment = """
-    out_color = texture(tex_sampler, varying_tex_coords);
-        """
-        
+
+        self.initialize_fragment()
             
-        self.add_fragment_main(fragment)
             
         # add navigation code
         self.initialize_default(**kwargs)

@@ -112,7 +112,7 @@ class GalryWidget(QGLWidget):
         
         Arguments:
           * bindings: a list of classes instances deriving from
-            ActionEventBindingSet.
+            BindingSet.
             
         """
         if bindings is None:
@@ -121,7 +121,7 @@ class GalryWidget(QGLWidget):
             bindings = [bindings]
         # if binding is a class, try instanciating it
         for i in xrange(len(bindings)):
-            if not isinstance(bindings[i], bindingmanager.ActionEventBindingSet):
+            if not isinstance(bindings[i], bindingmanager.BindingSet):
                 bindings[i] = bindings[i]()
         self.bindings = bindings
         
