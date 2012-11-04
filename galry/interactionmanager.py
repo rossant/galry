@@ -1,7 +1,7 @@
 import numpy as np
 import OpenGL.GL as gl
 import OpenGL.GLU as glu
-from interactionevents import InteractionEvents
+from interactionevents import InteractionEvents as events
 from tools import extend_enum
 import cursors
 
@@ -35,11 +35,11 @@ class InteractionManager(object):
         """
         pass
         
-    def extend_events(self, custom_events=None):
-        if custom_events:
-            self.events = extend_enum(InteractionEvents, custom_events)
-        else:
-            self.events = InteractionEvents
+    # def extend_events(self, custom_events=None):
+        # if custom_events:
+            # events = extend_enum(InteractionEvents, custom_events)
+        # else:
+            # events = InteractionEvents
     
     # Event processing methods
     # ------------------------
@@ -54,25 +54,25 @@ class InteractionManager(object):
     def process_navigation_event(self, event, parameter):
         # if "cursors" not in globals():
             # import cursors
-        if event == self.events.PanEvent:
+        if event == events.PanEvent:
             self.pan(parameter)
             self.cursor = cursors.ClosedHandCursor
     
     def process_zoom_event(self, event, parameter):
         # if "cursors" not in globals():
             # import cursors
-        if event == self.events.ZoomEvent:
+        if event == events.ZoomEvent:
             self.zoom(parameter)
             self.cursor = cursors.MagnifyingGlassCursor
-        if event == self.events.ZoomBoxEvent:
+        if event == events.ZoomBoxEvent:
             self.zoombox(parameter)
             self.cursor = cursors.MagnifyingGlassCursor
     
     def process_reset_event(self, event, parameter):
-        if event == self.events.ResetEvent:
+        if event == events.ResetEvent:
             self.reset()
             self.cursor = None
-        if event == self.events.ResetZoomEvent:
+        if event == events.ResetZoomEvent:
             self.reset_zoom()
             self.cursor = None
         

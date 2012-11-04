@@ -71,7 +71,7 @@ class GalryWidget(QGLWidget):
     display_fps = DISPLAY_FPS
 
     # widget creation parameters
-    events_enum = None
+    # events_enum = None
     bindings = None
     companion_classes_initialized = False
     
@@ -105,7 +105,7 @@ class GalryWidget(QGLWidget):
         if not self.companion_classes_initialized:
             self.initialize_companion_classes()
         self.initialize_bindings()
-        self.initialize_events_enum()
+        # self.initialize_events_enum()
         
     def set_bindings(self, bindings=None):
         """Set the interaction mode by specifying the binding object.
@@ -128,9 +128,9 @@ class GalryWidget(QGLWidget):
                 bindings[i] = bindings[i]()
         self.bindings = bindings
         
-    def set_events_enum(self, events_enum=None):
-        """Set the interaction events enumeration."""
-        self.events_enum = events_enum
+    # def set_events_enum(self, events_enum=None):
+        # """Set the interaction events enumeration."""
+        # self.events_enum = events_enum
         
     def set_companion_classes(self, **kwargs):
         """Set specified companion classes, unspecified ones are set to
@@ -153,9 +153,9 @@ class GalryWidget(QGLWidget):
         # set base cursor: the current binding is the first one
         self.interaction_manager.base_cursor = self.bindings[0].base_cursor
         
-    def initialize_events_enum(self):
-        """Initialize the extended events enumeration."""
-        self.interaction_manager.extend_events(self.events_enum)
+    # def initialize_events_enum(self):
+        # """Initialize the extended events enumeration."""
+        # self.interaction_manager.extend_events(self.events_enum)
         
     def initialize_companion_classes(self):
         """Initialize companion classes."""
@@ -517,7 +517,7 @@ class GalryTimerWidget(GalryWidget):
 # Basic widgets helper functions and classes
 # ------------------------------------------
 def create_custom_widget(bindings=None,
-                         events_enum=None,
+                         # events_enum=None,
                          antialiasing=False,
                          constrain_ratio=False,
                          display_fps=False,
@@ -547,7 +547,7 @@ def create_custom_widget(bindings=None,
         
         def initialize(self):
             self.set_bindings(bindings)
-            self.set_events_enum(events_enum)
+            # self.set_events_enum(events_enum)
             self.set_companion_classes(**companion_classes)
             self.constrain_ratio = constrain_ratio
             self.constrain_navigation = constrain_navigation
