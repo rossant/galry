@@ -25,6 +25,5 @@ class MyPaintManager(PaintManager):
         # GalryWidget has a special attribute to constrain the viewport ratio 
         # when navigating or resizing the window. It can be useful when
         # displaying an image, for instance.
-        self.parent.constrain_ratio = True
 
-show_basic_window(paint_manager=MyPaintManager)
+show_basic_window(paint_manager=MyPaintManager, constrain_ratio=True)

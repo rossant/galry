@@ -35,8 +35,7 @@ def create_data(m, n):
 
 class MyPaintManager(PaintManager):
     def initialize(self):
-        self.parent.display_fps = True
-        
+
         # We generate the colored lines.
         # Try changing the values here: heat your graphics card up!
         # If you have a high-end 2012 graphics card, you can try 
@@ -51,4 +50,4 @@ class MyPaintManager(PaintManager):
         # We plot all lines with a single call to `add_plot`.
         self.set_data(position=position, color=color)
 
-show_basic_window(paint_manager=MyPaintManager)
+show_basic_window(paint_manager=MyPaintManager, display_fps=True)

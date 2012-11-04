@@ -21,8 +21,6 @@ class MyTemplate(DefaultTemplate):
     def get_initialize_arguments(self, **data):
         pos = data.get("initial_position", None)
         self.size = pos.shape[0]
-        return {}
-        
         
     def initialize(self, **kwargs):
         self.add_attribute("initial_position", vartype="float", ndim=2)
@@ -49,8 +47,8 @@ class MyPaintManager(PaintManager):
         # We create a dataset of size n.
         # We also specify a white color, and our custom shaders.
         self.create_dataset(MyTemplate,
-            initial_position=positions,
-            # We set the frequency.
-            frequency=20.)
+                            initial_position=positions,
+                            # We set the frequency.
+                            frequency=20.)
         
 show_basic_window(paint_manager=MyPaintManager)

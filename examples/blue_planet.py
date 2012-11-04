@@ -9,19 +9,10 @@ class EarthPaintManager(PaintManager):
         # load the texture from an image thanks to matplotlib
         texture = plt.imread(os.path.join(path, "images/earth.png"))
         # add a textured rectangle
-        self.create_dataset(TextureTemplate, texture=texture)
-        
-class EarthPlot(GalryWidget):
-    def initialize(self):
-        # set custom paint manager
-        self.set_companion_classes(paint_manager=EarthPaintManager)
-        # initialize companion classes
-        self.initialize_companion_classes()
-        # not constrain navigation to [-1,1]^2
-        self.interaction_manager.constrain_navigation = False
-        # keep a square viewport ratio when resizing the window
-        self.constrain_ratio = True        
+        self.create_dataset(TextureTemplate, texture=texture)       
 
 if __name__ == '__main__':
     # create window
-    window = show_basic_window(EarthPlot)
+    window = show_basic_window(paint_manager=EarthPaintManager,
+                               constrain_ratio=True,
+                               constrain_navigation=False,)

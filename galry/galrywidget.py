@@ -1,5 +1,6 @@
 import sys
 import time
+import timeit
 import numpy as np
 import numpy.random as rdn
 import OpenGL.GL as gl
@@ -19,6 +20,7 @@ import cursors
 
 __all__ = [
 'GalryWidget',
+'GalryTimerWidget',
 'AutodestructibleWindow',
 'create_custom_widget',
 'create_basic_window',
@@ -75,6 +77,7 @@ class GalryWidget(QGLWidget):
     
     # constrain width/height ratio when resizing of zooming
     constrain_ratio = False
+    constrain_navigation = True
     
     # Initialization methods
     # ----------------------
@@ -173,6 +176,9 @@ class GalryWidget(QGLWidget):
                     continue
                 obj = getattr(self, key)
                 setattr(obj, child_key, getattr(self, child_key))
+        
+        self.interaction_manager.constrain_navigation = self.constrain_navigation
+        
         self.companion_classes_initialized = True
         
     def initialize(self, **kwargs):
@@ -470,10 +476,53 @@ class GalryWidget(QGLWidget):
     
     
     
+    
+        
+class GalryTimerWidget(GalryWidget):
+    def initialize_timer(self, dt=1.):
+        self.t = 0.
+        self.dt = dt
+        self.t0 = timeit.default_timer()
+        # start simulation after initialization completes
+        self.timer = QtCore.QTimer()
+        self.timer.setInterval(dt * 1000)
+        self.timer.timeout.connect(self.update_callback)
+        self.paint_manager.t = self.t
+        
+    def update_callback(self):
+        self.t = timeit.default_timer() - self.t0
+        if hasattr(self.paint_manager, 'update_callback'):
+            self.paint_manager.t = self.t
+            self.paint_manager.update_callback()
+            self.updateGL()
+        
+    def start_timer(self):
+        self.timer.start()
+        
+    def stop_timer(self):
+        self.timer.stop()
+        
+    def showEvent(self, e):
+        # start simulation when showing window
+        self.start_timer()
+        
+    def hideEvent(self, e):
+        # stop simulation when hiding window
+        self.stop_timer()
+       
+    
+    
+    
+    
 # Basic widgets helper functions and classes
 # ------------------------------------------
-def create_custom_widget(bindings=None, events_enum=None, antialiasing=False,
+def create_custom_widget(bindings=None,
+                         events_enum=None,
+                         antialiasing=False,
                          constrain_ratio=False,
+                         display_fps=False,
+                         constrain_navigation=True,
+                         update_interval=None,
                         **companion_classes):
     """Helper function to create a custom widget class from various parameters.
     
@@ -483,7 +532,12 @@ def create_custom_widget(bindings=None, events_enum=None, antialiasing=False,
       * antialiasing=False: whether to activate antialiasing or not.
     
     """
-    class MyWidget(GalryWidget):
+    if update_interval is not None:
+        baseclass = GalryTimerWidget
+    else:
+        baseclass = GalryWidget
+    
+    class MyWidget(baseclass):
         def __init__(self):
             # antialiasing
             format = QGLFormat()
@@ -496,6 +550,11 @@ def create_custom_widget(bindings=None, events_enum=None, antialiasing=False,
             self.set_events_enum(events_enum)
             self.set_companion_classes(**companion_classes)
             self.constrain_ratio = constrain_ratio
+            self.constrain_navigation = constrain_navigation
+            self.display_fps = display_fps
+            self.initialize_companion_classes()
+            if update_interval is not None:
+                self.initialize_timer(dt=update_interval)
 
     return MyWidget
     

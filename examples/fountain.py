@@ -93,13 +93,8 @@ class ParticleTemplate(DefaultTemplate):
         self.initialize_default(**kwargs)
     
         
-        
 class ParticlePaintManager(PaintManager):
     def initialize(self):
-        # time variables
-        self.t = 0.0
-        self.t0 = timeit.default_timer()
-        self.freq = 50.
         
         # number of particles
         n = 50000
@@ -125,7 +120,6 @@ class ParticlePaintManager(PaintManager):
         
         # create the dataset
         self.create_dataset(ParticleTemplate, 
-            t=self.t, 
             initial_positions=positions,
             velocities=velocities,
             alpha=alpha,
@@ -133,31 +127,10 @@ class ParticlePaintManager(PaintManager):
             delays=delays
             )
         
-    def update(self):
+    def update_callback(self):
         # update the t uniform value
         self.set_data(t=self.t)
-        self.t = timeit.default_timer() - self.t0
-        self.updateGL()
-        
-class ParticlePlot(GalryWidget):
-    def initialize(self):
-        # set custom paint manager
-        self.set_companion_classes(paint_manager=ParticlePaintManager)
-    
-    def initialized(self):
-        # start simulation after initialization completes
-        self.timer = QtCore.QTimer()
-        self.timer.setInterval(1000. / self.paint_manager.freq)
-        self.timer.timeout.connect(self.paint_manager.update)
-        self.timer.start()
-        
-    def showEvent(self, e):
-        # start simulation when showing window
-        self.timer.start()
-        
-    def hideEvent(self, e):
-        # stop simulation when hiding window
-        self.timer.stop()
 
 if __name__ == '__main__':
-    window = show_basic_window(widget_class=ParticlePlot)
+    window = show_basic_window(paint_manager=ParticlePaintManager,
+                               update_interval=.02)

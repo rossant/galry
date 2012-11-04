@@ -1,5 +1,6 @@
 import numpy as np
 import numpy.random as rdn
+import timeit
 from galry import *
 
 # grid size
@@ -25,7 +26,6 @@ def iterate(Z):
     return Z
     
 class ConwayPaintManager(PaintManager):
-
     def get_iteration_text(self):
         return "Iteration %05d" % self.iteration
         
@@ -41,36 +41,14 @@ class ConwayPaintManager(PaintManager):
         self.it = self.create_dataset(TextTemplate, fontsize=18, 
             text=text, pos=(0., .95), is_static=True)
         
-    def update(self):
-        # update the data
+    def update_callback(self):
         self.data[:,:,0] = iterate(self.data[:,:,0])
         self.set_data(tex_sampler=self.data)
         self.set_data(text=self.get_iteration_text(), dataset=self.it)
-        # update the texture
-        # update rendering
-        self.updateGL()
         self.iteration += 1
         
-class ConwayPlot(GalryWidget):
-    def initialize(self):
-        # set custom paint manager
-        self.set_companion_classes(paint_manager=ConwayPaintManager)
-        self.initialize_companion_classes()
-        # constrain ratio
-        self.constrain_ratio = True
-    
-    def initialized(self):
-        # start simulation after initialization completes
-        self.timer = QtCore.QTimer()
-        # 50 ms per iteration
-        self.timer.setInterval(50)
-        self.timer.timeout.connect(self.paint_manager.update)
-        self.timer.start()
-        
-    def hideEvent(self, e):
-        # stop simulation when hiding window
-        self.timer.stop()
-
 if __name__ == '__main__':
     # create window
-    window = show_basic_window(ConwayPlot)
+    window = show_basic_window(paint_manager=ConwayPaintManager,
+                               constrain_ratio=True,
+                               update_interval=.05)

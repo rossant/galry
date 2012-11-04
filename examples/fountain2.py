@@ -5,7 +5,7 @@ import numpy.random as rdn
 import os
 import time
 import timeit
-from fountain import ParticleTemplate, ParticlePaintManager, ParticlePlot
+from fountain import ParticleTemplate, ParticlePaintManager
 
 class Particle2Template(ParticleTemplate):
     def get_position_update_code(self):
@@ -22,10 +22,6 @@ class Particle2Template(ParticleTemplate):
         
 class Particle2PaintManager(PaintManager):
     def initialize(self):
-        # time variables
-        self.t = 0.0
-        self.t0 = timeit.default_timer()
-        self.freq = 50.
         
         # number of particles
         n = 20000
@@ -48,7 +44,6 @@ class Particle2PaintManager(PaintManager):
         
         # create the dataset
         self.create_dataset(Particle2Template, 
-            t=self.t, 
             initial_positions=positions,
             velocities=velocities,
             v=self.v,
@@ -59,15 +54,12 @@ class Particle2PaintManager(PaintManager):
         
     def change_velocities(self, v):
         # change the velocity direction
-        self.t = timeit.default_timer() - self.t0
         self.v = v
         self.set_data(t=self.t, v=self.v)
         
-    def update(self):
+    def update_callback(self):
         # update the t uniform value
-        self.t = timeit.default_timer() - self.t0
         self.set_data(t=self.t, v=self.v)
-        self.updateGL()
         
 class ParticleInteractionManager(InteractionManager):
     def process_extended_event(self, event, parameter):
@@ -84,13 +76,9 @@ class ParticleBindings(BindingSet):
                  param_getter=lambda p: 
                     (2 * p["mouse_position"][0],
                      2 * p["mouse_position"][1]))
-        
-class Particle2Plot(ParticlePlot):
-    def initialize(self):
-        # set custom paint manager
-        self.set_companion_classes(paint_manager=Particle2PaintManager,
-                                   interaction_manager=ParticleInteractionManager)
-        self.set_bindings(ParticleBindings)
 
 if __name__ == '__main__':
-    window = show_basic_window(widget_class=Particle2Plot)
+    window = show_basic_window(paint_manager=Particle2PaintManager,
+        interaction_manager=ParticleInteractionManager,
+        bindings=ParticleBindings,
+        update_interval=.02)

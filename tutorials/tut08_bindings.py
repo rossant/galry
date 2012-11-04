@@ -13,13 +13,9 @@ import numpy.random as rdn
 
 class MyPaintManager(PaintManager):
     def initialize(self):
-        # Deactivate constraining the navigation into [-1, 1]^2 (the default).
-        self.interaction_manager.constrain_navigation = False
-        
-        n = 10000
         
         # We add a plot with random points.
-        self.create_dataset(PlotTemplate, position=.2 * rdn.randn(n, 2),
+        self.create_dataset(PlotTemplate, position=.2 * rdn.randn(10000, 2),
             primitive_type=PrimitiveType.Points)
 
 # We define a customized binding by deriving a class from the base class
@@ -52,4 +48,5 @@ class MyBinding(BindingSet):
                                         0))
         
 # We pass our custom binding to the widget through the `bindings` argument.
-show_basic_window(bindings=MyBinding, paint_manager=MyPaintManager)
+show_basic_window(bindings=MyBinding, paint_manager=MyPaintManager,
+                  constrain_navigation=False)

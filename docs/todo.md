@@ -1,15 +1,12 @@
 Galry: high-performance interactive 2D visualization in Python
 ==============================================================
 
+  * update doc  
+  * get rid of events_enum
 
-  * bug: linux pyside segmentation fault
-  
-  * TimerWidget: with auto timer
-  * improve windows parameters: self.interaction_manager.constrain_navigation
-  * position => positions?
-  * update doc
   * user preferences, with DEBUG option
   * high level interface
+  * bug: linux pyside segmentation fault
   
 Doc
 ---

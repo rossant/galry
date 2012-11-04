@@ -28,11 +28,10 @@ class MyPaintManager(PaintManager):
         # can have several slots containing data or parameters, that can be
         # filled here with the `set_data` method.
         self.create_dataset(TextTemplate, text=text)
-
-        self.interaction_manager.constrain_navigation = False
                 
 # We show a basic QT window with a custom galry widget.
 # This widget has our custom `MyPaintManager` class as a paint manager.
 # The window has a size (500, 500) and a position (100, 100) on the screen.
 show_basic_window(paint_manager=MyPaintManager,
-                  size=(500., 500.), position=(100., 100.))
+                  size=(500., 500.), position=(100., 100.),
+                  constrain_navigation=False)
