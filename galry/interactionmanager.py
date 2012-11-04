@@ -7,6 +7,9 @@ import cursors
 
 __all__ = ['InteractionManager']
 
+# Maximum viewbox allowed when constraining navigation.
+MAX_VIEWBOX = (-1., -1., 1., 1.)
+
 class InteractionManager(object):
     """This class implements the processing of the raised interaction events.
     
@@ -35,15 +38,11 @@ class InteractionManager(object):
         """
         pass
         
-    # def extend_events(self, custom_events=None):
-        # if custom_events:
-            # events = extend_enum(InteractionEvents, custom_events)
-        # else:
-            # events = InteractionEvents
-    
     # Event processing methods
     # ------------------------
     def process_none_event(self):
+        """Process the None event, i.e. where there is no event. Useful
+        to trigger an action at the end of a long-lasting event."""
         # when zoombox event finished: set_relative_viewbox
         if (self.navigation_rectangle is not None):
             self.set_relative_viewbox(*self.navigation_rectangle)
@@ -51,16 +50,14 @@ class InteractionManager(object):
         self.navigation_rectangle = None
         self.cursor = None
     
-    def process_navigation_event(self, event, parameter):
-        # if "cursors" not in globals():
-            # import cursors
+    def process_pan_event(self, event, parameter):
+        """Process a pan-related event."""
         if event == events.PanEvent:
             self.pan(parameter)
             self.cursor = cursors.ClosedHandCursor
     
     def process_zoom_event(self, event, parameter):
-        # if "cursors" not in globals():
-            # import cursors
+        """Process a zoom-related event."""
         if event == events.ZoomEvent:
             self.zoom(parameter)
             self.cursor = cursors.MagnifyingGlassCursor
@@ -69,6 +66,7 @@ class InteractionManager(object):
             self.cursor = cursors.MagnifyingGlassCursor
     
     def process_reset_event(self, event, parameter):
+        """Process a reset-related event."""
         if event == events.ResetEvent:
             self.reset()
             self.cursor = None
@@ -92,12 +90,13 @@ class InteractionManager(object):
         # cursors, so we load (and create the cursors) here
         if event is None:
             self.process_none_event()
-        self.process_navigation_event(event, parameter)
+        self.process_pan_event(event, parameter)
         self.process_zoom_event(event, parameter)
         self.process_reset_event(event, parameter)
-        self.process_extended_event(event, parameter)
+        self.process_custom_event(event, parameter)
         
-    def process_extended_event(self, event, parameter):
+    def process_custom_event(self, event, parameter):
+        """Process a custom event."""
         pass
             
     # Navigation methods
@@ -111,7 +110,7 @@ class InteractionManager(object):
         
         """
         if not constraints:
-            constraints = (-1, -1, 1, 1)
+            constraints = MAX_VIEWBOX
         # view constraints
         self.xmin, self.ymin, self.xmax, self.ymax = constraints
         # minimum zoom allowed
@@ -166,18 +165,8 @@ class InteractionManager(object):
           * parameter: the box coordinates (xmin, ymin, xmax, ymax)
         
         """
-        # # do nothing if the box is too small
-        # if ((np.abs(parameter[2] - parameter[0]) > .05) and \
-             # np.abs(parameter[3] - parameter[1]) > .05):
         self.navigation_rectangle = parameter
-            # self.paint_manager.add_transient_overlay("rectangle", self.navigation_rectangle, 
-                        # (.5, .5, .5, .5))
-            # self.paint_manager.set_data(dataset=self.paint_manager.ds_navigation_rectangle,
-                # coordinates=self.navigation_rectangle)
         self.paint_manager.show_navigation_rectangle(parameter)
-        # else:
-            # self.navigation_rectangle = None
-            # self.paint_manager.hide_navigation_rectangle()
     
     def reset_zoom(self):
         """Reset the zoom."""
@@ -191,6 +180,7 @@ class InteractionManager(object):
         Returns:
           * (xmin, ymin, xmax, ymax): the current view box in data coordinate
             system.
+            
         """
         x0, y0 = self.get_data_coordinates(-1, -1)
         x1, y1 = self.get_data_coordinates(1, 1)
@@ -209,6 +199,7 @@ class InteractionManager(object):
         return x/self.sx - self.tx, y/self.sy - self.ty
     
     def constrain_viewbox(self, x0, y0, x1, y1):
+        """Constrain the viewbox ratio."""
         if (x1-x0) > (y1-y0):
             d = ((x1-x0)-(y1-y0))/2
             y0 -= d

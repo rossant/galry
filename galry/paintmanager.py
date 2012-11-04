@@ -5,18 +5,15 @@ import time
 import numpy as np
 import OpenGL.GL as gl
 import OpenGL.arrays.vbo as glvbo
-import OpenGL.GLUT as glut
 from tools import enum, memoize, enforce_dtype, get_intermediate_classes
-# from default_shaders import DEFAULT_SHADERS
-# from shaders import ShadersCreator
 import ctypes
 from debugtools import log_debug, log_info, log_warn
 import templates as tpl
 from dataloader import DataLoader, NP_GL_TYPE_CONVERTER, activate_buffer
 from primitives import PrimitiveType, GL_PRIMITIVE_TYPE_CONVERTER
 
-__all__ = ['PaintManager']
 
+__all__ = ['PaintManager']
 
 
 def get_template_initargs(template_class):
@@ -55,6 +52,8 @@ class PaintManager(object):
     
     # Background color.
     bgcolor = (0., 0., 0., 0.)
+    
+    # Color of the zoombox rectangle.
     navigation_rectangle_color = (1.,1.,1.,.25)
     
     # Initialization methods
@@ -67,29 +66,39 @@ class PaintManager(object):
         # list of datasets
         self.datasets = []
 
-        # list of text strings to display
-        # self.texts = []
-        # self.permanent_overlays = []
-        # self.transient_overlays = []
-        
+        # boolean indicated whether OpenGL has been initialized, the 
+        # data has been loaded on the GPU, and the shaders have been compiled.
         self.is_initialized = False
 
     def initialize_default(self):
+        """Default initialize method. Initializes the FPS (if shown) and
+        the navigation rectangle."""
         if self.parent.display_fps:
             text = "FPS: 000"
+            # create the FPS text dataset
             self.ds_fps = self.create_dataset(tpl.TextTemplate,
-                size=len(text),
                 fontsize=18,
                 is_static=True,
-                )
-            self.set_data(pos=(-.80, .92), text=text, dataset=self.ds_fps)
+                pos=(-.80, .92),
+                text=text)
 
         # navigation rectangle
-        self.ds_navigation_rectangle = self.create_dataset(tpl.RectanglesTemplate,
-            is_static=True, color=self.navigation_rectangle_color,
-            visible=False, )
+        self.ds_navigation_rectangle = self.create_dataset(
+            tpl.RectanglesTemplate,
+            is_static=True,
+            color=self.navigation_rectangle_color,
+            visible=False)
             
     def initialize_dataset(self, dataset):
+        """Initialize a dataset after the end of `self.initialize`.
+        
+        This method takes the keyword arguments given in `create_dataset` and
+        `set_data` and separates those to be passed to `template.initialize` 
+        and those which are template data fields.
+        This method initializes the template and the data loader, but does not
+        upload anything on the GPU (this happens in `paintGL`).
+        
+        """
         # keyword arguments passed in create_dataset
         kwargs = dataset["kwargs"]
         
@@ -161,8 +170,9 @@ class PaintManager(object):
         dl.set_data(**datakwargs)
         dataset["loader"] = dl
         
-            
     def initialize_gpu(self):
+        """Initialize the GPU by initializing the datasets, generating the
+        shaders, and compiling them. No data is uploaded on the GPU yet."""
         for dataset in self.datasets:
             self.initialize_dataset(dataset)
             dataset["loader"].compile_shaders()
@@ -172,14 +182,15 @@ class PaintManager(object):
     # Navigation rectangle methods
     # ----------------------------
     def show_navigation_rectangle(self, coordinates):
+        """Show the navigation rectangle with the specified coordinates 
+        (in relative window coordinates)."""
         self.ds_navigation_rectangle["visible"] = True
         self.set_data(coordinates=coordinates,
             dataset=self.ds_navigation_rectangle)
             
     def hide_navigation_rectangle(self):
+        """Hide the navigation rectangle."""
         self.ds_navigation_rectangle["visible"] = False
-        # self.set_data(coordinates=(0.,) * 4,
-            # dataset=self.ds_navigation_rectangle)
         
         
     # Data creation methods
@@ -187,115 +198,86 @@ class PaintManager(object):
     def create_dataset(self,
                        template_class=None,
                        visible=True,
-                       # size=None,
-                       # rendering options
-                       # bounds=None,
-                       # primitive_type=None,
-                       # default_color=None,
                        **kwargs):
-        """Create a dataset.
+        """Create a dataset. This method should be called in `self.initialize`.
         
-        A dataset is the combination of:
-          * a set of `N` points,
-          * a vertex shader and fragment shader source codes,
-          * any number of buffers, each buffer having a name and corresponding 
-            to an actual data array,
-          * a set of textures (TODO: only one texture support is implemented 
-            currently).
+        A dataset is an instanciation of a `DataTemplate`. A DataTemplate
+        defines a pattern for one, or a homogeneous set of plotting objects.
+        Example: a text string, a set of rectangles, a set of triangles,
+        a set of curves, a set of points. A set of points and rectangles
+        does not define a template since it is not an homogeneous set of
+        objects. The technical reason for this distinction is that OpenGL
+        allows for very fast rendering of homogeneous objects by calling
+        a single rendering command (even if several objects of the same type
+        need to be rendered, e.g. several rectangles). The lower the number
+        of rendering calls, the better the performance.
         
-        All the buffers are processed on the GPU through vertex and fragment
-        shaders. The role of shaders is to transform data contained in these
-        buffers into 2D or 3D colored vertices on the screen.
-        The vertex shader generates the positions of the vertices.
-        The fragment shader generates the colors of the vertices.
+        Hence, a dataset is defined by a particular DataTemplate, and by
+        specification of fields in this template (positions of the points,
+        colors, text string for the example of the TextTemplate, etc.). It
+        also comes with a number `N` which is the number of vertices contained
+        in the dataset (N=4 for one rectangle, N=len(text) for a text since 
+        every character is rendered independently, etc.)
         
-        Default shaders are provided in the helper painting methods.
-        Custom shaders can be specified if needed. That's an advanced 
-        and extremely powerful feature. One needs to know the OpenGL 
-        programmable pipeline and the GLSL language in order to write their
-        own shaders.
+        Several datasets can be created in the PaintManager, but performance
+        decreases with the number of datasets, so that all homogeneous 
+        objects to be rendered on the screen at the same time should be
+        grouped into a single dataset (e.g. multiple line plots).
         
         Arguments:
-          * size: the size of the dataset, i.e. the number of points.
-          * bounds=None: the data bounds separating the individual objects to
-            display. It should be an array of int32 with all bound indices.
-            The first index must be 0, the last one is `size`. Every index
-            gives the position of the first point in the current primitive.
-            The default (`None`) is just `[0, size]`.
-          * primitive_type=None: a member of the `PrimitiveType` enumeration
-            with the primitive type to render for this dataset. By default,
-            it is `PrimitiveType.Points`.
-          * color=None: the default color of the rendered primitives. It is
-            yellow by default. This value may not be used depending on the
-            specific fragment shader.
-          * vertex_shader=None: the source code of the vertex shader.
-          * fragment_shader=None: the source code of the fragment shader.
-          * is_static=False: whether the rendered objects should be transformed
-            by the interactive navigation or stay at a fixed position in the
-            window.
-          * **uniforms: keyword arguments of uniform variables, with their 
-            initial values.
+          * template_class=None: the template class, deriving from
+            `DefaultTemplate` (or directly from the base class `DataTemplate`
+            if you don't want the navigation-related functionality).
+          * visible=True: whether this dataset should be rendered. Useful
+            for showing/hiding a transient element. When hidden, the dataset
+            does not go through the rendering pipeline at all.
           
         Returns:
           * dataset: a dictionary containing all the information about
-            the dataset, and that can be used in the methods of `PaintManager`.
+            the dataset, and that can be used in `set_data`.
         
         """
         
+        # Default template class
         if not template_class:
             template_class = tpl.DefaultTemplate
             
-        # template = template_class(size=size)
+        # pass the `constrain_ratio` parameter to the parent widget
         if self.parent.constrain_ratio:
             kwargs["constrain_ratio"] = True
-        # template.initialize(**kwargs)
-        # size = template.size
-        
-        # we pass the default color to the template, only if it is not None
-        # template.set_default_color(default_color)
-        
-        # if primitive_type is None:
-            # # if primitive_type is specified in create_dataset, we take it.
-            # # otherwise, we take the one that may have been defined in the
-            # # template (in template.set_rendering_options, called in
-            # # initialize)
-            # # finally, we fallback on Points
-            # primitive_type = getattr(template, "primitive_type",
-                    # PrimitiveType.Points)
-        
-        # if bounds is None:
-            # # if bounds is specified, we take it
-            # # otherwise, we take the one that may have been defined in the
-            # # template (in template.set_rendering_options, called in
-            # # initialize)
-            # # finally, we fallback on the default bounds
-            # bounds = getattr(template, "bounds", None)
-            # if bounds is None:
-                # bounds = [0, size]
-        # bounds = np.array(bounds, np.int32)
-        
-        # template.finalize()
 
+        # initialize the dataset object, for now just a placeholder for
+        # all the information passed to `create_dataset` and `set_data`.
         dataset = {}
         dataset["visible"] = visible
-        # dataset["size"] = size
-        # dataset["primitive_type"] = primitive_type
         dataset["template_class"] = template_class
+
+        # keyword arguments passed to `create_dataset`
         dataset["kwargs"] = kwargs
+
+        # keyword arguments that may be passed to `set_data`
         dataset["datakwargs"] = {}
-        # dataset["loader"] = DataLoader(size, template=template, bounds=bounds)        
-        # we redirect the elements in kwargs that are template variables
-        # to set_data
-        # self.set_data(dataset=dataset, **dict([(k, v) for (k, v) in \
-            # kwargs.iteritems() if k in template.variable_names]))
         
-        # default data
-        # self.set_data(dataset=dataset, **template.default_data)
-        
+        # `self.datasets` contains the list of all defined datasets in the
+        # paint manager.
         self.datasets.append(dataset)
+        
+        # we return the dataset, so that it can be used in `set_data` later.
         return dataset
 
     def set_data(self, dataset=None, **kwargs):
+        """Specify or change the data associated to particular template
+        fields.
+        
+        Actual data upload on the GPU will occur during the rendering process, 
+        in `paintGL`. It is just recorded here for later use.
+        
+        Arguments:
+          * dataset=None: the relevant dataset. By default, the first one
+            that has been created in `initialize`.
+          * **kwargs: keyword arguments as `template_field_name: value` pairs.
+        
+        """
         if dataset is None:
             dataset = self.datasets[0]
         # this case happens during `create_dataset`: we just update the dataset
@@ -322,44 +304,30 @@ class PaintManager(object):
                         scale=scale, translation=translation)
     
     def set_viewport(self, viewport, window_size):
+        """Specify the viewport and the window size by changing the
+        corresponding uniform values in all datasets."""
         for dataset in self.datasets:
             self.set_data(dataset=dataset, viewport=viewport,
-                            window_size=window_size)
+                          window_size=window_size)
  
     def update_fps(self, fps):
+        """Update the FPS in the corresponding text dataset."""
         self.set_data(dataset=self.ds_fps, text="FPS: %03d" % fps)
  
  
     # Rendering methods
     # -----------------
-    def paint_dataset(self, dataset, primitive_type=None, #color=None,
-                      **buffers_activations):
+    def paint_dataset(self, dataset): #, **buffers_activations):
         """Paint a dataset.
         
         Arguments:
           * dataset: the dataset object, returned by `create_dataset` method.
-          * primitive_type=None: a PrimitiveType enum value. By default, 
-            the value specified in the dataset creation is used.
-          * color=None: the color of the primitives. If None, the color
-            specified in the buffer will be used.
-          **buffers_activations: for each name, whether to activate or not
-            this buffer. It is True by default for all buffers in the dataset.
           
         """
-        if primitive_type is None:
-            primitive_type = dataset.get("primitive_type", PrimitiveType.Points)
-        # if color is None:
-        # color = dataset["color"]
+        primitive_type = dataset.get("primitive_type", PrimitiveType.Points)
         gl_primitive_type = GL_PRIMITIVE_TYPE_CONVERTER[primitive_type]
-        
         dl = dataset["loader"]
-        
         subdata_bounds = dl.subdata_bounds
-        
-        # by default, choose to activate non specified buffers
-        for name, buffer in dl.attributes.iteritems():
-            if name not in buffers_activations:
-                buffers_activations[name] = True
         
         # activate shaders for this dataset
         dl.activate_shaders()
@@ -372,13 +340,12 @@ class PaintManager(object):
             # get slice bounds
             slice_bounds = subdata_bounds[slice_index]
             
-            # activate or deactivate buffers
-            for name, do_activate in buffers_activations.iteritems():
-                buffer = dataset["loader"].attributes[name]
+            # activate buffers
+            for name, buffer in dl.attributes.iteritems():
                 location = buffer["location"]
                 ndim = buffer["ndim"]
                 vbo, pos, size = buffer["vbos"][slice_index]
-                activate_buffer(vbo, location, ndim, do_activate)
+                activate_buffer(vbo, location, ndim) #, do_activate)
 
             # activate textures
             for name, texture in dl.textures.iteritems():
@@ -407,17 +374,17 @@ class PaintManager(object):
         This method is called by paintGL().
         
         """
-        # Interactive transformation ON
-        # -----------------------------
+        # transform the view for interactive navigation by updating the
+        # corresponding uniform values in all non-static datasets
         self.transform_view()
         
-        # plot all datasets
+        # plot all visible datasets
         for dataset in self.datasets:
             if dataset.get("visible", True):
                 self.paint_dataset(dataset)
         
     def updateGL(self):
-        """Update rendering."""
+        """Call updateGL in the parent widget."""
         self.parent.updateGL()
         
         
@@ -460,7 +427,7 @@ class PaintManager(object):
     def initialize(self):
         """Initialize the data. To be overriden.
 
-        This method can make calls to `create_dataset` and `add_*` methods.
+        This method can make calls to `create_dataset` and `set_data` methods.
         
         """
         pass

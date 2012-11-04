@@ -8,28 +8,52 @@ import matplotlib.pyplot as plt
 from ..debugtools import log_debug, log_info, log_warn
 
 class TextTemplate(DefaultTemplate):
+    """Template for displaying short text on a single line.
+    
+    It uses the following technique: each character is rendered as a sprite,
+    i.e. a pixel with a large point size, and a single texture for every point.
+    The texture contains a font atlas, i.e. all characters in a given font.
+    Every point comes with coordinates that indicate which small portion
+    of the font atlas to display (that portion corresponds to the character).
+    This is all done automatically, thanks to a font atlas stored in the
+    `fontmaps` folder. There needs to be one font atlas per font and per font
+    size. Also, there is a configuration text file with the coordinates and
+    size of every character. The software used to generate font maps is
+    AngelCode Bitmap Font Generator.
+    
+    For now, there is only the Segoe font.
+    
+    """
+    
     def position_compound(self, position=None):
+        """Compound variable with the position of the text. All characters
+        are at the exact same position, and are then shifted in the vertex
+        shader."""
         if position is None:
             position = (0., 0.)
         position = np.tile(np.array(position).reshape((1, -1)), self.size)
         return dict(position=position)
     
     def text_compound(self, text):
+        """Compound variable for the text string. It changes the text map,
+        the character position, and the text width."""
         text_map = self.get_map(text)
         offset = np.hstack((0., np.cumsum(text_map[:, 2])[:-1]))    
         text_map = self.get_map(text.ljust(self.size, ' '))
         return dict(text_map=text_map, offset=offset, text_width=offset[-1])
     
     def initialize_font(self, font, fontsize):
+        """Initialize the specified font at a given size."""
         self.texture, self.matrix, self.get_map = load_font(font, fontsize)
 
     def get_initialize_arguments(self, **data):
+        """Set the size as the text length."""
         text = data.get("text", None)
         assert text
-        # self.size = len(text)
         return dict(size=len(text))
         
     def initialize(self, size=None, font="segoe", fontsize=24, **kwargs):
+        """Initialize the text template."""
         self.size = size
         self.primitive_type = PrimitiveType.Points
 
@@ -39,7 +63,6 @@ class TextTemplate(DefaultTemplate):
         point_size = float(self.matrix[:,4].max() * self.texture.shape[1])
 
         # add navigation code
-        # super(TextTemplate, self).initialize(**kwargs)
         self.initialize_default(**kwargs)
         
         # template attributes and varyings
@@ -75,26 +98,25 @@ class TextTemplate(DefaultTemplate):
     gl_PointSize = point_size;
     flat_text_map = text_map;
         """)
-        
-        
-        
-        
+
         # fragment shader
         fragment = """
+    // relative coordinates of the pixel within the sprite (in [0,1])
     float x = gl_PointCoord.x;
     float y = gl_PointCoord.y;
+    
+    // size of the corresponding character
     float w = flat_text_map.z;
     float h = flat_text_map.w;
     
+    // display the character at the left of the sprite
     float delta = h / w;
     x = delta * x;
     if ((x >= 0) && (x <= 1))
     {
-        float xcoord = w * x;
-        float ycoord = h * y;
-        vec2 coord = flat_text_map.xy + vec2(xcoord, ycoord);
-        vec4 texcol = texture(tex_sampler, coord);
-        out_color = texcol * color;
+        // coordinates of the character in the font atlas
+        vec2 coord = flat_text_map.xy + vec2(w * x, h * y);
+        out_color = texture(tex_sampler, coord) * color;
     }
     else
         out_color = vec4(0, 0, 0, 0);

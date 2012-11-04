@@ -2,7 +2,6 @@ Galry: high-performance interactive 2D visualization in Python
 ==============================================================
 
   * update doc  
-  * get rid of events_enum
 
   * user preferences, with DEBUG option
   * high level interface

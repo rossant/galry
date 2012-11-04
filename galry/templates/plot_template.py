@@ -3,13 +3,12 @@ from default_template import DefaultTemplate
 from ..primitives import PrimitiveType
     
 class PlotTemplate(DefaultTemplate):
+    """Generic template for plotting data as any primitive type."""
+    
     def get_initialize_arguments(self, **data):
         position = data.get("position", None)
         assert position is not None
-        # nprimitives, nsamples = position.shape
-        
         self.size = position.shape[0]
-        
         color = data.get("color", self.default_color)
         
         # handle the case where there is a single color given as a list of
@@ -47,6 +46,20 @@ class PlotTemplate(DefaultTemplate):
     
     def initialize(self, colors_ndim=4, single_color=True, 
         nprimitives=1, nsamples=None,use_color_array=False, **kwargs):
+        """Initialize the template
+        
+        Arguments:
+          * colors_ndim: the number of components in the colors.
+          * single_color=True: whether to use only color or not.
+          * nprimitives=1: number of individual primitives to render.
+          * nsamples=None: number of points per primitive.
+          * use_color_array=False: if True, then every primitive has its own
+            color, but all points in a given primitive share the same color.
+            This is useful when displaying e.g. a large number of signals
+            with a lot of samples. It saves a lot of memory compared to
+            the case when the color of every vertex is saved.
+        
+        """
         
         assert self.size
         

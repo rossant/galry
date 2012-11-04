@@ -55,12 +55,12 @@ MyEvents = enum("ChangeLawEvent")
 # We create a class deriving from `InteractionManager` that processes the
 # newly defined event.
 class MyInteractionManager(InteractionManager):
-    # The method `process_extended_event` processes the newly created events
+    # The method `process_custom_event` processes the newly created events
     # when they are raised. The first parameter `event` is an element of the
     # `MyEvents` enumeration, whereas `parameter` contains the parameters of
     # the associated user action that was returned by the `param_getter` 
     # function defined in the binding.
-    def process_extended_event(self, event, parameter):
+    def process_custom_event(self, event, parameter):
         # Here, we call the `update_data` method of the PaintManager whenever
         # this event is raised. We don't use the parameter here.
         if event == MyEvents.ChangeLawEvent:

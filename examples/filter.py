@@ -54,6 +54,7 @@ class FilterTemplate(TextureTemplate):
             data=kernel)
                 
         fragment = """
+    // compute the convolution of the texture with the kernel
     out_color = vec4(0., 0., 0., 1.);
     for (int i = 0; i < 3; i++)
     {
@@ -87,17 +88,21 @@ FilterEvents = enum("NextFilter",
                     "PreviousFilter")
         
 class FilterInteractionManager(InteractionManager):
-    def process_extended_event(self, event, parameter):
+    def process_custom_event(self, event, parameter):
+        # previous filter
         if event == FilterEvents.PreviousFilter:
             self.paint_manager.change_kernel(change_kernel(-1))
+        # next filter
         if event == FilterEvents.NextFilter:
             self.paint_manager.change_kernel(change_kernel(1))
         
 class FilterBinding(DefaultBindingSet):
     def extend(self):
+        # left key
         self.set(UserActions.KeyPressAction,
                 FilterEvents.PreviousFilter,
                 key=QtCore.Qt.Key_Left)
+        # right key
         self.set(UserActions.KeyPressAction,
                 FilterEvents.NextFilter,
                 key=QtCore.Qt.Key_Right)

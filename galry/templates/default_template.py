@@ -1,8 +1,11 @@
 from datatemplate import DataTemplate
 
 class DefaultTemplate(DataTemplate):
+    """Default data template that implements navigation."""
+    
     def add_transformation(self, is_static=False):
         """Add static or dynamic position transformation."""
+        
         # dynamic navigation
         if not is_static:
             self.add_uniform("scale", vartype="float", ndim=2)
@@ -25,17 +28,20 @@ return scale * (position + translation);
     gl_Position = vec4(position, 0., 1.);""")
         
     def add_constrain_ratio(self, constrain_ratio=False):
+        """Add viewport-related code."""
         self.add_uniform("viewport", vartype="float", ndim=2)
         self.add_uniform("window_size", vartype="float", ndim=2)
         if constrain_ratio:
             self.add_vertex_main("gl_Position.xy = gl_Position.xy / viewport;")
 
     def get_initialize_arguments(self, **data):
+        """Infer size from position attribute."""
         position = data.get("position", None)
         if position is not None:
             self.size = position.shape[0]
             
-    def initialize_default(self, is_static=False, constrain_ratio=False, **kwargs):        
+    def initialize_default(self, is_static=False, constrain_ratio=False, **kwargs): 
+        """Default initialization with navigation-related code."""
         self.is_static = is_static
         self.constrain_ratio = constrain_ratio
         
@@ -44,8 +50,3 @@ return scale * (position + translation);
         
     def initialize(self, **kwargs):
         self.initialize_default(**kwargs)
-        # super(DefaultTemplate, self).initialize(**kwargs)
-            
-        # # arguments in kwargs are for set_data
-        # for name, data in kwargs.iteritems():
-            # self.set_default_data(name, data)

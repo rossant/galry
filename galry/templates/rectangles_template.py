@@ -4,7 +4,21 @@ from plot_template import PlotTemplate
 from ..primitives import PrimitiveType
     
 class RectanglesTemplate(PlotTemplate):
+    """Template for displaying one or several rectangles. This template
+    derives from PlotTemplate."""
+    
     def coordinates_compound(self, data):
+        """Compound function for the coordinates variable.
+        
+        Arguments:
+          * data: a Nx4 array where each line contains the coordinates of the
+            rectangle corners as (x0, y0, x1, y1)
+        
+        Returns:
+          * dict(position=position): the coordinates of all vertices used
+            to render the rectangles as TriangleStrips.
+        
+        """
         if type(data) is tuple:
             data = np.array(data, dtype=np.float32).reshape((1, -1))
         # reorder coordinates to make sure that first corner is lower left
@@ -16,7 +30,7 @@ class RectanglesTemplate(PlotTemplate):
         x0, y0, x1, y1 = data.T
         
         # create vertex positions, 4 per rectangle
-        position = np.zeros((4 * nprimitives,2), dtype=np.float32)
+        position = np.zeros((4 * nprimitives, 2), dtype=np.float32)
         position[0::4,0] = x0
         position[0::4,1] = y0
         position[1::4,0] = x1
@@ -28,30 +42,21 @@ class RectanglesTemplate(PlotTemplate):
         
         return dict(position=position)
     
-    # def colors_compound(self, data):
-        # if type(data) is tuple:
-            # data = np.array(data, dtype=np.float32).reshape((1, -1))
-        # data = np.repeat(data, 4, axis=0)
-        # return dict(color=data)
-
     def get_initialize_arguments(self, **data):
-        
         coordinates = data.get("coordinates", (0.,) * 4)
         assert coordinates is not None
-        
         if type(coordinates) is tuple:
             coordinates = np.array(coordinates, dtype=np.float32).reshape((1, -1))
-        
         nprimitives = coordinates.shape[0]
-        
         return dict(nprimitives=nprimitives)
         
     def initialize(self, nprimitives=1, **kwargs):
-        
+        # there are four vertices per rectangle
         self.size = 4 * nprimitives
         self.primitive_type = PrimitiveType.TriangleStrip
         self.bounds = np.arange(0, self.size + 1, 4)
         
+        # a single color is used if there is only one rectangle
         if nprimitives == 1:
             single_color = True
         else:
@@ -60,10 +65,6 @@ class RectanglesTemplate(PlotTemplate):
         super(RectanglesTemplate, self).initialize(single_color=single_color,
             use_color_array=True,
             nprimitives=nprimitives, **kwargs)
-        # self.initialize_default(**kwargs)
             
         self.add_compound("coordinates", fun=self.coordinates_compound, 
             data=(0.,) * 4)
-        # self.add_compound("colors", fun=self.colors_compound)
-        
-        

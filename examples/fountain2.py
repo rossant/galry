@@ -62,7 +62,7 @@ class Particle2PaintManager(PaintManager):
         self.set_data(t=self.t, v=self.v)
         
 class ParticleInteractionManager(InteractionManager):
-    def process_extended_event(self, event, parameter):
+    def process_custom_event(self, event, parameter):
         # process our custom event
         if event == ParticleEvents.ChangeVelocitiesEvent:
             self.paint_manager.change_velocities(parameter)

@@ -23,8 +23,6 @@ __all__ = [
     'show_window',
     'run_all_scripts',
     'enforce_dtype',
-    'repeat1D_fast',
-    'tile1D_fast',
     'FpsCounter',
 ]
     
@@ -54,6 +52,8 @@ def extend_enum(enum_base, enum_new):
     return type('Enum', (), d)
     
 def get_intermediate_classes(cls, baseclass):
+    """Return all intermediate classes in the OO hierarchy between a base 
+    class and a child class."""
     classes = inspect.getmro(cls)
     classes = [c for c in classes if issubclass(c, baseclass)]
     return classes
@@ -121,17 +121,9 @@ def memoize(func):
     return wrap
     
 def nid(x):
+    """Return the address of an array data, used to check whether two arrays
+    refer to the same data in memory."""
     return x.__array_interface__['data'][0]
-    
-def repeat1D_fast(arr, reps, step=1):
-    c = np.lib.stride_tricks.as_strided(arr, (reps, arr.size), (0, step*arr.itemsize))
-    c = c.T.ravel()
-    return c
-   
-def tile1D_fast(arr, reps, step=1):
-    c = np.lib.stride_tricks.as_strided(arr, (reps, arr.size), (0, step*arr.itemsize))
-    c = c.ravel()
-    return c
     
 class FpsCounter(object):
     """Count FPS."""

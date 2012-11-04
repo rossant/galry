@@ -3,6 +3,7 @@ import os.path
 import traceback
 import sys
 
+# Debug switch.
 DEBUG = False
 
 __all__ = ['log_debug', 'log_info', 'log_warn',
@@ -10,6 +11,7 @@ __all__ = ['log_debug', 'log_info', 'log_warn',
            'DEBUG']
 
 def setup_logging(level):
+    """Set the logging level among debug, info, warn."""
     if level == logging.DEBUG:
         logging.basicConfig(level=level,
                             format="%(asctime)s,%(msecs)03d  \
@@ -22,6 +24,7 @@ def setup_logging(level):
     return logging.getLogger('galry')
 
 def get_caller():
+    """Return the line and module of the caller function."""
     tb = traceback.extract_stack()[-3]
     module = os.path.splitext(os.path.basename(tb[0]))[0].ljust(18)
     line = str(tb[1]).ljust(4)
@@ -31,17 +34,20 @@ def get_caller():
 # Logging methods
 # ---------------
 def log_debug(obj):
+    """Debug log."""
     if level == logging.DEBUG:
         string = str(obj)
         string = get_caller() + string
         logger.debug(string)
         
 def log_info(obj):
+    """Info log."""
     if level == logging.DEBUG:
         obj = get_caller() + str(obj)
     logger.info(obj)
 
 def log_warn(obj):
+    """Warn log."""
     if level == logging.DEBUG:
         obj = get_caller() + str(obj)
     logger.warn(obj)
@@ -67,8 +73,6 @@ logger = setup_logging(level)
 
 # DEBUG
 info_level()
-
-
 
 
 if __name__ == '__main__':

@@ -30,7 +30,7 @@ MyEvents = enum("SynchronizePanEvent", "SynchronizeZoomEvent")
 # A custom interaction manager processes the synchronization by calling
 # the `pan` and `zoom` methods of the InteractionManager.
 class MyInteractionManager(InteractionManager):
-    def process_extended_event(self, event, parameter):
+    def process_custom_event(self, event, parameter):
         if event == MyEvents.SynchronizePanEvent:
             self.pan(parameter)
         if event == MyEvents.SynchronizeZoomEvent:

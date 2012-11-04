@@ -6,9 +6,14 @@ __all__ = ['PrimitiveType', 'GL_PRIMITIVE_TYPE_CONVERTER']
 
 # Enumeration with the possible primitive types. They exactly correspond
 # to their OpenGL counterparts.
-PrimitiveType = enum("Points",
-                     "Lines", "LineStrip", "LineLoop",
-                     "Triangles", "TriangleStrip", "TriangleFan")
+PrimitiveType = enum("Points",  # one pixel per vertex
+                     "Lines",  # one single line for two vertices
+                     "LineStrip",  # consecutive line segments
+                     "LineLoop",  # like line strip but closed
+                     "Triangles",  # one triangle per triplet of vertices
+                     "TriangleStrip",  # consecutive triangles
+                     "TriangleFan",  # triangles all sharing the first vertex
+                     )
 
 # Primitive type converter.
 GL_PRIMITIVE_TYPE_CONVERTER = {

@@ -1,5 +1,3 @@
-
-
 import numpy as np
 import OpenGL.GL as gl
 from primitives import PrimitiveType, GL_PRIMITIVE_TYPE_CONVERTER
@@ -7,8 +5,8 @@ from tools import enforce_dtype
 from debugtools import log_debug, log_info, log_warn
 from templates.datatemplate import OLDGLSL
 
-__all__ = ['DataLoader']
 
+__all__ = ['DataLoader']
 
 
 # Whether to use the array extension of PyOpenGL. Should be False.
@@ -21,46 +19,16 @@ NP_GL_TYPE_CONVERTER = {
     np.bool:gl.GL_BOOL,
 }
 
-DEFAULT_COLOR = (1., 1., 1., 1.)
-
-
-
-# def _get_vartype(pytype):
-    # if (pytype == float) | (pytype == np.float32):
-        # vartype = 'float'
-    # elif (pytype == int) | (pytype == np.int32):
-        # vartype = 'int'
-    # elif pytype == bool:
-        # vartype = 'bool'
-    # else:
-        # vartype = None
-    # return vartype
-  
-# def _get_varinfo(value):
-    # """Give information about any numeric variable."""
-    # # array
-    # if isinstance(value, np.ndarray):
-        # vartype = _get_vartype(value.dtype)
-        # if value.ndim == 1:
-            # size, ndim = value.size, 1
-        # elif value.ndim == 2:
-            # size, ndim = value.shape
-        # elif value.ndim == 3:
-            # w, h, ndim = value.shape
-            # size = w, h
-    # # tuple
-    # elif type(value) is tuple:
-        # vartype = _get_vartype(type(value[0]))
-        # ndim = len(value)
-        # size = None
-    # # scalar value
-    # else:
-        # vartype = _get_vartype(type(value))
-        # ndim = 1
-        # size = None
-    # return dict(vartype=vartype, ndim=ndim, size=size)
 
 def validate_data(data):
+    """Validate arrays before uploading them on the GPU:
+      * make sure the dtype is 32 bits (64 bits is still no supported on most
+        GPUS, but that may change some time...)
+      * ensure there are at least 2 dimensions (the first dimension corresponds
+        to one point, the second dimension to the number of components of the
+        point).
+    
+    """
     if isinstance(data, np.ndarray):
         # enforce 32 bits for arrays of floats
         if data.dtype == np.float64:
@@ -74,6 +42,8 @@ def validate_data(data):
     return data
     
 def validate_texture(data):
+    """Converts a texture with floating values in [0,1] to an array
+    of unsigned 8-bits integers between 0 and 255."""
     return np.array(255 * data, dtype=np.uint8)
     
     
@@ -95,7 +65,8 @@ def create_vbo(data, location=None):
     Arguments:
       * data: a 2D Numpy array to put in the VBO. It can contain more than 65k 
         points, in this case several VBOs are being created under the hood.
-        This is all transparent in this class interface.
+        This is all transparent.
+      * location=None: the buffer location.
         
     Returns:
       * buffer: either a PyOpenGL VBO object, or a buffer index.
@@ -104,9 +75,11 @@ def create_vbo(data, location=None):
     if USE_PYOPENGL_ARRAY:
         buffer = glvbo.VBO(data)
     else:
+        # generate a buffer index
         buffer = gl.glGenBuffers(1)
-        # gl.glBindBuffer(gl.GL_ARRAY_BUFFER, buffer)
+        # bind the newly generated buffer
         bind_vbo(buffer, location=location)
+        # upload the data on the GPU
         gl.glBufferData(gl.GL_ARRAY_BUFFER, data, 
                         gl.GL_DYNAMIC_DRAW)
     return buffer
@@ -119,6 +92,7 @@ def bind_vbo(buffer, location=None):
     
     Arguments:
       * buffer: the object returned by `create_vbo`.
+      * location: the buffer location.
       
     """
     if USE_PYOPENGL_ARRAY:
@@ -129,7 +103,9 @@ def bind_vbo(buffer, location=None):
             if location == -1:
                 # raise RuntimeError("this buffer has not a valid location")
                 return
+            # old syntax for enabling a vertex array
             gl.glEnableVertexAttribArray(location)
+        # bind the buffer
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, buffer)
 
 def update_vbo(buffer, newdata, onset=None, location=None):
@@ -140,17 +116,21 @@ def update_vbo(buffer, newdata, onset=None, location=None):
       * newdata: the array with the new data, it does not need to have the exact
         same shape as the original data.
       * onset: the onset starting from which the data should be updated.
+      * location=None: the buffer location.
     
     """
     if onset is None:
         onset = 0
     # convert onset into bytes count
     onset *= newdata.shape[1] * newdata.itemsize
+    # bind the buffer
     bind_vbo(buffer, location=location)
+    # update part of the buffer with new data
     gl.glBufferSubData(gl.GL_ARRAY_BUFFER, onset, newdata)
         
         
-def activate_buffer(vbo, location, ndim, do_activate):
+def activate_buffer(vbo, location, ndim, do_activate=True):
+    """Activate or deactive a buffer."""
     # TODO: refactor this
     bind_vbo(vbo, location=location)
     if do_activate:
@@ -230,43 +210,6 @@ def _slice_bounds(bounds, position, slice_size):
             bounds_sliced = np.hstack((bounds_sliced, slice_size))
     return enforce_dtype(bounds_sliced, np.int32)
     
-def _set_drawing_size( primitive_type, size):
-    """Set the drawing size.
-    
-    Arguments:
-      * primitive_type: a PrimitiveType enum value.
-      * size: the size of the point or line (1 by default).
-      
-    """
-    if primitive_type == PrimitiveType.Points:
-        gl.glPointSize(size)
-    elif primitive_type == PrimitiveType.LineStrip:
-        gl.glLineWidth(size)
-    
-def _set_vbo(vbo, location, ndim, dtype=None, gltype=None):
-    """Activate the VBO before rendering.
-    
-    Arguments:
-      * vbo: the buffer object returned by the `create_vbo` that was used
-        for the VBO creation.
-      * location: the shader attribute location (int).
-      * ndim: the size of each vertex in the current buffer (number of 
-        columns in the data array).
-      * dtype=None: the Numpy dtype of the corresponding data, used to 
-        specify the corresponding OpenGL type.
-      * gltype=None: the OpenGL type, if `None`, it is deduced from the dtype.
-        
-    """
-    if gltype is None:
-        if dtype is None:
-            dtype = np.float32
-        gltype = NP_GL_TYPE_CONVERTER[dtype]
-    bind_vbo(vbo, location=location)
-    gl.glEnableVertexAttribArray(location)
-    gl.glVertexAttribPointer(location, ndim, gltype, gl.GL_FALSE, 0, None)
-    
-
-
 
 # Texture functions
 # -----------------
@@ -334,30 +277,50 @@ def update_texture(tex, newdata, size, ndim, ncomponents):
 
 
 
-
 class DataLoader(object):
-    def __init__(self, template=None):#, size=None, bounds=None):
+    """Handles data uploading on the GPU.
+    
+    Every dataset has its own DataLoader instance. This class handles:
+    shaders compilation, data uploading of attributes, uniforms and textures,
+    data updating, shader activation and deactivation.
+    
+    """
+    def __init__(self, template=None):
+        """Constructor. Initialize the template variables.
+        
+        Arguments:
+          * template: an instance of a class deriving from `DataTemplate`.
+        
+        """
         self.template = template
         
         self.size = template.size
         self.bounds = template.bounds
         
-        
+        # dictionary with all variables
         self.attributes = None
         self.uniforms = None
         self.textures = None
         self.compounds = None
         
+        # dictionary with those variables which have just been updated and
+        # that should be uploaded on the GPU at the next rendering pass.
+        # These variables are called 'invalidated'.
         self.invalidated = {}
         
+        # compute the data slicing with respect to bounds (specified in the
+        # template) and to the maximum size of a VBO.
         self.slices_count = int(np.ceil(self.size / float(MAX_VBO_SIZE)))
         self.slices = _get_slices(self.size)
         self.subdata_bounds = [_slice_bounds(self.bounds, pos, size) \
             for pos, size in self.slices]
         
+        # initialize all variables from the template
         self.initialize_variables()
         
     def initialize_variables(self):
+        """Initialize the variables from the template,
+        in particular by setting the default data if necessary."""
         # initialize "uniforms", "attributes" or "textures" keys
         # in the dataset, where each value is itself a dict with
         # all uniforms/attributes/textures.
@@ -370,32 +333,23 @@ class DataLoader(object):
                 self.variables[name] = variable
                 # copy the variables in the template to the dataset
                 vardic[name] = dict(**dic)
-                # if "default" in dic:
                 if "data" in dic:
                     alldata[name] = dic["data"]
-                # add uniform invalidation
-                # if variable == "uniforms":
-                    # vardic[name]["invalidated"] = True
-                # if variable != "compounds":
-                    # self.invalidated[name] = True
             setattr(self, variable, vardic)
-        
         self.set_data(**alldata)
         
     def set_data(self, **kwargs):
         """Set attribute/uniform/texture data. To be called at initialize time.
         No data is sent on the GPU here.
         
+        Arguments:
+          * **kwargs: keyword arguments with variable name: value pairs.
+        
         """
         tpl = self.template
         
-        # special case: primitive_type
-        # if "primitive_type" in kwargs:
-            # tpl.set_rendering_options(primitive_type=kwargs["primitive_type"])
-            # del kwargs["primitive_type"]
-        
-        kwargs2 = kwargs.copy()
         # first, find possible compounds and add them to kwargs
+        kwargs2 = kwargs.copy()
         for name, data in kwargs2.iteritems():
             if self.variables[name] == "compounds":
                 fun = self.compounds[name]["fun"]
@@ -405,7 +359,15 @@ class DataLoader(object):
         # now, we have the actual list of variables to update
         for name, data in kwargs.iteritems():
             # variable is attribute, uniform or texture
-            variable = self.variables[name]
+            variable = self.variables.get(name, None)
+            
+            # if name is not in variables, it means it is not a valid template
+            # field, so we just raise a warning and discard this variable
+            if variable is None:
+                log_warn("the variable `%s` is not a field of the template %s"\
+                         (name, str(tpl)))
+                continue
+            
             dic = getattr(self, variable)[name]
             if variable == "textures":
                 data = validate_texture(data)
@@ -421,16 +383,23 @@ class DataLoader(object):
             # should be updated later
             self.invalidated[name] = True
 
-
         
-    def upload_attribute_data(self, name, mask=None):  
-        # print self.template.attributes["position"]  
+    def upload_attribute_data(self, name, mask=None):
+        """Upload attribute data on the GPU (first upload or update).
+        
+        The data has been set beforehand via the `set_data` method.
+        
+        Arguments:
+          * name: the attribute name.
+          * mask=None: the mask with the vertex indices that need to be
+            updated. It is an array of size N with boolean values.
+        
+        """
         bf = self.attributes[name]
         data = bf.get("data", None)
         if data is None:
             raise RuntimeError("No data found for attribute %s, skipping data uploading"\
                 % name)
-            # return
         
         # OLDGLSL: only float type possible for attributes
         if OLDGLSL:
@@ -468,6 +437,14 @@ class DataLoader(object):
                         location=bf["location"])
         
     def upload_uniform_data(self, name):
+        """Upload uniform data on the GPU (first upload or update).
+        
+        The data has been set beforehand via the `set_data` method.
+        
+        Arguments:
+          * name: the uniform name.
+        
+        """
         # define GL uniform
         uniform = self.uniforms[name]
         if "location" not in uniform:
@@ -476,9 +453,6 @@ class DataLoader(object):
     
         float_suffix = {True: 'f', False: 'i'}
         array_suffix = {True: 'v', False: ''}
-        
-        # if not uniform["invalidated"]:
-            # return
             
         vartype = uniform["vartype"]
         size = uniform.get("size", None)
@@ -487,10 +461,9 @@ class DataLoader(object):
         if data is None:
             raise RuntimeError("No data found for uniform %s, skipping data uploading"\
                 % name)
-            # return
         
-        # TODO: register function name at initialization time
-        
+        # TODO: register function name at initialization time instead
+
         args = (uniform["location"],)
         
         # scalar or vector uniform
@@ -513,7 +486,6 @@ class DataLoader(object):
             # find function name
             funname = "glUniformMatrix%dfv" % (uniform["ndim"][0])
             args += (1, False, data)
-            
         
         # get the function from its name
         fun = getattr(gl, funname)
@@ -524,12 +496,19 @@ class DataLoader(object):
         uniform["invalidated"] = False
 
     def upload_texture_data(self, name):
+        """Upload texture data on the GPU (first upload or update).
+        
+        The data has been set beforehand via the `set_data` method.
+        
+        Arguments:
+          * name: the texture name.
+        
+        """
         texture = self.textures[name]
         # add data
         if "location" not in texture:
             texture["location"] = create_texture(texture["data"], texture["size"], texture["ndim"], 
                             texture["ncomponents"])
-            # print id(self), name, texture
         # or update data
         else:
             update_texture(texture["location"], texture["data"], texture["size"], 
@@ -537,15 +516,10 @@ class DataLoader(object):
         
     def upload_data(self):
         """Upload all invalidated data."""
-        # print names
-        # print self.template.attributes["position"]
         # we go through all invalidated data
         names = [k for (k, v) in self.invalidated.iteritems() if v]
-        # log_info("uploading " + ", ".join(names))
         for name in names:
             var = self.variables[name]
-            # if var == "uniforms" or var == "compounds":
-                # continue
             getattr(self, "upload_%s_data" % var[:-1])(name)
             self.invalidated[name] = False
  
@@ -602,7 +576,6 @@ class DataLoader(object):
             msg += gl.glGetProgramInfoLog(program)
             raise RuntimeError(msg)
         
-        
         # OLDGLSL: explicitely link attribute locations to names
         if OLDGLSL:
             for name, attr in self.template.attributes.iteritems():
@@ -630,5 +603,4 @@ class DataLoader(object):
         
         """
         gl.glUseProgram(0)
-        
         

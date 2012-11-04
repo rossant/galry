@@ -6,6 +6,7 @@ __all__ = [
 'UserActionGenerator',
 ]
 
+# List of user actions.
 UserActions = enum(
     "MouseMoveAction",
     "LeftButtonClickAction",

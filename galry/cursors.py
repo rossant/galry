@@ -39,5 +39,3 @@ def load():
     MagnifyingGlassCursor = QtGui.QCursor(MagnifyingGlassPixmap)
     
     
-    
-    

@@ -3,20 +3,28 @@ import numpy as np
 __all__ = ['DataNormalizer']
 
 class DataNormalizer(object):
+    """Handles normalizing data so that it fits the fixed [-1,1]^2 viewport."""
     def __init__(self, data):
-        # if data:
         self.data = data
     
-    # def set_data(self, data):
-        # self.data = data
-    
     def normalize(self, initial_viewbox=None):
-        """
-        Normalize data given the initial view box.
-        The initial view box is a 4-tuple (x0, y0, x1, y1) describing
-        the initial view of the data and defining the normalization.
-        By default, it is the bounding box of the data (min/max x/y).
-        x0 and/or y0 can be None, meaning no normalization for that dimension.
+        """Normalize data given the initial view box.
+        
+        This function also defines the four following methods:
+          * `(un)normalize_[x|y]`: normalize or un-normalize in the x or y
+            dimension. Un-normalization can be useful for e.g. retrieving the
+            original coordinates of a point in the window.
+        
+        Arguments:
+          * initial_viewbox=None: the initial view box is a 4-tuple
+            (x0, y0, x1, y1) describing the initial view of the data and
+            defining the normalization. By default, it is the bounding box of the
+            data (min/max x/y). x0 and/or y0 can be None, meaning no
+            normalization for that dimension.
+        
+        Returns:
+          * normalized_data: the normalized data.
+        
         """
         x, y = self.data[:,0], self.data[:,1]
         if initial_viewbox is None:

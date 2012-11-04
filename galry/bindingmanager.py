@@ -243,6 +243,6 @@ class DefaultBindingSet(BindingSet):
         self.extend()
         
     def extend(self):
-        """Initialize extended, custom bindings. Can be overriden."""
+        """Initialize custom bindings. Can be overriden."""
         pass
         
