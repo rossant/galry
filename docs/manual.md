@@ -189,7 +189,7 @@ More precisely, a template is defined by:
 ##### Shaders
     
 A **vertex shader** is a small program in a C-like language called
-[**GLSL**}(http://en.wikipedia.org/wiki/GLSL) that
+[**GLSL**](http://en.wikipedia.org/wiki/GLSL) that
 is **executed once per vertex**. Vertex shaders execute in 
 parallel across all vertices, using the high computational power of the 
 GPU. A vertex shader takes some DataTemplate fields as inputs, and
