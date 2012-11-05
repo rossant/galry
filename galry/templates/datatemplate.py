@@ -84,7 +84,7 @@ def _get_shader_type(varinfo):
       * declaration: the string containing the variable declaration.
         
     """
-    if type(varinfo["ndim"]) == int:
+    if type(varinfo["ndim"]) == int or type(varinfo["ndim"]) == long:
         if varinfo["ndim"] == 1:
             shader_type = varinfo["vartype"]
         elif varinfo["ndim"] >= 2:

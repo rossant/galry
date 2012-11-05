@@ -45,9 +45,6 @@ class MyPaintManager(PaintManager):
         position, color = create_data(nprimitives, nsamples)
         
         self.create_dataset(PlotTemplate, nprimitives=nprimitives, 
-            nsamples=nsamples)
-        
-        # We plot all lines with a single call to `add_plot`.
-        self.set_data(position=position, color=color)
+            nsamples=nsamples, position=position, color=color)
 
-show_basic_window(paint_manager=MyPaintManager, display_fps=True)
+show_basic_window(paint_manager=MyPaintManager)#, display_fps=True)

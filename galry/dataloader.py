@@ -39,6 +39,8 @@ def validate_data(data):
         # enforce 2 dimensions for the array
         if data.ndim == 1:
             data = data.reshape((-1, 1))
+    elif type(data) == long:
+        data = int(data)
     return data
     
 def validate_texture(data):
@@ -467,7 +469,7 @@ class DataLoader(object):
         args = (uniform["location"],)
         
         # scalar or vector uniform
-        if type(uniform["ndim"]) == int:
+        if type(uniform["ndim"]) == int or type(uniform["ndim"]) == long:
             # find function name
             funname = "glUniform%d%s%s" % (uniform["ndim"], \
                                            float_suffix[vartype == "float"], \

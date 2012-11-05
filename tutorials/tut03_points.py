@@ -30,4 +30,4 @@ class MyPaintManager(PaintManager):
 #   * mouse move while pressing the middle button to drag a zoom box,
 #   * mouse move while pressing the right button to zoom in/out,
 #   * double click or press R to reinitialize the view.
-show_basic_window(paint_manager=MyPaintManager, display_fps=True)
+win=show_basic_window(paint_manager=MyPaintManager, display_fps=True)

@@ -76,10 +76,7 @@ class PlotTemplate(DefaultTemplate):
         
         # set position attribute
         self.add_attribute("position", vartype="float", ndim=2,) 
-                           # data=np.zeros((self.size, 2)))
-            
         bounds = np.arange(0, self.size + 1, nsamples)
-        # self.set_rendering_options(bounds=bounds)
         self.bounds = bounds
         
         # single color case: no need for a color buffer, just use default color
@@ -142,6 +139,11 @@ class PlotTemplate(DefaultTemplate):
             out_color = varying_color;
                 """)
 
+        # add point size uniform (when it's not specified, there might be some
+        # bugs where its value is obtained from other datasets...)
+        self.add_uniform("point_size", data=1.0)
+        self.add_vertex_main("""gl_PointSize = point_size;""")
+                
         # add navigation code
         # super(PlotTemplate, self).initialize(**kwargs)
         self.initialize_default(**kwargs)
