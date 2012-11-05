@@ -184,13 +184,13 @@ class PaintManager(object):
     def show_navigation_rectangle(self, coordinates):
         """Show the navigation rectangle with the specified coordinates 
         (in relative window coordinates)."""
-        self.ds_navigation_rectangle["visible"] = True
         self.set_data(coordinates=coordinates,
+            visible=True,
             dataset=self.ds_navigation_rectangle)
             
     def hide_navigation_rectangle(self):
         """Hide the navigation rectangle."""
-        self.ds_navigation_rectangle["visible"] = False
+        self.set_data(visible=False, dataset=self.ds_navigation_rectangle)
         
         
     # Data creation methods
@@ -265,7 +265,7 @@ class PaintManager(object):
         # we return the dataset, so that it can be used in `set_data` later.
         return dataset
 
-    def set_data(self, dataset=None, **kwargs):
+    def set_data(self, dataset=None, visible=None, **kwargs):
         """Specify or change the data associated to particular template
         fields.
         
@@ -280,6 +280,8 @@ class PaintManager(object):
         """
         if dataset is None:
             dataset = self.datasets[0]
+        if visible is not None:
+            dataset["visible"] = visible
         # this case happens during `create_dataset`: we just update the dataset
         # with the data so that it can be handled later
         if not self.is_initialized:

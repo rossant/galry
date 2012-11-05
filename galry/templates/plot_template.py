@@ -45,7 +45,10 @@ class PlotTemplate(DefaultTemplate):
             )
     
     def initialize(self, colors_ndim=4, single_color=True, 
-        nprimitives=1, nsamples=None,use_color_array=False, **kwargs):
+        nprimitives=1, nsamples=None,
+        use_color_array=False, color_array_size=None, color_array_index=None,
+        
+        **kwargs):
         """Initialize the template
         
         Arguments:
@@ -114,16 +117,20 @@ class PlotTemplate(DefaultTemplate):
                 
         # multiple colors, but with a color array to save memory
         elif use_color_array:
-            plot_index = np.repeat(np.arange(nprimitives), nsamples)
+            if color_array_index is None:
+                color_array_index = np.repeat(np.arange(nprimitives), nsamples)
             
-            self.add_attribute("plot_index", vartype="int", ndim=1,
-                data=plot_index)
+            self.add_attribute("color_array_index", vartype="int", ndim=1,
+                data=color_array_index)
                 
-            self.add_uniform("color", vartype="float", ndim=colors_ndim, size=nprimitives)
+            if color_array_size is None:
+                color_array_size = nprimitives
+                
+            self.add_uniform("color", vartype="float", ndim=colors_ndim, size=color_array_size)
             self.add_varying("varying_color", vartype="float", ndim=colors_ndim)
             
             self.add_vertex_main("""
-        varying_color = color[int(plot_index)];
+        varying_color = color[int(color_array_index)];
             """)
             
             if colors_ndim == 3:

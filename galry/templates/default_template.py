@@ -3,6 +3,8 @@ from datatemplate import DataTemplate
 class DefaultTemplate(DataTemplate):
     """Default data template that implements navigation."""
     
+    position_attribute_name = "position"
+    
     def add_transformation(self, is_static=False):
         """Add static or dynamic position transformation."""
         
@@ -20,12 +22,12 @@ return scale * (position + translation);
             """)
             
             self.add_vertex_main("""
-    gl_Position = vec4(transform_position(position, scale, translation), 
-                   0., 1.);""")
+    gl_Position = vec4(transform_position(%s, scale, translation), 
+                   0., 1.);""" % self.position_attribute_name)
         # static
         else:
             self.add_vertex_main("""
-    gl_Position = vec4(position, 0., 1.);""")
+    gl_Position = vec4(%s, 0., 1.);""" % self.position_attribute_name)
         
     def add_constrain_ratio(self, constrain_ratio=False):
         """Add viewport-related code."""

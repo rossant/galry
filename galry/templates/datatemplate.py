@@ -125,6 +125,7 @@ VARINFO_DICT = {
     
     # integers
     int: 'int',
+    long: 'int',
     np.int32: 'int',
     np.int64: 'int',
     np.dtype('int32'): 'int',
@@ -600,7 +601,7 @@ class DataTemplate(object):
         """
         
         # self.size is a mandatory variable
-        assert type(self.size) == int
+        assert self.size is not None
         
         # default rendering options
         if self.primitive_type is None:
