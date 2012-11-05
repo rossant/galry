@@ -298,16 +298,16 @@ def get_varying_declarations(varying):
 class DataTemplate(object):
     """Describes a particular graphical object.
     
-    A dataset contains information about the rendering of an object in
+    A data template contains information about the rendering of an object in
     the visual scene, that consists of a homogeneous set of one or multiple
-    primitives. Rendering of the dataset is eventually done with a single 
+    primitives. Rendering of the data template is eventually done with a single 
     OpenGL command, hence the necessity for homogeneity. Even with a single
     command, multiple independent objects of the same type can be drawn.
     Making a single command is really important for performance, since it is
     the number of rendering commands made every frame that essentially dictates
     the final rendering performance as the number of frames per second.
     
-    A dataset is defined by:
+    A template is defined by:
       * a set of variables, or fields, that have a name, a type, and various
         characteristics,
       * vertex and fragment shader source codes that describe how

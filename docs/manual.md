@@ -1,15 +1,15 @@
 User manual
 ===========
 
-Galry is an highly efficient hardware-accelerated interactive 2D visualization
-package in Python.
+Galry is a **high-performance interactive 2D visualization in Python**.
 
-Galry offers an high-level interface for quickly visualizing large 2D
+It offers a **high-level interface** for quickly visualizing large 2D
 datasets. It can be used either in script mode, or in interactive mode
 with IPython. It integrates smoothly with the QT event system of IPython
-so that you can interact with the plotting widget from the IPython console.
+so that you can interact with the plotting widget from the IPython console
+(much like matplotlib).
 
-The low-level interface lets you create a fully customized GUI
+The **low-level interface** lets you create a fully customized GUI
 for interactive visualization. It integrates with QT, through either PyQT or 
 PySide. Integration with other GUI systems may be considered at some point
 (wx, etc.).
@@ -21,18 +21,33 @@ This user manual gives a wide, high-level introduction to both interfaces.
 High-level interface
 --------------------
 
-This interface is not done yet.
+This interface is not done yet. *It is currently not the highest priority*.
 
 
 Low-level interface
 -------------------
 
+The low-level interface is not necessarily *that* low-level. 
+Basically, it is meant to be used in script mode rather than in interactive
+mode. It allows to plot simple figures (scatter plots, curves, etc.) in
+less than 10 lines of code. But it also gives you the opportunity to customize 
+plots as 
+much as you want. The integration of the plot within the GUI window can also
+be fully customized (thanks to QT).
+
+Here, we give a **high-level overview of this interface** and, consequently, 
+of the internal architecture of Galry.
+
+
 ### The `GalryWidget` class
 
-Galry provides a QT widget class called `GalryWidget`. This class derives
+The **main class that Galry provides is `GalryWidget`**.
+It is a QT widget deriving
 from `QGLWidget` which is defined in QT (available in PyQT and Pyside).
-The `GalryWidget` displays a rectangle entirely rendered by OpenGL.
+The `GalryWidget` displays an OpenGL context entirely controlled by
+Galry through OpenGL.
 
+First, some technical details about the internals of `GalryWidget`.
 This widget inherits three important OpenGL-related methods from `QGLWidget`:
 
   * `initializeGL`: this method implements all OpenGL-related initialization,
@@ -43,10 +58,11 @@ This widget inherits three important OpenGL-related methods from `QGLWidget`:
     updated. It renders everything on the screen, starting from a black 
     background (the color can be customized). This means that everything is
     rendered again every frame: this is the standard way of rendering things
-    with a graphics card. However, the data can be uploaded only once in 
+    with a graphics card. However, it is possible to upload data
+    only once in 
     GPU memory at initialization, so that rendering is fast. If needed,
-    data stored in GPU memory can be changed at any time, at the expense of
-    performance.
+    data stored in GPU memory can also be changed at any time, during the
+    life of the widget.
 
   * `resizeGL`: this method is called as soon as the widget is resized. It
     automatically triggers a new rendering call. The OpenGL viewport size is
@@ -66,24 +82,25 @@ the **companion classes**) happens there.
 
 By default, the `GalryWidget` class displays just a black empty rectangle.
 The whole logic of the widget is implemented in several companion classes
-that all handle a specific aspect of the widget. This lets you separate
+that all handle a specific aspect of the widget. This allows to separate
 the code into separate modules.
 
 By default, there are three companion classes. These classes are meant to
-be derived to implement the logic of the widget. In addition,
+be derived in order to implement the logic of the widget. In addition,
 new companion classes implementing specific features can also be defined.
 For example, one could implement a `SelectionManager` to handle selection of 
-objects with the mouse. This custom companion class can then be used in
-different widgets.
+objects with the mouse. This custom companion class can then be reused in
+different widgets. It should make modularity easier.
 
-Any companion instance has access, through attributes, to all other companion
-instances.
+Any companion instance has access to all other companion
+instances. The set of all companion instances can then be seen as a complete
+graph, where each instance has access to all other instances.
 
 The three default companion classes are:
 
   * `PaintManager`. This class handles everything related to rendering:
-    data processing to put user-provided data into a GPU-friendly form,
-    initialization of the plotting objects, etc.
+    data processing, uploading data on the GPU, initializing OpenGL objects,
+    compiling shaders, etc.
     
   * `InteractionManager`. This class handles everything related to user
     interactions, and how they interfere with rendering.
@@ -103,6 +120,13 @@ The creation of a new, custom Galry widget then involves the following steps:
     
   * Deriving the `GalryWidget` and overriding `initialize` to specify the 
     custom companion classes.
+    
+Also, helper functions are provided in order to directly show a window with
+an automatically-created custom widget by specifying the companion classes,
+without the need of explicitely creating a new class (see `show_basic_window`).
+
+
+
 
 
 ### The `PaintManager` companion class
@@ -110,110 +134,168 @@ The creation of a new, custom Galry widget then involves the following steps:
 The `PaintManager` class is the most important companion class. It specifies
 what to render in the widget.
 
-Once again, the main method to override is `initialize`. It makes calls
-to specific methods in `PaintManager` that define objects to be rendered.
-An important point is that the number of calls to these methods in 
-`initialize` should be as low as possible for performance reasons. Ideally, 
-**only one call should be done here**. It is however possible to plot several
-independent objects of the same type in a single call, as we'll see below.
 
-There are two sorts of methods in `PaintManager` that give two different
-ways of defining data: the easy way and the hard way.
+#### Datasets
 
-#### The easy way
-
-Three helper methods are available for now.
-
-  * `add_plot`: this method adds a new plot. Arguments include x and y
-    coordinates as 1D or 2D arrays, according to whether a single object
-    or several objects (one per line in the arrays) should be plotted.
-    Types of plots closely follow OpenGL primitive types: points, lines,
-    triangles, etc. The color can be identical for all points, or can
-    be specified individually for every point.
-    
-  * `add_textured_rectangle`: this method displays a texture. The texture
-    is specified as a `N x M x 3` array (RGB components).
-  
-  * `add_sprites`: this method displays a single texture at different positions
-    in a very efficient way. This is a common technique in 2D video games.
-    Arguments include the texture, its size, and the sprites positions.
-    
-The reader can refer to the reference API for complete details about these
-methods. Also, 
-[the list of primitives can be found for example 
+The main method to override is `initialize`. This is where **datasets** are
+created. A dataset is a particular plot object, such as a set of points, of
+curves, of rectangles, one image, one text string, etc. The key point is that
+several *primitives* can be contained in a dataset: several points in a 
+scatter plot, several line segments in a curve, etc. So, **a dataset is a
+homogeneous set of primitives**. Primitives are defined in OpenGL and include
+pixels, line segments, and triangles.
+[The full list of primitives can be found for example 
 here](http://www.informit.com/articles/article.aspx?p=461848).
+Those primitives are described by a set of **vertices**.
+A **vertex** is a vector of length 2, 3 or 4.
 
-#### The hard way
+A dataset is rendered *with a single call*
+to an OpenGL command, so that rendering is fast. This explains why there is
+the need for homogeneity within a dataset. Also, let's note that within a 
+dataset, objects can be drawn independently (for example, different curves
+that are not physically connected).
 
-This way is more complicated, but allows full customization and gives full 
-control on the GPU rendering process.
+**In conclusion, a dataset is meant to be
+a big object in general**. It is not a good idea to define too many datasets
+since that can really hurt performance.
 
-Some definitions first.
-We call a **dataset** a set of Numpy arrays of size `N` or `N x D` with `D` 
-between 2 or 4, all arrays having the same `N`. Each array is called a
-**buffer** and is associated to that dataset. The role of a dataset is 
-eventually to render `N` points on the screen. `N` can be large (like several
-millions), and even _should_ be large, so that the number of datasets in
-a single widget is as low as possible (ideally one).
+*Very technical note: actually, it may happen that several OpenGL commands
+are issued for a single dataset. It occurs when the number of vertices is 
+high, typically higher than 65,000. The reason is that the OpenGL buffers
+cannot always be bigger than that. The set of vertices is then automatically
+and transparently cut by Galry into multiple buffers, which are rendered
+in sequence at each frame.*
 
-A dataset is created with `create_dataset` which accepts as arguments `N`,
-the default color, the primitive type, and the shaders (see below).
-It also accepts a bound list, containing the indices separating the different
-objects to be rendered as independent primitives.
-A buffer is added to a dataset with `add_buffer` which accepts a buffer name
-and buffer data as arguments.
 
-The data defining the positions and color of those points is contained in any
-number of buffers (even though more buffers always implies a slight decrease in
-performance). The simplest situation is when a single buffer contains the x, y 
-coordinates of the points. The second simplest situation is when one buffer
-contains the positions, and another one contains the colors of all points.
+#### Templates
 
-The situation can be more complicated: the position and color of the points
-could depend on several factors, each defined by a specific value for every
-point. For example, in a particle system, each particle's position is defined
-by its initial position, initial velocity, different forces, time, etc. The
-final position is calculated from those values through a simple algorithm
-involving a mathematical formula.
+A dataset is an instance of a **data template**. A data template is a
+particular type of graphical object that follows a specific pattern. Examples:
+a single-line text, a scatter plot (set of points), a set of curves, a set of 
+rectangles or
+triangles, a set of barplots, a single bitmap image, a set of identical
+textures at different positions (sprites), etc. Galry comes with predefined
+templates
+that can be used for simple plots. However, custom templates can also be
+created, either from scratch or through specialization of predefined templates.
 
-It is the role of the **vertex and fragment shaders** to calculate the final
-positions and colors of the points from the data buffers.
-Technically, a shader is a small program written in a C-like low-level language
-called GLSL (OpenGL Shading Language). It is compiled and executed on the GPU
-at every rendering pass (every frame). It is executed independently for all
-points (vertex shader) or pixels (fragment shader) on the graphics card.
-It is an embarassingly parallel operation and therefore shaders fully exploit
-the power of the graphics card.
+More precisely, a template is defined by:
+  * a set of *variables*, or *fields*, that have a name, a type, and various
+    characteristics,
+  * *vertex shader* and *fragment shader* source codes, that describe how
+    data contained in the different fields will be eventually transformed into
+    pixels.
 
-**The vertex shader computes the position of every point**. In a given
-rendering pass, it is executed `N` times, once per point in the dataset.
-It takes as inputs
-the values of every data buffer at the current point, as well as global
-variables that are the same for all points (they are called **uniforms** in
-OpenGL). It ouputs the position of the point. It can also
-output other data that will be passed to the next programmable stage
-in the graphics pipeline, namely the fragment shader.
-  
-**The fragment shader computes the color of every pixel**. In a given
-rendering pass, it is executed once per pixel belonging to a rendered
-primitive. It takes as inputs
-all outputs of the vertex shader, along with the default color of the point
-if it was specified (simplest situation). It outputs the color of the pixel.
-The fragment shader has also access to the normalized
-coordinates of the current pixel within the rendered primitive. This permits
-to display a texture on a primitive, where the color of the pixel is obtained
-by the color of the texture at the corresponding position.
+##### Shaders
+    
+A **vertex shader** is a small program in a C-like language called *GLSL* that
+is **executed once per vertex**. Vertex shaders execute in 
+parallel across all vertices, using the high computational power of the 
+GPU. A vertex shader takes some DataTemplate fields as inputs, and
+returns the final position of the current vertex. Execution of shaders can
+be extremely fast thanks to the highly parallel architecture of the graphics
+card.
 
-Default shaders are provided in the easy way, corresponding to the three
-simplest situations (position only, position and color, texture). You can
-write and provide your own shaders to get full control of the graphics card.
-This is an advanced feature, but it considerably widens the rendering 
-possibilities. The interested reader should first take a look to the relevant
-examples. They include a GPU-based particle system (implemented in a vertex
-shader) and a Mandelbrot fractal interactive viewer with dynamic zooming 
-(implemented in a fragment shader). To learn GLSL, a great, freely available
+A **fragment shader** is also written in GLSL, but executes after the vertex
+shader, and **once per pixel**. It takes some variables as inputs, as well
+as (possibly) some outputs of the vertex shader. It returns the final color of
+the current pixel.
+
+
+##### Template fields
+
+There are different types of template fields:
+
+  * **attributes**: an *attribute* is an array variable of size `N`.
+    **All attributes in a given DataTemplate share the same number `N`.**
+    This number is essentially
+    the number of vertices. Also, there is one execution of the vertex 
+    shader per vertex (so `N` executions), at every rendering call (so
+    every frame). Examples of attributes: the position (coordinates of the
+    points to render), the color of the points (if each point needs to have
+    its own color), etc. Every variable that has one specific value per
+    vertex is an attribute.
+    
+  * **uniforms**: an *uniform* is a global variable, shared by all vertices. It
+    may change at every frame, but it is global to the vertex and fragment
+    shaders.
+    
+  * **varyings**: during the rendering process, the vertex shader is executed
+    *once per vertex*. Then, the fragment shader is executed *once per pixel*
+    (pixel of the rendered primitives). Since the fragment shader always
+    executes after the vertex shader, the vertex shader can pass 
+    information to the fragment shader through *varying variables*. They
+    can be automatically interpolated when the pixels are between 2 or 3
+    vertices (hence their names).
+    
+  * **textures**: a *texture* variable holds a texture data as a 3D array (with
+    RGB(A) components) and can be accessed in the fragment shader in
+    order to display it.
+    
+  * **compounds**: a particular type of variable that has no counterpart in
+    the shaders. A *compound variable* allows to automatically change
+    several template variables according to a high-level value. They exist
+    only for convenience for the user. For example, in the TextTemplate,
+    where characters are individually positioned on the screen, the
+    text variable is a compound variable that affects the texture of the
+    characters (i.e. the points), their particular position, etc.
+    
+
+##### Vertex shader example: particle system
+    
+Let's give an example of a *particle system*, where there is a number of 
+independent particles, defined at any time by a position, a velocity, and 
+a color. To achieve the highest performance possible, we want to execute this
+system on the GPU. It means that vertex shaders are responsible for
+updating the position of the particles at any time. So the template could 
+contain:
+
+  * an *attribute variable* with the *initial position* of each particle,
+  * an *attribute variable* with the *initial velocity* of each particle,
+  * an **atribute variable* with the creation time of that particle,
+  * an *uniform variable* with the current time,
+  * etc.
+
+For each particle, the vertex shader then gets the values of these variables
+as inputs, and computes the current position of the particle with a formula
+involving the initial position and velocity, and the current time.
+The execution of this system is fast since the expensive part executes
+entirely on the GPU. The graphics card is used optimally since the execution
+of shaders is an embarassingly parallel problem, with no communication between
+threads.
+    
+This example is implemented in `examples/fountain.py`.
+
+
+##### Fragment shader example: fractal viewer
+    
+Let's give an example of a *fractal viewer*, where a blank texture is rendered,
+and the fragment shader computes the final color using an algorithm.
+In the example of the Mandelbrot fractal, every pixel corresponds to a point
+$z0 \in E \subset \mathbb C$, and the color of that pixel depends on the
+asymptotic
+behavior of a discrete-time dynamical system defined by a recursive function:
+$z_{n+1} = f(z_n)$. The fragment shader retrieves the coordinates of the
+current pixel, then executes the dynamical system, and finally returns
+the adequate color depending on the outcome of the system.
+Once again, the execution of this example is optimal since it is an 
+embarassingly parallel problem.
+
+This example is implemented in `examples/mandelbrot.py`.
+
+
+##### Conclusion
+
+Vertex and fragment shaders are widely used in real-time 3D video games,
+but not so much in scientific applications, particulary when it concerns
+2D rendering. Yet, they are extremely powerful for 2D rendering of huge
+datasets with millions of points. They widen considerably the plotting 
+possibilities of Galry.
+
+To learn the OpenGL shading language, GLSL, a great, freely available
 reference book is 
 [http://www.arcsynthesis.org/gltut/](Learning Modern 3D Graphics Programming).
+
 
 
 ### The `InteractionManager` companion class
