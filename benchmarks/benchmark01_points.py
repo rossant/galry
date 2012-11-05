@@ -6,14 +6,12 @@ from galry import *
 import numpy.random as rdn
 
 # Number of points.
-N = 1000000
+N = 1e6
 
 class MyPaintManager(PaintManager):
     def initialize(self):
-        self.parent.display_fps = True
-        self.interaction_manager.constrain_navigation = False
-        data = 0.2 * rdn.randn(N, 2)
-        self.create_dataset(PlotTemplate, size=len(data))
-        self.set_data(position=data)
+        self.create_dataset(PlotTemplate, position=0.2 * rdn.randn(N, 2),
+            primitive_type=PrimitiveType.Points)
         
-show_basic_window(paint_manager=MyPaintManager)
+show_basic_window(paint_manager=MyPaintManager, display_fps=True,
+    constrain_navigation=False)

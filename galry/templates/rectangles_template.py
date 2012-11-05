@@ -63,7 +63,7 @@ class RectanglesTemplate(PlotTemplate):
             single_color = False
         
         super(RectanglesTemplate, self).initialize(single_color=single_color,
-            use_color_array=True,
+            use_color_array=not(single_color),
             nprimitives=nprimitives, **kwargs)
             
         self.add_compound("coordinates", fun=self.coordinates_compound, 
