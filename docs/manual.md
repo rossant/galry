@@ -62,7 +62,7 @@ This widget inherits three important OpenGL-related methods from `QGLWidget`:
     only once in 
     GPU memory at initialization, so that rendering is fast. If needed,
     data stored in GPU memory can also be changed at any time, during the
-    life of the widget.
+    lifetime of the widget.
 
   * `resizeGL`: this method is called as soon as the widget is resized. It
     automatically triggers a new rendering call. The OpenGL viewport size is
@@ -188,7 +188,8 @@ More precisely, a template is defined by:
 
 ##### Shaders
     
-A **vertex shader** is a small program in a C-like language called *GLSL* that
+A **vertex shader** is a small program in a C-like language called
+[**GLSL**}(http://en.wikipedia.org/wiki/GLSL) that
 is **executed once per vertex**. Vertex shaders execute in 
 parallel across all vertices, using the high computational power of the 
 GPU. A vertex shader takes some DataTemplate fields as inputs, and
@@ -252,7 +253,7 @@ contain:
 
   * an *attribute variable* with the *initial position* of each particle,
   * an *attribute variable* with the *initial velocity* of each particle,
-  * an **atribute variable* with the creation time of that particle,
+  * an *attribute variable* with the creation time of that particle,
   * an *uniform variable* with the current time,
   * etc.
 
@@ -261,7 +262,7 @@ as inputs, and computes the current position of the particle with a formula
 involving the initial position and velocity, and the current time.
 The execution of this system is fast since the expensive part executes
 entirely on the GPU. The graphics card is used optimally since the execution
-of shaders is an embarassingly parallel problem, with no communication between
+of shaders is an embarrassingly parallel problem, with no communication between
 threads.
     
 This example is implemented in `examples/fountain.py`.
@@ -272,14 +273,14 @@ This example is implemented in `examples/fountain.py`.
 Let's give an example of a *fractal viewer*, where a blank texture is rendered,
 and the fragment shader computes the final color using an algorithm.
 In the example of the Mandelbrot fractal, every pixel corresponds to a point
-$z0 \in E \subset \mathbb C$, and the color of that pixel depends on the
+$z_0 \in E \subset \mathbb C$, and the color of that pixel depends on the
 asymptotic
 behavior of a discrete-time dynamical system defined by a recursive function:
 $z_{n+1} = f(z_n)$. The fragment shader retrieves the coordinates of the
 current pixel, then executes the dynamical system, and finally returns
 the adequate color depending on the outcome of the system.
 Once again, the execution of this example is optimal since it is an 
-embarassingly parallel problem.
+embarrassingly parallel problem.
 
 This example is implemented in `examples/mandelbrot.py`.
 
@@ -289,12 +290,14 @@ This example is implemented in `examples/mandelbrot.py`.
 Vertex and fragment shaders are widely used in real-time 3D video games,
 but not so much in scientific applications, particulary when it concerns
 2D rendering. Yet, they are extremely powerful for 2D rendering of huge
-datasets with millions of points. They widen considerably the plotting 
+datasets with millions of points. They considerably widen the plotting 
 possibilities of Galry.
 
 To learn the OpenGL shading language, GLSL, a great, freely available
 reference book is 
-[http://www.arcsynthesis.org/gltut/](Learning Modern 3D Graphics Programming).
+[Learning Modern 3D Graphics Programming](http://www.arcsynthesis.org/gltut/).
+Also, 
+[here is an introduction to shaders](http://cyrille.rossant.net/shaders-opengl/).
 
 
 
