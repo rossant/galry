@@ -78,7 +78,7 @@ class GalryWidget(QGLWidget):
     
     # constrain width/height ratio when resizing of zooming
     constrain_ratio = False
-    constrain_navigation = True
+    constrain_navigation = False
     
     # Initialization methods
     # ----------------------
@@ -263,11 +263,12 @@ class GalryWidget(QGLWidget):
         vx = vy = 1.0
         # viewport in the case where the ratio should be kept constant
         if self.constrain_ratio:
-            a = float(width) / height
-            if a > 1:
-                vx = a
-            else:
-                vy = 1. / a
+            if height > 0:
+                a = float(width) / height
+                if a > 1:
+                    vx = a
+                else:
+                    vy = 1. / a
         self.viewport = (vx, vy)
         self.paint_manager.set_viewport(viewport=self.viewport,
             window_size=(width, height))
