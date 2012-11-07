@@ -8,16 +8,17 @@ import numpy as np
 # HACK: Linux in VirtualBox uses OpenGL ES, which requires a special API
 # in GLSL. This variable is true when OpenGL ES version 120 is used
 # info_level()
-OLDGLSL = False
+# UPDATE: OLDGLSL=True is also necessary for Mac OS X 10.6
+OLDGLSL = True
 # OLDGLSL = sys.platform != "win32"
-log_info("OLDGLSL=%s" % str(OLDGLSL))
+# log_info("OLDGLSL=%s" % str(OLDGLSL))
 
 
 # Shader templates
 # ----------------
 if not OLDGLSL:
     VS_TEMPLATE = """
-#version 330
+%GLSL_VERSION_HEADER%
 precision mediump float;
 
 %VERTEX_HEADER%
@@ -29,7 +30,7 @@ void main()
 """
 
     FS_TEMPLATE = """
-#version 330
+%GLSL_VERSION_HEADER%
 precision mediump float;
 
 %FRAGMENT_HEADER%
@@ -45,7 +46,7 @@ void main()
 
 else:
     VS_TEMPLATE = """
-#version 120
+%GLSL_VERSION_HEADER%
 //precision mediump float;
 
 %VERTEX_HEADER%
@@ -57,7 +58,7 @@ void main()
 """
 
     FS_TEMPLATE = """
-#version 120
+%GLSL_VERSION_HEADER%
 //precision mediump float;
 
 %FRAGMENT_HEADER%
@@ -567,6 +568,12 @@ class DataTemplate(object):
         # TODO: handle non-2D textures...
         if OLDGLSL:
             fs = fs.replace("texture(", "texture%dD(" % 2)
+        
+        # TODO: maybe change this as a function of 
+        # gl.glGetString(gl.GL_SHADING_LANGUAGE_VERSION) ?
+        glslversion = '#version 120'
+        vs = vs.replace('%GLSL_VERSION_HEADER%', glslversion)
+        fs = fs.replace('%GLSL_VERSION_HEADER%', glslversion)
     
         return vs, fs
     

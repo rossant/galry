@@ -70,6 +70,27 @@ class PaintManager(object):
         # data has been loaded on the GPU, and the shaders have been compiled.
         self.is_initialized = False
 
+    def initialize_gl(self):
+        
+        log_info("OpenGL renderer: %s" % gl.glGetString(gl.GL_RENDERER))
+        log_info("OpenGL version: %s" % gl.glGetString(gl.GL_VERSION))
+        log_info("GLSL version: %s" % gl.glGetString(gl.GL_SHADING_LANGUAGE_VERSION))
+        
+        # use vertex buffer object
+        gl.glEnableClientState(gl.GL_VERTEX_ARRAY)
+
+        # used for multisampling (antialiasing)
+        gl.glEnable(gl.GL_MULTISAMPLE)
+        gl.glEnable(gl.GL_VERTEX_PROGRAM_POINT_SIZE)
+        gl.glEnable(gl.GL_POINT_SPRITE)
+        
+        # enable transparency
+        gl.glEnable(gl.GL_BLEND)
+        gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
+        
+        # Paint the background with the specified color (black by default)
+        gl.glClearColor(*self.bgcolor)
+        
     def initialize_default(self):
         """Default initialize method. Initializes the FPS (if shown) and
         the navigation rectangle."""

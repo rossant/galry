@@ -202,25 +202,11 @@ class GalryWidget(QGLWidget):
     def initializeGL(self):
         """Initialize OpenGL parameters."""
         
-        # use vertex buffer object
-        gl.glEnableClientState(gl.GL_VERTEX_ARRAY)
-
-        # used for multisampling (antialiasing)
-        gl.glEnable(gl.GL_MULTISAMPLE)
-        gl.glEnable(gl.GL_VERTEX_PROGRAM_POINT_SIZE)
-        gl.glEnable(gl.GL_POINT_SPRITE)
-        
-        # enable transparency
-        gl.glEnable(gl.GL_BLEND)
-        gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
-        
         # initialize data manager and shaders
+        self.paint_manager.initialize_gl()
         self.paint_manager.initialize()
         self.paint_manager.initialize_default()
         self.paint_manager.initialize_gpu()
-        
-        # Paint the background with the specified color (black by default)
-        gl.glClearColor(*self.paint_manager.bgcolor)
         
         self.initialized()
         

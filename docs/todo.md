@@ -1,8 +1,8 @@
 Galry: high-performance interactive 2D visualization in Python
 ==============================================================
 
-  * update doc  
-
+  * try to reproduce bug with violation memory access when there are several
+    widgets within a main window (concurrency issue in pyopengl?)
   * user preferences, with DEBUG option
   * high level interface
   * bug: linux pyside segmentation fault
