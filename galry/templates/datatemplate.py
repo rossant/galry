@@ -8,8 +8,8 @@ import numpy as np
 # HACK: Linux in VirtualBox uses OpenGL ES, which requires a special API
 # in GLSL. This variable is true when OpenGL ES version 120 is used
 # info_level()
-# OLDGLSL = sys.platform != "win32"
 OLDGLSL = False
+# OLDGLSL = sys.platform != "win32"
 log_info("OLDGLSL=%s" % str(OLDGLSL))
 
 
