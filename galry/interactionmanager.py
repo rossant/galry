@@ -101,7 +101,7 @@ class InteractionManager(object):
             
     # Navigation methods
     # ------------------    
-    def set_navigation_constraints(self, constraints=None):
+    def set_navigation_constraints(self, constraints=None, maxzoom=1e6):
         """Set the navigation constraints.
         
         Arguments:
@@ -117,7 +117,7 @@ class InteractionManager(object):
         self.sxmin = 1./min(self.xmax, -self.xmin)
         self.symin = 1./min(self.ymax, -self.ymin)
         # maximum zoom allowed
-        self.sxmax = self.symax = 1e6
+        self.sxmax = self.symax = maxzoom
         
     def reset(self):
         """Reset the navigation."""
@@ -152,10 +152,15 @@ class InteractionManager(object):
             else:
                 dx = dy = 0
         self.sx *= np.exp(dx)
-        self.tx += -px * (1./self.sxl - 1./self.sx)
-        self.sxl = self.sx
         self.sy *= np.exp(dy)
+        
+        # constrain scaling
+        self.sx = np.clip(self.sx, self.sxmin, self.sxmax)
+        self.sy = np.clip(self.sy, self.symin, self.symax)
+        
+        self.tx += -px * (1./self.sxl - 1./self.sx)
         self.ty += -py * (1./self.syl - 1./self.sy)
+        self.sxl = self.sx
         self.syl = self.sy
     
     def zoombox(self, parameter):
