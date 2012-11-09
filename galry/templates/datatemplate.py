@@ -337,7 +337,8 @@ class DataTemplate(object):
         vertex is an attribute.
       * uniforms: an uniform is a global variable, shared by all vertices. It
         may change at every frame, but it is global to the vertex and fragment
-        shaders.
+        shaders. It can be a scalar, a vector, or an array of scalars or
+        vectors. *A uniform variable cannot hold more than 64 KB of data*.
       * varyings: during the rendering process, the vertex shader is executed
         once per vertex. Then, the fragment shader is executed once per pixel
         (pixel of the rendered primitives). Since the fragment shader always

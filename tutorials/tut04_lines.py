@@ -37,11 +37,10 @@ class MyPaintManager(PaintManager):
     def initialize(self):
 
         # We generate the colored lines.
-        # Try changing the values here: heat your graphics card up!
-        # If you have a high-end 2012 graphics card, you can try 
-        # 1,000 x 100,000 = 100,000,000 points.
-        nprimitives = 10
-        nsamples = 1000
+        # You can try to increase the values here.
+        # If the number of primitives is too high, you may encounter bugs
+        nprimitives = 16390
+        nsamples = 100
         position, color = create_data(nprimitives, nsamples)
         
         self.create_dataset(PlotTemplate, nprimitives=nprimitives, 

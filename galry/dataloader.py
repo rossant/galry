@@ -52,7 +52,7 @@ def validate_texture(data):
 # VBO functions
 # -------------
 
-# Maximum size of a VBO, generally 65k. You might try to increase it
+# Maximum size of a VBO, generally 64KB. You might try to increase it
 # in order to improve performance, but be very careful since no error will
 # be raised if you cross the limit: all values defined after that limit
 # will be zero, so you might just have very weird results! Make sure to test.
@@ -65,9 +65,9 @@ def create_vbo(data, location=None):
     the value of the global variable `USE_PYOPENGL_ARRAY`.
     
     Arguments:
-      * data: a 2D Numpy array to put in the VBO. It can contain more than 65k 
-        points, in this case several VBOs are being created under the hood.
-        This is all transparent.
+      * data: a 2D Numpy array to put in the VBO. It can contain more than
+        64 KB of data, in this case several VBOs are being created under the
+        hood. This is all transparent.
       * location=None: the buffer location.
         
     Returns:
