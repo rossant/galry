@@ -38,9 +38,8 @@
           <span class="credits right">Hosted on GitHub Pages &mdash; Theme by <a href="http://twitter.com/#!/michigangraham">mattgraham</a></span>
         </div>
 
-        <p><strong>Important note: Galry is still an experimental project with an unstable
-programming interface that is likely to change at any time. Do not use it in
-production yet.</strong></p>
+        <p><strong>Important note: Galry is still in development. The programming interface
+may change without notice.</strong></p>
 
 <h2>What is Galry?</h2>
 
@@ -48,12 +47,15 @@ production yet.</strong></p>
 Python</strong>. It lets you visualize and navigate into very large 2D plots (signals,
 points, textures...) in real time, by using the graphics card as much as
 possible (with OpenGL).
-On a 2012 computer with a recent 250$ graphics card, one can interactively
+On a 2012 computer with a recent graphics card, one can interactively
 visualize as much as <strong>100 million points</strong> at a reasonable framerate.</p>
 
 <p>Galry is not meant to generate high-quality plots (like matplotlib), and is
 more "low-level". It can be used to write complex interactive visualization
-GUIs that deal with large 2D datasets (only with QT for now).</p>
+GUIs that deal with large 2D datasets (only with QT for now). Galry is
+fully customizable, and all aspects of rendering and interaction can be 
+controlled by the developer. Support for 3D rendering is also possible (there
+is an example of 3D rendering in the <code>examples</code> folder).</p>
 
 <p>It is based on PyOpenGL and Numpy and is
 meant to work on any platform (Window/Linux/MacOS).
@@ -65,11 +67,7 @@ currently used but may be in the future).</p>
 
 <h2>I want to see a demo!</h2>
 
-<!--<p><a href="http://www.youtube.com/watch?v=jYNJJ4O3pXo"><img src="https://raw.github.com/rossant/galry/master/images/youtube.png" alt="Galry's Demo"></a></p>-->
-
-<iframe width="640" height="480" src="http://www.youtube.com/embed/jYNJJ4O3pXo?rel=0" frameborder="0" allowfullscreen></iframe>
-
-<p><img src="https://raw.github.com/rossant/galry/master/images/overview.png" alt="Galry's gallery"></p>
+<p><a href="http://www.youtube.com/watch?v=jYNJJ4O3pXo"><img src="https://raw.github.com/rossant/galry/master/images/youtube.png" alt="Galry's Demo"></a></p>
 
 <h2>Why Galry?</h2>
 
@@ -79,7 +77,8 @@ visualization (like mayavi).
 Existing 2D plotting packages do not generally offer an efficient way to 
 interactively visualize large datasets (1, 10, even 100 million points). 
 The main goal of Galry is to provide the most optimized way of visualizing
-large 2D datasets, by using the full power of the graphics card.</p>
+large 2D datasets, by using the full power of the graphics card.
+Experimental support for 3D rendering is also available.</p>
 
 <h2>How fast is it?</h2>
 
@@ -115,7 +114,8 @@ and pan/zoom smoothly into your data.</p></li>
 interactive visualization of large 2D datasets.</p></li>
 </ul><p>Galry is fully customizable, and you can either write a specialized scientific
 visualization GUI, a particle system, a fractal viewer, or even a video
-game!</p>
+game! Even if Galry is oriented toward 2D rendering, 3D rendering is also
+possible.</p>
 
 <h3>Custom visualization</h3>
 
@@ -168,11 +168,13 @@ is transformed into pixels through vertex and fragment shaders.</p>
 
 <h2>How to get started?</h2>
 
-<p>At the time of writing, the code is still quite experimental and is not
-guaranteed to work on any platform. The programming interface is still
-unstable and might change without any further notice. Installation may be
-difficult depending on the OS and the graphics card drivers. But feel
-free to experiment with it or to take a look to the documentation.</p>
+<p>At the time of writing, the code is still experimental and is not
+guaranteed to work on any platform. The programming interface might change
+without notice. Installation may be
+difficult depending on the OS and the graphics card drivers (even if it has
+been successfully tested on Windows, Linux and MacOS systems as of now).
+That being said, please feel
+free to download the library and take a look to the documentation.</p>
 
 <p>The <code>master</code> branch contains the latest "stable" version, whereas the
 development version is in the <code>dev</code> branch.</p>
@@ -201,38 +203,20 @@ electrophysiological data GUI that will handle very large datasets.</p>
 <h2>I want to participate!</h2>
 
 <p><a href="http://cyrille.rossant.net">Send me an e-mail</a>.</p>
-
-<h2>Why this name?</h2>
-
-<p>Don't even ask.</p>
       </section>
 
     </div>
-<!--[if !IE]><script>fixScale(document);</script><![endif]-->
-<script type="text/javascript">
-var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
-document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
-</script>
-<script type="text/javascript">
-try {
-var pageTracker = _gat._getTracker("UA-6774000-3");
-pageTracker._trackPageview();
-} catch(err) {}
-</script>
-<script type="text/javascript">
-var sc_project=8405204; 
-var sc_invisible=1; 
-var sc_security="c13aafcf"; 
-var scJsHost = (("https:" == document.location.protocol) ?
-"https://secure." : "http://www.");
-document.write("<sc"+"ript type='text/javascript' src='" +
-scJsHost +
-"statcounter.com/counter/counter.js'></"+"script>");</script>
-<noscript><div class="statcounter"><a title="web analytics"
-href="http://statcounter.com/" target="_blank"><img
-class="statcounter"
-src="https://c.statcounter.com/8405204/0/c13aafcf/1/"
-alt="web analytics"></a></div></noscript>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+              <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-6774000-3");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
 
   </body>
 </html>
