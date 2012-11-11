@@ -242,6 +242,42 @@ There are different types of template fields:
     characters (i.e. the points), their particular position, etc.
     
 
+##### Predefined templates
+
+Galry comes with a set of predefined templates for convenient use. More
+templates may be added as the development of the package goes along.
+Currently, available templates are:
+
+  * `PlotTemplate`: generic template for basic or advanced plotting. Any
+    GL primitive is possible:
+      * `Lines`: independent line segments,
+      * `LineStrip`: continuous signal as successive line segments,
+      * `LineLoop`: like `LineStrip` but as a closed polygon,
+      * `Points`: pixels with arbitrary size,
+      * `Triangles`: independent triangles,
+      * `TriangleStrip`: successive triangles, two consecutive triangles
+        sharing one side, useful for rendering any filled polygon,
+      * `TriangleFan`: successive triangles, all sharing the very first vertex.
+        Useful for rendering discs.
+    In addition, multiple independent primitives of the same type can be 
+    rendered in the same dataset (example: multiple signals as multiple
+    `LineStrip`).
+    
+  * `RectanglesTemplate`: multiple rectangles in a single dataset.
+  
+  * `SpriteTemplate`: one texture at multiple positions (e.g. scatter plot with
+    special markers).
+    
+  * `TextTemplate`: a single line of text.
+  
+  * `TextureTemplate`: a single textured rectangle.
+  
+  * `ThreeDimensionsTemplate`: template example for 3D rendering, implementing
+    3D/4D transformation matrices, basic lighting, etc. The developer
+    interested in 3D rendering should take this template as an example and
+    customize it.
+
+    
 ##### Vertex shader example: particle system
     
 Let's give an example of a *particle system*, where there is a number of 

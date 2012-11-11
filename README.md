@@ -1,9 +1,8 @@
 Welcome to Galry: high performance interactive 2D visualization in Python
 =========================================================================
 
-**Important note: Galry is still an experimental project with an unstable
-programming interface that is likely to change at any time. Do not use it in
-production yet.**
+**Important note: Galry is still in development. The programming interface
+may change without notice.**
 
 
 What is Galry?
@@ -13,12 +12,15 @@ Galry is a **high performance interactive 2D visualization package in
 Python**. It lets you visualize and navigate into very large 2D plots (signals,
 points, textures...) in real time, by using the graphics card as much as
 possible (with OpenGL).
-On a 2012 computer with a recent 250$ graphics card, one can interactively
+On a 2012 computer with a recent graphics card, one can interactively
 visualize as much as **100 million points** at a reasonable framerate.
 
 Galry is not meant to generate high-quality plots (like matplotlib), and is
 more "low-level". It can be used to write complex interactive visualization
-GUIs that deal with large 2D datasets (only with QT for now).
+GUIs that deal with large 2D datasets (only with QT for now). Galry is
+fully customizable, and all aspects of rendering and interaction can be 
+controlled by the developer. Support for 3D rendering is also possible (there
+is an example of 3D rendering in the `examples` folder).
 
 It is based on PyOpenGL and Numpy and is
 meant to work on any platform (Window/Linux/MacOS).
@@ -47,6 +49,7 @@ Existing 2D plotting packages do not generally offer an efficient way to
 interactively visualize large datasets (1, 10, even 100 million points). 
 The main goal of Galry is to provide the most optimized way of visualizing
 large 2D datasets, by using the full power of the graphics card.
+Experimental support for 3D rendering is also available.
 
 
 How fast is it?
@@ -87,7 +90,8 @@ You can either:
     
 Galry is fully customizable, and you can either write a specialized scientific
 visualization GUI, a particle system, a fractal viewer, or even a video
-game!
+game! Even if Galry is oriented toward 2D rendering, 3D rendering is also
+possible.
 
 ### Custom visualization
 
@@ -144,11 +148,13 @@ is transformed into pixels through vertex and fragment shaders.
 How to get started?
 -------------------
 
-At the time of writing, the code is still quite experimental and is not
-guaranteed to work on any platform. The programming interface is still
-unstable and might change without any further notice. Installation may be
-difficult depending on the OS and the graphics card drivers. But feel
-free to experiment with it or to take a look to the documentation.
+At the time of writing, the code is still experimental and is not
+guaranteed to work on any platform. The programming interface might change
+without notice. Installation may be
+difficult depending on the OS and the graphics card drivers (even if it has
+been successfully tested on Windows, Linux and MacOS systems as of now).
+That being said, please feel
+free to download the library and take a look to the documentation.
 
 The `master` branch contains the latest "stable" version, whereas the
 development version is in the `dev` branch.
@@ -184,11 +190,4 @@ I want to participate!
 ----------------------
 
 [Send me an e-mail](http://cyrille.rossant.net).
-
-
-Why this name?
---------------
-
-Don't even ask.
-
 
