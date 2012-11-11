@@ -1,9 +1,6 @@
 import numpy as np
-import OpenGL.GL as gl
-import OpenGL.GLU as glu
-from interactionevents import InteractionEvents as events
-from tools import extend_enum
 import cursors
+from interactionevents import InteractionEvents as events
 
 __all__ = ['InteractionManager']
 
@@ -56,6 +53,11 @@ class InteractionManager(object):
             self.pan(parameter)
             self.cursor = cursors.ClosedHandCursor
     
+    def process_rotation_event(self, event, parameter):
+        if event == events.RotationEvent:
+            self.rotate(parameter)
+            self.cursor = cursors.ClosedHandCursor
+
     def process_zoom_event(self, event, parameter):
         """Process a zoom-related event."""
         if event == events.ZoomEvent:
@@ -86,11 +88,10 @@ class InteractionManager(object):
             specified in the related binding.
         
         """
-        # HACK: a QApplication needs to be constructed for creating Pixmap
-        # cursors, so we load (and create the cursors) here
         if event is None:
             self.process_none_event()
         self.process_pan_event(event, parameter)
+        self.process_rotation_event(event, parameter)
         self.process_zoom_event(event, parameter)
         self.process_reset_event(event, parameter)
         self.process_custom_event(event, parameter)
@@ -121,9 +122,10 @@ class InteractionManager(object):
         
     def reset(self):
         """Reset the navigation."""
-        self.tx, self.ty = 0, 0
-        self.sx, self.sy = 1, 1
-        self.sxl, self.syl = 1, 1
+        self.tx, self.ty, self.tz = 0., 0., 0.
+        self.sx, self.sy = 1., 1.
+        self.sxl, self.syl = 1., 1.
+        self.rx, self.ry = 0., 0.
         self.navigation_rectangle = None
     
     def pan(self, parameter):
@@ -135,6 +137,10 @@ class InteractionManager(object):
         """
         self.tx += parameter[0] / self.sx
         self.ty += parameter[1] / self.sy
+    
+    def rotate(self, parameter):
+        self.rx += parameter[0]
+        self.ry += parameter[1]
     
     def zoom(self, parameter):
         """Zoom along the x,y coordinates.
@@ -155,8 +161,9 @@ class InteractionManager(object):
         self.sy *= np.exp(dy)
         
         # constrain scaling
-        self.sx = np.clip(self.sx, self.sxmin, self.sxmax)
-        self.sy = np.clip(self.sy, self.symin, self.symax)
+        if self.constrain_navigation:
+            self.sx = np.clip(self.sx, self.sxmin, self.sxmax)
+            self.sy = np.clip(self.sy, self.symin, self.symax)
         
         self.tx += -px * (1./self.sxl - 1./self.sx)
         self.ty += -py * (1./self.syl - 1./self.sy)
@@ -281,6 +288,9 @@ class InteractionManager(object):
         if self.constrain_navigation:
             self.activate_navigation_constrain()
         return self.tx, self.ty
+    
+    def get_rotation(self):
+        return self.rx, self.ry
     
     def get_scaling(self):
         """Return the scaling vector.

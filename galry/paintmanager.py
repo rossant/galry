@@ -56,6 +56,8 @@ class PaintManager(object):
     # Color of the zoombox rectangle.
     navigation_rectangle_color = (1.,1.,1.,.25)
     
+    activate3D = False
+    
     # Initialization methods
     # ----------------------
     def __init__(self):
@@ -71,7 +73,6 @@ class PaintManager(object):
         self.is_initialized = False
 
     def initialize_gl(self):
-        
         log_info("OpenGL renderer: %s" % gl.glGetString(gl.GL_RENDERER))
         log_info("OpenGL version: %s" % gl.glGetString(gl.GL_VERSION))
         log_info("GLSL version: %s" % gl.glGetString(gl.GL_SHADING_LANGUAGE_VERSION))
@@ -90,7 +91,16 @@ class PaintManager(object):
         
         # Paint the background with the specified color (black by default)
         gl.glClearColor(*self.bgcolor)
+        gl.glClearDepth(1.0)
         
+        # enable depth buffer, necessary for 3D rendering
+        if self.activate3D:
+            gl.glEnable(gl.GL_DEPTH_TEST)
+            gl.glDepthMask(gl.GL_TRUE)
+            gl.glDepthFunc(gl.GL_LEQUAL)
+            gl.glDepthRange(0., 1.0)
+        
+            
     def initialize_default(self):
         """Default initialize method. Initializes the FPS (if shown) and
         the navigation rectangle."""
@@ -319,9 +329,13 @@ class PaintManager(object):
         """Change uniform variables to implement interactive navigation."""
         tx, ty = self.interaction_manager.get_translation()
         sx, sy = self.interaction_manager.get_scaling()
-        scale = (np.float32(sx), np.float32(sy))
-        translation = (np.float32(tx), np.float32(ty))
+        # scale = (np.float32(sx), np.float32(sy))
+        scale = (sx, sy)
+        # translation = (np.float32(tx), np.float32(ty))
+        translation = (tx, ty)
         for dataset in self.datasets:
+            if not hasattr(dataset["template"], 'is_static'):
+                continue
             if not dataset["template"].is_static:
                 self.set_data(dataset=dataset, 
                         scale=scale, translation=translation)
@@ -397,6 +411,12 @@ class PaintManager(object):
         This method is called by paintGL().
         
         """
+        # clear the buffer (and depth buffer is 3D is activated)
+        if self.activate3D:
+            gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
+        else:
+            gl.glClear(gl.GL_COLOR_BUFFER_BIT)
+        
         # transform the view for interactive navigation by updating the
         # corresponding uniform values in all non-static datasets
         self.transform_view()

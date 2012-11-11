@@ -38,12 +38,12 @@ class MyPaintManager(PaintManager):
 
         # We generate the colored lines.
         # You can try to increase the values here.
-        # If the number of primitives is too high, you may encounter bugs
-        nprimitives = 16390
-        nsamples = 100
+        # If the number of primitives is too high, you may have errors.
+        nprimitives = 20
+        nsamples = 10000
         position, color = create_data(nprimitives, nsamples)
         
         self.create_dataset(PlotTemplate, nprimitives=nprimitives, 
             nsamples=nsamples, position=position, color=color)
 
-show_basic_window(paint_manager=MyPaintManager)#, display_fps=True)
+show_basic_window(paint_manager=MyPaintManager, display_fps=True)

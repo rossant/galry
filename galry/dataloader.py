@@ -353,7 +353,7 @@ class DataLoader(object):
         # first, find possible compounds and add them to kwargs
         kwargs2 = kwargs.copy()
         for name, data in kwargs2.iteritems():
-            if self.variables[name] == "compounds":
+            if self.variables.get(name, None) == "compounds":
                 fun = self.compounds[name]["fun"]
                 kwargs.update(**fun(data))
                 del kwargs[name]
@@ -366,8 +366,8 @@ class DataLoader(object):
             # if name is not in variables, it means it is not a valid template
             # field, so we just raise a warning and discard this variable
             if variable is None:
-                log_warn("the variable `%s` is not a field of the template %s"\
-                         (name, str(tpl)))
+                log_warn("the variable `%s` is not a field of the template \
+                        %s" % (name, tpl.__class__.__name__))
                 continue
             
             dic = getattr(self, variable)[name]
@@ -481,7 +481,7 @@ class DataLoader(object):
             elif uniform["ndim"] == 1:
                 args += (data,)
             elif uniform["ndim"] > 1:
-                args += data
+                args += tuple(data)
                 
         # matrix uniform
         elif type(uniform["ndim"]) == tuple:

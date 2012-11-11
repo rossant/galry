@@ -203,8 +203,8 @@ class GalryWidget(QGLWidget):
         """Initialize OpenGL parameters."""
         
         # initialize data manager and shaders
-        self.paint_manager.initialize_gl()
         self.paint_manager.initialize()
+        self.paint_manager.initialize_gl()
         self.paint_manager.initialize_default()
         self.paint_manager.initialize_gpu()
         
@@ -219,8 +219,6 @@ class GalryWidget(QGLWidget):
         This method calls the `paint_all` method of the PaintManager.
         
         """
-        # clear the buffer
-        gl.glClear(gl.GL_COLOR_BUFFER_BIT)
         # paint everything
         self.paint_manager.paint_all()
         # paint fps
