@@ -30,6 +30,8 @@ PyOpenGL, matplotlib.
 Optional dependencies include IPython, hdf5, PyOpenCL (the last two are not
 currently used but may be in the future).
 
+Galry is licensed under the BSD license.
+
 
 I want to see a demo!
 ---------------------
