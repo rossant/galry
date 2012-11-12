@@ -63,7 +63,7 @@ class GalryWidget(QGLWidget):
     
     """
     # background color as a 4-tuple (R,G,B,A)
-    bgcolor = (0,0,0,0)
+    bgcolor = (0, 0, 0, 0)
 
     # default window size
     width, height = 600, 600
@@ -91,7 +91,7 @@ class GalryWidget(QGLWidget):
         cursors.load()
         
         # Capture keyboard events.
-        self.setFocusPolicy(Qt.StrongFocus)
+        self.setFocusPolicy(Qt.WheelFocus)
         self.setMouseTracking(True)
         
         # Initialize the objects providing the core features of the widget.
@@ -471,7 +471,10 @@ class GalryWidget(QGLWidget):
         image = self.grabFrameBuffer()
         image.save(file,"PNG")
     
-    
+    # Focus methods
+    # -------------
+    def focusOutEvent(self, event):
+        self.user_action_generator.focusOutEvent(event)
     
     
         

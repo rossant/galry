@@ -36,15 +36,17 @@ class UserActionGenerator(object):
         return (pos.x(), pos.y())
         
     def __init__(self):
+        self.reset()
+        
+    def reset(self):
         """Reinitialize the actions."""
         self.action = None
         self.key = None
         self.key_modifier = None
-        # mouse button: 0 = no mouse button, 1 = left, 2 = right
         self.mouse_button = 0
         self.mouse_position = (0, 0)
-        self.mouse_position_diff = (0, 0)##
-        self.mouse_press_position = (0, 0)##
+        self.mouse_position_diff = (0, 0)
+        self.mouse_press_position = (0, 0)
         self.wheel = 0
         
     def get_action_parameters(self):
@@ -114,3 +116,8 @@ class UserActionGenerator(object):
         self.wheel = e.delta()
         self.action = UserActions.WheelAction
     
+    def focusOutEvent(self, e):
+        # reset all actions when the focus goes out
+        self.reset()
+        
+        
