@@ -84,10 +84,6 @@ class BindingSet(object):
         
     def set_base_cursor(self, cursor=None):
         """Define the base cursor in this mode."""
-        # HACK: a QApplication needs to be constructed for creating Pixmap
-        # cursors, so we load (and create the cursors) here
-        # if "cursors" not in globals():
-            # import cursors
         if cursor is None:
             cursor = cursors.OpenHandCursor
         # set the base cursor

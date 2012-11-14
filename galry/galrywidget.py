@@ -108,7 +108,7 @@ class GalryWidget(QGLWidget):
             self.initialize_companion_classes()
         self.initialize_bindings()
         
-    def set_bindings(self, bindings=None):
+    def set_bindings(self, *bindings):
         """Set the interaction mode by specifying the binding object.
         
         Several binding objects can be given for the binding manager, such that
@@ -119,10 +119,11 @@ class GalryWidget(QGLWidget):
             BindingSet.
             
         """
-        if bindings is None:
+        bindings = list(bindings)
+        if not bindings:
             bindings = [bindingmanager.DefaultBindingSet()]
-        if type(bindings) is not list and type(bindings) is not tuple:
-            bindings = [bindings]
+        # if type(bindings) is not list and type(bindings) is not tuple:
+            # bindings = [bindings]
         # if binding is a class, try instanciating it
         for i in xrange(len(bindings)):
             if not isinstance(bindings[i], bindingmanager.BindingSet):
@@ -383,6 +384,7 @@ class GalryWidget(QGLWidget):
         binding = self.binding_manager.switch()
         # set base cursor
         self.interaction_manager.base_cursor = binding.base_cursor
+        return binding
         
     def get_current_action(self):
         """Return the current user action with the action parameters."""
@@ -442,7 +444,9 @@ class GalryWidget(QGLWidget):
         
         # handle interaction mode change
         if event == events.SwitchInteractionModeEvent:
-            self.switch_interaction_mode()
+            binding = self.switch_interaction_mode()
+            log_info("Switching interaction mode to %s." % \
+                binding.__class__.__name__)
         
         # process the interaction event
         self.interaction_manager.process_event(event, args)
@@ -570,6 +574,11 @@ def create_custom_widget(bindings=None,
     else:
         baseclass = GalryWidget
     
+    if bindings is None:
+        bindings = []
+    if type(bindings) != list and type(bindings) != tuple:
+        bindings = [bindings]
+    
     # create the custom widget class
     class MyWidget(baseclass):
         """Automatically-created Galry widget."""
@@ -581,7 +590,7 @@ def create_custom_widget(bindings=None,
             super(MyWidget, self).__init__(format=format)
         
         def initialize(self):
-            self.set_bindings(bindings)
+            self.set_bindings(*bindings)
             self.set_companion_classes(**companion_classes)
             self.constrain_ratio = constrain_ratio
             self.constrain_navigation = constrain_navigation

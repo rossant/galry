@@ -39,6 +39,9 @@ class MyInteractionManager(InteractionManager):
 # In this custom widget, we just specify our two custom companion classes.
 class MyWidget(GalryWidget):
     def initialize(self):
+        # constrain the view to [-1,1]^2
+        self.constrain_navigation = True
+        # set the custom companion classes
         self.set_companion_classes(paint_manager=MyPaintManager,
             interaction_manager=MyInteractionManager)
         
