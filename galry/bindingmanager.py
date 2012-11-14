@@ -25,6 +25,7 @@ class BindingManager(object):
           * bindings: a list of classes deriving from UserActionBinding.
           
         """
+        bindings = [b for b in bindings if b not in self.bindings]
         self.bindings.extend(bindings)
         
     def remove(self, binding):
@@ -44,8 +45,13 @@ class BindingManager(object):
           * binding: the current binding.
           
         """
+        if not isinstance(binding, BindingSet):
+            # here, we assume that binding is a class, so we take the first
+            # existing binding that is an instance of this class
+            binding = [b for b in self.bindings if isinstance(b, binding)][0]
         self.add(binding)
         self.index = self.bindings.index(binding)
+        return self.get()
             
     def get(self):
         """Return the current binding."""

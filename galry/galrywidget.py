@@ -385,6 +385,19 @@ class GalryWidget(QGLWidget):
         # set base cursor
         self.interaction_manager.base_cursor = binding.base_cursor
         return binding
+    
+    def set_interaction_mode(self, mode):
+        """Set the interaction mode.
+        
+        Arguments:
+          * mode: either a class deriving from `BindingSet` and which has been
+            specified in `set_bindings`, or directly a `BindingSet` instance.
+        
+        """
+        binding = self.binding_manager.set(mode)
+        # set base cursor
+        self.interaction_manager.base_cursor = binding.base_cursor
+        return binding
         
     def get_current_action(self):
         """Return the current user action with the action parameters."""

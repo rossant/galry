@@ -6,6 +6,7 @@ Galry: high-performance interactive 2D visualization in Python
   * user preferences, with DEBUG option
   * high level interface
   * bug: linux pyside segmentation fault
+  * rename "bindings" to "mode"
   
 Doc
 ---
