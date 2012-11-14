@@ -8,12 +8,14 @@ may change without notice.**
 What is Galry?
 --------------
 
-Galry is a **high performance interactive 2D visualization package in 
-Python**. It lets you visualize and navigate into very large 2D plots (signals,
+Galry is a **high performance interactive 2D/3D visualization package in 
+Python**. It lets you visualize and navigate into very large plots (signals,
 points, textures...) in real time, by using the graphics card as much as
 possible (with OpenGL).
 On a 2012 computer with a recent graphics card, one can interactively
 visualize as much as **100 million points** at a reasonable framerate.
+High performance is achieved through techniques coming from real-time 3D 
+video games.
 
 Galry is not meant to generate high-quality plots (like matplotlib), and is
 more "low-level". It can be used to write complex interactive visualization
@@ -22,8 +24,8 @@ fully customizable, and all aspects of rendering and interaction can be
 controlled by the developer. Support for 3D rendering is also possible (there
 is an example of 3D rendering in the `examples` folder).
 
-It is based on PyOpenGL and Numpy and is
-meant to work on any platform (Window/Linux/MacOS).
+Galry is based on PyOpenGL and Numpy and should work on any platform
+(Window/Linux/MacOS).
 Mandatory dependencies include Python 2.7, Numpy, either PyQt4 or PySide,
 PyOpenGL, matplotlib.
 
@@ -96,8 +98,9 @@ possible.
 ### Custom visualization
 
 The library gives you full control on the rendering pipeline process, through
-the use of vertex and fragment shaders. Shaders are small programs written in
-a simple C-like low-level language ([GLSL](http://en.wikipedia.org/wiki/GLSL)) 
+the use of **vertex and fragment shaders**. Shaders are small programs written
+in a simple C-like low-level language
+([GLSL](http://en.wikipedia.org/wiki/GLSL)) 
 that are dynamically compiled on the GPU.
 They transform the raw data stored in GPU memory to pixels on the screen.
 Learning and using GLSL lets you exploit the full power of the GPU for
@@ -182,8 +185,10 @@ Examples and tutorials are in separated folders.
 How did this project start?
 ---------------------------
 
-We created this project as part of the development of a specific
-electrophysiological data GUI that will handle very large datasets.
+Galry is developed in the context of the creation of
+a new electrophysiological data GUI that will handle very large datasets.
+This GUI is still in development and should be released in 2013.
+The development of Galry will be done in parallel.
 
 
 I want to participate!
