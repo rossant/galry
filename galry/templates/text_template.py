@@ -4,7 +4,6 @@ from default_template import DefaultTemplate
 # from datatemplate import OLDGLSL
 from ..primitives import PrimitiveType
 from fontmaps import load_font
-import matplotlib.pyplot as plt
 from ..debugtools import log_debug, log_info, log_warn
 
 class TextTemplate(DefaultTemplate):

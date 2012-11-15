@@ -2,7 +2,6 @@ import sys
 import os
 import re
 import numpy as np
-import matplotlib.pyplot as plt
 from ...debugtools import log_info
 import re
 
@@ -52,6 +51,7 @@ def get_font_filenames(font="segoe", size=32):
 
 def load_png(filename):
     """Load a PNG texture."""
+    import matplotlib.pyplot as plt
     return plt.imread(filename)
     
 def load_fnt(filename):
