@@ -43,12 +43,14 @@ may change without notice.</strong></p>
 
 <h2>What is Galry?</h2>
 
-<p>Galry is a <strong>high performance interactive 2D visualization package in 
-Python</strong>. It lets you visualize and navigate into very large 2D plots (signals,
+<p>Galry is a <strong>high performance interactive 2D/3D visualization package in 
+Python</strong>. It lets you visualize and navigate into very large plots (signals,
 points, textures...) in real time, by using the graphics card as much as
 possible (with OpenGL).
 On a 2012 computer with a recent graphics card, one can interactively
-visualize as much as <strong>100 million points</strong> at a reasonable framerate.</p>
+visualize as much as <strong>100 million points</strong> at a reasonable framerate.
+High performance is achieved through techniques coming from real-time 3D 
+video games.</p>
 
 <p>Galry is not meant to generate high-quality plots (like matplotlib), and is
 more "low-level". It can be used to write complex interactive visualization
@@ -57,19 +59,19 @@ fully customizable, and all aspects of rendering and interaction can be
 controlled by the developer. Support for 3D rendering is also possible (there
 is an example of 3D rendering in the <code>examples</code> folder).</p>
 
-<p>It is based on PyOpenGL and Numpy and is
-meant to work on any platform (Window/Linux/MacOS).
+<p>Galry is based on PyOpenGL and Numpy and should work on any platform
+(Window/Linux/MacOS).
 Mandatory dependencies include Python 2.7, Numpy, either PyQt4 or PySide,
 PyOpenGL, matplotlib.</p>
 
 <p>Optional dependencies include IPython, hdf5, PyOpenCL (the last two are not
 currently used but may be in the future).</p>
 
+<p>Galry is licensed under the BSD license.</p>
+
 <h2>I want to see a demo!</h2>
 
-<!--<p><a href="http://www.youtube.com/watch?v=jYNJJ4O3pXo"><img src="https://raw.github.com/rossant/galry/master/images/youtube.png" alt="Galry's Demo"></a></p>-->
-
-<iframe width="640" height="480" src="http://www.youtube.com/embed/jYNJJ4O3pXo?rel=0" frameborder="0" allowfullscreen></iframe>
+<p><a href="http://www.youtube.com/watch?v=jYNJJ4O3pXo"><img src="https://raw.github.com/rossant/galry/master/images/youtube.png" alt="Galry's Demo"></a></p>
 
 <h2>Why Galry?</h2>
 
@@ -122,8 +124,9 @@ possible.</p>
 <h3>Custom visualization</h3>
 
 <p>The library gives you full control on the rendering pipeline process, through
-the use of vertex and fragment shaders. Shaders are small programs written in
-a simple C-like low-level language (<a href="http://en.wikipedia.org/wiki/GLSL">GLSL</a>) 
+the use of <strong>vertex and fragment shaders</strong>. Shaders are small programs written
+in a simple C-like low-level language
+(<a href="http://en.wikipedia.org/wiki/GLSL">GLSL</a>) 
 that are dynamically compiled on the GPU.
 They transform the raw data stored in GPU memory to pixels on the screen.
 Learning and using GLSL lets you exploit the full power of the GPU for
@@ -199,8 +202,10 @@ through both the user guide and the tutorials anyway.</p></li>
 if you want to go deeper into Galry.</p></li>
 </ul><h2>How did this project start?</h2>
 
-<p>We created this project as part of the development of a specific
-electrophysiological data GUI that will handle very large datasets.</p>
+<p>Galry is developed in the context of the creation of
+a new electrophysiological data GUI that will handle very large datasets.
+This GUI is still in development and should be released in 2013.
+The development of Galry will be done in parallel.</p>
 
 <h2>I want to participate!</h2>
 
@@ -208,30 +213,17 @@ electrophysiological data GUI that will handle very large datasets.</p>
       </section>
 
     </div>
-<!--[if !IE]><script>fixScale(document);</script><![endif]-->
-<script type="text/javascript">
-var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
-document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
-</script>
-<script type="text/javascript">
-try {
-var pageTracker = _gat._getTracker("UA-6774000-3");
-pageTracker._trackPageview();
-} catch(err) {}
-</script>
-<script type="text/javascript">
-var sc_project=8405204; 
-var sc_invisible=1; 
-var sc_security="c13aafcf"; 
-var scJsHost = (("https:" == document.location.protocol) ?
-"https://secure." : "http://www.");
-document.write("<sc"+"ript type='text/javascript' src='" +
-scJsHost +
-"statcounter.com/counter/counter.js'></"+"script>");</script>
-<noscript><div class="statcounter"><a title="web analytics"
-href="http://statcounter.com/" target="_blank"><img
-class="statcounter"
-src="https://c.statcounter.com/8405204/0/c13aafcf/1/"
-alt="web analytics"></a></div></noscript>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+              <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-6774000-3");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
   </body>
 </html>
