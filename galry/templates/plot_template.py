@@ -64,15 +64,15 @@ class PlotTemplate(DefaultTemplate):
         
         """
         
-        assert self.size
+        assert self.size is not None
         
         if nprimitives == 1:
             nsamples = self.size
         if nsamples is None:
             nsamples = self.size // nprimitives
         
-        assert nprimitives
-        assert nsamples
+        assert nprimitives is not None
+        assert nsamples is not None
         
         # set position attribute
         self.add_attribute("position", vartype="float", ndim=2,) 

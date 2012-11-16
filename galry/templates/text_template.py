@@ -119,7 +119,6 @@ class TextTemplate(DefaultTemplate):
     }
     else
         out_color = vec4(0, 0, 0, 0);
-
         """
         
         self.add_fragment_main(fragment)

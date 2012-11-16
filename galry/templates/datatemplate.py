@@ -254,7 +254,7 @@ def get_uniform_declaration(uniform):
     tab = ""
     size = uniform.get("size", None)
     if size is not None:
-        tab = "[%d]" % size
+        tab = "[%d]" % max(1, size)  # ensure that the size is always >= 1
     # add uniform declaration
     declaration = "uniform %s %s%s;\n" % \
         (_get_shader_type(uniform),

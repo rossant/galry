@@ -58,20 +58,24 @@ class PaintManager(object):
     
     activate3D = False
     
+    # list of datasets
+    datasets = []
+    
     # Initialization methods
     # ----------------------
     def __init__(self):
         # current absolute translation offset, used because glTranslate is
         # relative to the current position
         self.current_offset = (0, 0)
-        
-        # list of datasets
-        self.datasets = []
 
         # boolean indicated whether OpenGL has been initialized, the 
         # data has been loaded on the GPU, and the shaders have been compiled.
         self.is_initialized = False
 
+    def reset(self):
+        self.datasets = []
+        self.is_initialized = False
+        
     def initialize_gl(self):
         log_info("OpenGL renderer: %s" % gl.glGetString(gl.GL_RENDERER))
         log_info("OpenGL version: %s" % gl.glGetString(gl.GL_VERSION))
@@ -99,11 +103,11 @@ class PaintManager(object):
             gl.glDepthMask(gl.GL_TRUE)
             gl.glDepthFunc(gl.GL_LEQUAL)
             gl.glDepthRange(0., 1.0)
-        
             
     def initialize_default(self):
         """Default initialize method. Initializes the FPS (if shown) and
         the navigation rectangle."""
+        
         if self.parent.display_fps:
             text = "FPS: 000"
             # create the FPS text dataset

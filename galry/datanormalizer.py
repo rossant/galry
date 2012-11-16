@@ -32,15 +32,18 @@ class DataNormalizer(object):
         dx0, dy0, dx1, dy1 = initial_viewbox
         
         # default: replace None by min/max
-        if dx0 is None:
-            dx0 = x.min()
-        if dy0 is None:
-            dy0 = y.min()
-        if dx1 is None:
-            dx1 = x.max()
-        if dy1 is None:
-            dy1 = y.max()
-        
+        if self.data.size == 0:
+            dx0 = dy0 = dx1 = dy1 = 0.
+        else:
+            if dx0 is None:
+                dx0 = x.min()
+            if dy0 is None:
+                dy0 = y.min()
+            if dx1 is None:
+                dx1 = x.max()
+            if dy1 is None:
+                dy1 = y.max()
+            
         if dx0 == dx1:
             dx0 -= .5
             dx1 += .5

@@ -198,15 +198,30 @@ class GalryWidget(QGLWidget):
         """This method is called at the end of `initializeGL`."""
         pass
         
+    def clear(self):
+        """Clear the view."""
+        self.paint_manager.reset()
+        
+    def reinit(self):
+        """Reinitialize OpenGL.
+        
+        The clear method should be called before.
+        
+        """
+        self.initializeGL()
+        self.resizeGL(self.width, self.height)
+        self.updateGL()
+        
     # OpenGL widget methods
     # ---------------------
     def initializeGL(self):
         """Initialize OpenGL parameters."""
         
         # initialize data manager and shaders
+        self.clear()
         self.paint_manager.initialize()
-        self.paint_manager.initialize_gl()
         self.paint_manager.initialize_default()
+        self.paint_manager.initialize_gl()
         self.paint_manager.initialize_gpu()
         
         self.initialized()
