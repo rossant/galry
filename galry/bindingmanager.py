@@ -98,7 +98,7 @@ class BindingSet(object):
     def set_common_bindings(self):
         """Set bindings that are common to any interaction mode."""
         self.set(actions.KeyPressAction, events.SwitchInteractionModeEvent,
-                    key=Qt.Key_M)
+                    key=Qt.Key_I)
         
     def initialize(self):
         """Registers all bindings through commands to self.set().
