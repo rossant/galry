@@ -1,6 +1,6 @@
 
 function get_pos(e) {
-    return [e.pageX, e.pageY];
+    return [2 * e.pageX / width - 1, -(2 * e.pageY / height - 1)];
 }
 
 // Return the inf norm between two points.
@@ -87,6 +87,7 @@ var gen = {
         }
         gen.mouse_button = 0;
         process_event();
+        return false;
     },
     
     mousemove: function(e) {
@@ -115,6 +116,7 @@ var gen = {
         gen.wheel = delta;
         gen.action = actions.WheelAction;
         process_event();
+        return false;
     },
     
     keydown: function(e) {

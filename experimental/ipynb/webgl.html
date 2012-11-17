@@ -15,132 +15,37 @@ var s = "AACAv/hECz/LfH+/AvEGP5j5fr80jwI/Y3Z+vwFA/D4w832/uUfzPvtvfb96Nuo+yOx8vzQ
 <script language="javascript" type="text/javascript" src="utils.js"></script>
 <script language="javascript" type="text/javascript" src="useractions.js"></script>
 <script language="javascript" type="text/javascript" src="navigation.js"></script>
+<script language="javascript" type="text/javascript" src="gl.js"></script>
 <script language="javascript" type="text/javascript" src="core.js"></script>
-
-
-<!-- VERTEX SHADER -->
-<script id="shader-vs" type="x-shader/x-vertex">
-    vec2 transform_position(vec2 position, vec2 scale, vec2 translation)
-    {
-        return scale * (position + translation);
-    }
-
-    attribute vec2 position;
-    attribute vec2 color;
-    
-    uniform vec2 scale;
-    uniform vec2 translation;
-    
-    varying vec2 out_color;
-    
-    void main(void)
-    {
-        gl_Position = vec4(transform_position(position, scale, translation), 
-                           0., 1.);
-        out_color = color;
-    }
-</script>
-
-<!-- FRAGMENT SHADER -->
-<script id="shader-fs" type="x-shader/x-fragment">
-    precision mediump float;
-    
-    varying vec2 out_color;
-    
-    void main(void)
-    {
-        gl_FragColor = vec4(out_color, 1, 1);
-    }
-</script>
 
 
 <script type="text/javascript">
 
+var VS = "vec2 transform_position(vec2 position, vec2 scale, vec2 translation)" +
+    "{return scale * (position + translation);}" +
+    "attribute vec2 position; attribute vec2 color;" +
+    "uniform vec2 scale; uniform vec2 translation;" +
+    "varying vec2 out_color;" +    
+    "void main(void) {" +
+    "gl_Position = vec4(transform_position(position, scale, translation), 0., 1.);" +
+    "out_color = color;}";
 
-var byteArray = get_array(s);
-
-
+var FS = "precision mediump float;"+
+"varying vec2 out_color;"+
+"void main(void) { gl_FragColor = vec4(out_color, 1, 1); }";
+    
+    
+// Size of the canvas.
+var width = 640.;
+var height = 480.;
 var antialias = false;
-
-// WebGL context
-var gl;
-
-
-
-// Compile a shader
-function getShader(gl, id) {
-    var shaderScript = document.getElementById(id);
-    if (!shaderScript)
-    {
-        return null;
-    }
-
-    var str = "";
-    var k = shaderScript.firstChild;
-    while (k)
-    {
-        if (k.nodeType == 3)
-        {
-            str += k.textContent;
-        }
-        k = k.nextSibling;
-    }
-
-    var shader;
-    if (shaderScript.type == "x-shader/x-fragment")
-    {
-        shader = gl.createShader(gl.FRAGMENT_SHADER);
-    } 
-    else if (shaderScript.type == "x-shader/x-vertex")
-    {
-        shader = gl.createShader(gl.VERTEX_SHADER);
-    }
-    else
-    {
-        return null;
-    }
-
-    gl.shaderSource(shader, str);
-    gl.compileShader(shader);
-
-    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS))
-    {
-        alert(gl.getShaderInfoLog(shader));
-        return null;
-    }
-
-    return shader;
-}
-
-// Shader program
-var shaderProgram;
-
-// Initialize the shaders
-function initShaders() {
-    var fragmentShader = getShader(gl, "shader-fs");
-    var vertexShader = getShader(gl, "shader-vs");
-
-    shaderProgram = gl.createProgram();
-    gl.attachShader(shaderProgram, vertexShader);
-    gl.attachShader(shaderProgram, fragmentShader);
-    gl.linkProgram(shaderProgram);
-
-    if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS))
-    {
-        alert("Could not initialise shaders");
-    }
-
-    gl.useProgram(shaderProgram);
-}
-
-
-
-
-
 
 // TEMPLATE VARIABLES
 var template = {
     primitive_type: "LINE_STRIP",
+    
+    vertex_shader: VS,
+    fragment_shader: FS,
 
     attributes: {
         position: {
@@ -177,115 +82,19 @@ var template = {
 // DATA HOLDER
 var dataholder = {
     size: 1000,
-    position: byteArray,
-    color: byteArray,
+    position: get_array(s),
+    color: get_array(s),
 }
 
 
-// Initialize the shader variables
-function initVariables() {
-    // initialize and load attributes
-    for (name in template.attributes) {
-        dataloader.init_attribute(name);
-        dataloader.upload_attribute(name);
-    }
-    
-    // initialize uniforms
-    for (name in template.uniforms) {
-        dataloader.init_uniform(name);
-    }
-}
 
-// Render the scene
-function drawScene() {
-    gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
-    gl.clear(gl.COLOR_BUFFER_BIT);
-
-    // bind all attribute buffers
-    for (name in template.attributes)
-        dataloader.bind_buffer(name);
-    
-    // navigation
-    dataloader.upload_uniform("translation", [nav.tx, nav.ty]);
-    dataloader.upload_uniform("scale", [nav.sx, nav.sy]);
-    
-    // render stuff
-    gl.drawArrays(gl[template.primitive_type], 0, dataholder.size);
-}
-
+// DEBUG
 var debugObj;
 var debug = function(text) {
     debugObj.html(text.toString());
 }
 
 
-// Size of the canvas.
-width = 640.;
-height = 480.;
-
-// Convert mouse coordinates in absolute screen coordinates into relative
-// GL coordinates.
-function get_pos(e) {
-    return [2 * e.pageX / width - 1, -(2 * e.pageY / height - 1)];
-}
-
-// Process an interaction event and call the associated navigation methods
-function process_event() {
-    if (gen.action == actions.LeftButtonMouseMoveAction) {
-        nav.pan(gen.mouse_position_diff[0], gen.mouse_position_diff[1]);
-        drawScene();
-    }
-    if (gen.action == actions.RightButtonMouseMoveAction) {
-        nav.zoom(gen.mouse_position_diff[0] * 2.5,
-                 gen.mouse_press_position[0],
-                 gen.mouse_position_diff[1] * 2.5,
-                 gen.mouse_press_position[1]);
-        drawScene();
-    }
-    if (gen.action == actions.WheelAction) {
-        nav.zoom(gen.wheel * .2, 
-                 gen.mouse_position[0],
-                 gen.wheel * .2, 
-                 gen.mouse_position[1]);
-        drawScene();
-    }
-}
-
-// Main function
-function webGLStart() {
-    debugObj = $('#debug');
-    var canvas = document.getElementById("canvas");
-    // Disable right click context menu on the canvas.
-    canvas.oncontextmenu = function() {return false;};
-    
-    $('canvas').attr('width', width);
-    $('canvas').attr('height', height);
-    
-    // make bindings
-    $('canvas').mousedown(gen.mousedown);
-    $('canvas').dblclick(gen.dblclick);
-    $('canvas').mouseup(gen.mouseup);
-    $('canvas').mousemove(gen.mousemove);
-    $('canvas').mousewheel(gen.mousewheel);
-    $('canvas').keydown(gen.keydown);
-    $('canvas').keyup(gen.keyup);
-    $('canvas').focusout(gen.focusout);        
-        
-    // allow to move the mouse outside the canvas
-    $(document).mousemove(gen.mousemove);
-    $(document).mouseup(gen.mouseup);
-        
-    // Initialize everything
-    initGL(canvas);
-    initShaders();
-    initVariables();
-
-    // Background color
-    gl.clearColor(0.0, 0.0, 0.0, 1.0);
-    
-    // Render everything
-    drawScene();
-    }
 </script>
 </head>
 <body onload="webGLStart();">

@@ -42,3 +42,30 @@ nav = {
         nav.syl = nav.sy;
     },
 }
+
+
+
+
+
+
+// Process an interaction event and call the associated navigation methods
+function process_event() {
+    if (gen.action == actions.LeftButtonMouseMoveAction) {
+        nav.pan(gen.mouse_position_diff[0], gen.mouse_position_diff[1]);
+        drawScene();
+    }
+    if (gen.action == actions.RightButtonMouseMoveAction) {
+        nav.zoom(gen.mouse_position_diff[0] * 2.5,
+                 gen.mouse_press_position[0],
+                 gen.mouse_position_diff[1] * 2.5,
+                 gen.mouse_press_position[1]);
+        drawScene();
+    }
+    if (gen.action == actions.WheelAction) {
+        nav.zoom(gen.wheel * .2, 
+                 gen.mouse_position[0],
+                 gen.wheel * .2, 
+                 gen.mouse_position[1]);
+        drawScene();
+    }
+}
