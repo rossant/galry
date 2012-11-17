@@ -232,6 +232,46 @@ def _update_texinfo(texinfo, data):
         texinfo.update(size=texinfo_data['size'])
     return texinfo
     
+def _get_uniform_function_name(varinfo):
+    """Return the name of the GL function used to update the uniform data.
+    
+    Arguments:
+      * varinfo: the information dictionary about the variable.
+    
+    Returns:
+      * funname: the name of the OpenGL function.
+      * args: the tuple of arguments to this function. The data must be 
+        appended to this tuple.
+    
+    """
+    # NOTE: varinfo == dict(vartype=vartype, ndim=ndim, size=size)
+    float_suffix = {True: 'f', False: 'i'}
+    array_suffix = {True: 'v', False: ''}
+        
+    vartype = varinfo["vartype"]
+    ndim = varinfo["ndim"]
+    size = varinfo.get("size", None)
+    args = ()
+    
+    # scalar or vector uniform
+    if type(ndim) == int or type(ndim) == long:
+        # find function name
+        funname = "glUniform%d%s%s" % (ndim, \
+                                       float_suffix[vartype == "float"], \
+                                       array_suffix[size is not None])
+
+        # find function arguments
+        if size is not None:
+            args += (size,)
+            
+    # matrix uniform
+    elif type(ndim) == tuple:
+        # find function name
+        funname = "glUniformMatrix%dfv" % (ndim[0])
+        args += (1, False,)
+        
+    return funname, args
+
     
 # GLSL declaration functions
 # --------------------------

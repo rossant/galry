@@ -25,13 +25,18 @@ var s = "AACAv/hECz/LfH+/AvEGP5j5fr80jwI/Y3Z+vwFA/D4w832/uUfzPvtvfb96Nuo+yOx8vzQ
     }
 
     attribute vec2 position;
+    attribute vec2 color;
+    
     uniform vec2 scale;
     uniform vec2 translation;
+    
+    varying vec2 out_color;
     
     void main(void)
     {
         gl_Position = vec4(transform_position(position, scale, translation), 
                            0., 1.);
+        out_color = color;
     }
 </script>
 
@@ -39,9 +44,11 @@ var s = "AACAv/hECz/LfH+/AvEGP5j5fr80jwI/Y3Z+vwFA/D4w832/uUfzPvtvfb96Nuo+yOx8vzQ
 <script id="shader-fs" type="x-shader/x-fragment">
     precision mediump float;
     
+    varying vec2 out_color;
+    
     void main(void)
     {
-        gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+        gl_FragColor = vec4(out_color, 1, 1);
     }
 </script>
 
@@ -50,6 +57,7 @@ var s = "AACAv/hECz/LfH+/AvEGP5j5fr80jwI/Y3Z+vwFA/D4w832/uUfzPvtvfb96Nuo+yOx8vzQ
 
 
 var byteArray = get_array(s);
+var byteArray2 = get_array(s);
 
 
 var antialias = false;
@@ -141,24 +149,122 @@ function initShaders() {
 }
 
 
+
+
+
+
+// TEMPLATE VARIABLES
+var attributes = {
+    position: {
+        ndim: 2,
+    },
+    
+    color: {
+        ndim: 2,
+    },
+};
+
+var uniforms = {
+    translation: {
+        ndim: 2,
+        size: false,
+        vartype: 'float',
+    },
+    
+    scale: {
+        ndim: 2,
+        size: false,
+        vartype: 'float',
+    },
+};
+
+var varyings = {
+    out_color: {
+        ndim: 2,
+        vartype: 'float',
+    },
+};
+
+// DATA LOADER
+var dataloader = {
+    init_attribute: function(name) {
+        attributes[name].location = gl.getAttribLocation(shaderProgram, name);
+        gl.enableVertexAttribArray(attributes[name].location);
+    },
+
+    init_uniform: function(name) {
+        uniforms[name].location = gl.getUniformLocation(shaderProgram, name);
+    },
+    
+    // upload upload_attribute data
+    upload_attribute: function(name, data, size) {
+        attributes[name].buffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, attributes[name].buffer);
+        gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
+        attributes[name].size = size;
+    },
+    
+    // upload uniform data
+    upload_uniform: function(name, data) {
+        
+        var ndim = uniforms[name].ndim;
+        var size = uniforms[name].size;
+        var vartype = uniforms[name].vartype;
+        
+        var float_suffix = {true: 'f', false: 'i'};
+        var array_suffix = {true: 'v', false: ''};
+            
+        loc = uniforms[name].location;
+        
+        // scalar or vector uniform
+        if (!(ndim instanceof Array)) {
+            var funname = "uniform" + ndim + float_suffix[vartype == 'float'] + 
+                array_suffix[size > 0];
+            if (size > 0) {
+                gl[funname](loc, size, data);
+            }
+            else if (ndim == 1) {
+                gl[funname](loc, data);
+            }
+            else if (ndim == 2) {
+                gl[funname](loc, data[0], data[1]);
+            }
+            else if (ndim == 3) {
+                gl[funname](loc, data[0], data[1], data[2]);
+            }
+            else if (ndim == 4) {
+                gl[funname](loc, data[0], data[1], data[2], data[3]);
+            }
+        }
+        // matrix uniform
+        else {
+            var funname = "uniformmatrix" + ndim[0] + "fv";
+            gl[funname](loc, 1, false, data);
+        }
+    },
+    
+    bind_buffer: function(name) {
+        gl.bindBuffer(gl.ARRAY_BUFFER, attributes[name].buffer);
+        gl.vertexAttribPointer(attributes[name].location,
+                attributes[name].ndim, gl.FLOAT, false, 0, 0);
+    },
+};
+
+
 var triangleVertexPositionBuffer;
+var colorBuffer;
 
 // Initialize the shader variables
 function initVariables() {
-    // position attribute
-    shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "position");
-    gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
 
-    // translation uniform
-    shaderProgram.scale = gl.getUniformLocation(shaderProgram, "scale");
-    shaderProgram.translation = gl.getUniformLocation(shaderProgram, "translation");
+    dataloader.init_attribute("position");
+    dataloader.init_attribute("color");
     
-    // triangle position attribute
-    triangleVertexPositionBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, triangleVertexPositionBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, byteArray, gl.STATIC_DRAW);
-    triangleVertexPositionBuffer.itemSize = 2;
-    triangleVertexPositionBuffer.numItems = 1000;
+    dataloader.init_uniform("scale");
+    dataloader.init_uniform("translation");
+    
+    dataloader.upload_attribute("position", byteArray, 1000);
+    dataloader.upload_attribute("color", byteArray, 1000);
 }
 
 // Render the scene
@@ -166,14 +272,17 @@ function drawScene() {
     gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
     gl.clear(gl.COLOR_BUFFER_BIT);
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, triangleVertexPositionBuffer);
-    gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute,
-            triangleVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
     
-    gl.uniform2f(shaderProgram.translation, nav.tx, nav.ty);
-    gl.uniform2f(shaderProgram.scale, nav.sx, nav.sy);
+    dataloader.bind_buffer("position");
+    dataloader.bind_buffer("color");
     
-    gl.drawArrays(gl.LINE_STRIP, 0, triangleVertexPositionBuffer.numItems);
+    /*gl[uniforms.translation.funname](uniforms.translation.location, nav.tx, nav.ty);
+    gl[uniforms.translation.funname](uniforms.scale.location, nav.sx, nav.sy);*/
+    
+    dataloader.upload_uniform("translation", [nav.tx, nav.ty]);
+    dataloader.upload_uniform("scale", [nav.sx, nav.sy]);
+    
+    gl.drawArrays(gl.LINE_STRIP, 0, attributes.position.size);
 }
 
 var debugObj;
@@ -181,13 +290,18 @@ var debug = function(text) {
     debugObj.html(text.toString());
 }
 
+
+// Size of the canvas.
 width = 640.;
 height = 480.;
 
+// Convert mouse coordinates in absolute screen coordinates into relative
+// GL coordinates.
 function get_pos(e) {
     return [2 * e.pageX / width - 1, -(2 * e.pageY / height - 1)];
 }
 
+// Process an interaction event and call the associated navigation methods
 function process_event() {
     if (gen.action == actions.LeftButtonMouseMoveAction) {
         nav.pan(gen.mouse_position_diff[0], gen.mouse_position_diff[1]);

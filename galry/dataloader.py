@@ -3,7 +3,7 @@ import OpenGL.GL as gl
 from primitives import PrimitiveType, GL_PRIMITIVE_TYPE_CONVERTER
 from tools import enforce_dtype
 from debugtools import log_debug, log_info, log_warn
-from templates.datatemplate import OLDGLSL
+from templates.datatemplate import OLDGLSL, _get_uniform_function_name
 
 
 __all__ = ['DataLoader']
@@ -48,7 +48,7 @@ def validate_texture(data):
     of unsigned 8-bits integers between 0 and 255."""
     return np.array(255 * data, dtype=np.uint8)
     
-    
+
 # VBO functions
 # -------------
 
@@ -449,14 +449,9 @@ class DataLoader(object):
         """
         # define GL uniform
         uniform = self.uniforms[name]
-        if "location" not in uniform:
-            uniform["location"] = gl.glGetUniformLocation(
-                self.shaders_program, name)
-    
-        float_suffix = {True: 'f', False: 'i'}
-        array_suffix = {True: 'v', False: ''}
-            
+        
         vartype = uniform["vartype"]
+        ndim = uniform["ndim"]
         size = uniform.get("size", None)
         
         data = uniform.get("data", None)
@@ -464,30 +459,26 @@ class DataLoader(object):
             raise RuntimeError("No data found for uniform %s, skipping data uploading"\
                 % name)
         
-        # TODO: register function name at initialization time instead
-
-        args = (uniform["location"],)
+        if "location" not in uniform:
+            uniform["location"] = gl.glGetUniformLocation(
+                self.shaders_program, name)
+    
+        funname, args = _get_uniform_function_name(uniform)
+        # add the location as a first argument
+        args = (uniform["location"],) + args
         
+        # add the data as a last argument
         # scalar or vector uniform
-        if type(uniform["ndim"]) == int or type(uniform["ndim"]) == long:
-            # find function name
-            funname = "glUniform%d%s%s" % (uniform["ndim"], \
-                                           float_suffix[vartype == "float"], \
-                                           array_suffix[size is not None])
-
-            # find function arguments
+        if type(ndim) == int or type(ndim) == long:
             if size is not None:
-                args += (size, data)
-            elif uniform["ndim"] == 1:
                 args += (data,)
-            elif uniform["ndim"] > 1:
+            elif ndim == 1:
+                args += (data,)
+            elif ndim > 1:
                 args += tuple(data)
-                
         # matrix uniform
-        elif type(uniform["ndim"]) == tuple:
-            # find function name
-            funname = "glUniformMatrix%dfv" % (uniform["ndim"][0])
-            args += (1, False, data)
+        elif type(ndim) == tuple:
+            args += (data,)
         
         # get the function from its name
         fun = getattr(gl, funname)
@@ -526,7 +517,7 @@ class DataLoader(object):
             self.invalidated[name] = False
  
 
- # GL shader methods
+    # GL shader methods
     # -----------------
     def compile_shaders(self):
         """Compile the shaders.
