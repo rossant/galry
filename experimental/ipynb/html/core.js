@@ -1,10 +1,4 @@
 
-// Convert mouse coordinates in absolute screen coordinates into relative
-// GL coordinates.
-/*function get_pos(e) {
-    return [2 * e.pageX / width - 1, -(2 * e.pageY / height - 1)];
-}*/
-
 
 // Main function
 function webGLStart() {
