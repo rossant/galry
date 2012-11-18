@@ -46,8 +46,8 @@ void main()
 
 else:
     VS_TEMPLATE = """
-%GLSL_VERSION_HEADER%
-//precision mediump float;
+//%GLSL_VERSION_HEADER%
+precision mediump float;
 
 %VERTEX_HEADER%
 void main()
@@ -58,8 +58,8 @@ void main()
 """
 
     FS_TEMPLATE = """
-%GLSL_VERSION_HEADER%
-//precision mediump float;
+//%GLSL_VERSION_HEADER%
+precision mediump float;
 
 %FRAGMENT_HEADER%
 void main()

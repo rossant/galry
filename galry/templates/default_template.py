@@ -10,8 +10,8 @@ class DefaultTemplate(DataTemplate):
         
         # dynamic navigation
         if not is_static:
-            self.add_uniform("scale", vartype="float", ndim=2)
-            self.add_uniform("translation", vartype="float", ndim=2)
+            self.add_uniform("scale", vartype="float", ndim=2, data=(1., 1.))
+            self.add_uniform("translation", vartype="float", ndim=2, data=(0., 0.))
             
             self.add_vertex_header("""
 // Transform a position according to a given scaling and translation.
@@ -31,8 +31,8 @@ return scale * (position + translation);
         
     def add_constrain_ratio(self, constrain_ratio=False):
         """Add viewport-related code."""
-        self.add_uniform("viewport", vartype="float", ndim=2)
-        self.add_uniform("window_size", vartype="float", ndim=2)
+        self.add_uniform("viewport", vartype="float", ndim=2, data=(1., 1.))
+        self.add_uniform("window_size", vartype="float", ndim=2, data=(100., 100.))
         if constrain_ratio:
             self.add_vertex_main("gl_Position.xy = gl_Position.xy / viewport;")
 

@@ -1,6 +1,11 @@
 
 function get_pos(e) {
-    return [2 * e.pageX / width - 1, -(2 * e.pageY / height - 1)];
+    var offset = $("#canvas").offset();
+    var x = e.pageX - offset.left;
+    var y = e.pageY - offset.top;
+    x = 2 * x / width - 1;
+    y = -(2 * y / height - 1);
+    return [x, y];
 }
 
 // Return the inf norm between two points.

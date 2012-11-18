@@ -1,6 +1,8 @@
 Galry: high-performance interactive 2D visualization in Python
 ==============================================================
 
+  * data holder, template.size, allow dynamic change of template size, etc.
+
   * try to reproduce bug with violation memory access when there are several
     widgets within a main window (concurrency issue in pyopengl?)
   * user preferences, with DEBUG option

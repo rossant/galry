@@ -210,7 +210,10 @@ class PaintManager(object):
         shaders, and compiling them. No data is uploaded on the GPU yet."""
         for dataset in self.datasets:
             self.initialize_dataset(dataset)
-            dataset["loader"].compile_shaders()
+            try:
+                dataset["loader"].compile_shaders()
+            except:
+                log_warn("error while compiling shaders")
         self.is_initialized = True
  
     
