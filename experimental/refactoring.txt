@@ -1,0 +1,148 @@
+Some ideas about refactoring of the rendering module
+
+The goal of this refactoring is to:
+
+  * simplify the code
+  * improve the design of how data is associated to a template
+  * make it very easy to dynamically change the size of datasets
+  * have an independent module that does not depend on PyOpenGL and that can
+    be used for the high-level interface and for the WebGL version
+
+A few new abstraction layers are introduced to decouple between the logic
+of the scene, the datasets, the templates, the data, and the actual
+rendering process. This way, the same logic can be used for the PyOpenGL
+renderer, and the Javascript webgl renderer (in this case, the whole logic
+is serialized and sent as text to the javascript renderer).
+    
+Definitions
+-----------
+    
+A scene is defined by a set of datasets.
+
+A dataset is defined by:
+  
+  * a template
+  * a dataholder, containing data associated to the template's fields
+  
+A template is defined by a set of variables, and a shader generator which
+creates vertex and fragment shader codes from the template parameters.
+  
+A variable is defined by:
+
+  * its type: attribute, uniform, texture, or varying.
+  * whether it's a float or an int,
+  * its dimension (scalar or vector of size 2 to 4)
+  * its size if it's an array
+
+A template can be parametrized, i.e. can have some parameters that depend
+on the data (like the size of some uniforms or the dimension of some
+attributes).
+
+
+Needs for the high-level Python interface
+-----------------------------------------
+
+This pylab-like interface can be used in Python and in the IPython notebook.
+In the latter case, the dependency to PyOpenGL should not be necessary, since
+the whole rendering process will be done by WebGL.
+
+The high-level commands yield a combination of datasets with well-defined
+templates and data (and full shader codes, that may be customized according
+to what the renderer will be in the next step).
+
+Then, there's a renderer object which takes this information and calls the 
+OpenGL-related functions to:
+  
+  * compile the shaders
+  * initialize the rendering engine
+  * upload the data
+  * render the scene
+  
+
+The DataHolder holds data related to a template, including the size.
+
+dataset = template + dataholder
+
+Scene = set of datasets
+
+
+A Scene is described in PaintManager.initialize()
+which calls PaintManager.create_dataset().
+This method defines the template and all the data fields associated to it.
+
+PaintManager.add_scene(PlotScene, x=..., y=..., color=..., )
+
+
+Scene.__init__(**kwargs)
+generates a set of datasets with templates and dataholders
+it should contain mostly dictionaries with serializable data (except data which
+are Numpy arrays)
+
+Then a SceneSerializer serializes it (eg binary data => base64)
+
+
+plot(x, y, '-o')
+
+        ||
+        \/
+
+PlotScene object with:
+    dataset1 (name)
+        PlotTemplate, LineStrip, vertex_shader, fragment_shader...
+        DataHolder
+    dataset2 (name)
+        PlotTemplate, Points, vertex_shader, fragment_shader...
+        DataHolder
+        
+        
+The PaintManager defines a unique scene with create_dataset and set_data.
+But there are predefined scenes with some input parameters/data that can be
+directly added to the paint manager, which "add_scene". Scenes are also
+useful for the high-level interface, they offer a higher level of
+abstraction for defining a plot, that can be complex with multiple plot
+types (ie multiple datasets), axes, overlays, text, etc, all of that
+in the same scene.
+        
+        
+This object should be fully serializable into a dict (JSON).
+
+        ||
+        \/
+
+The renderer takes a scene and renders it (backend).
+It can also update data, and the size of each dataset is not fixed.
+It can change on updates.
+
+There is a base renderer, and GLRenderer(BaseRenderer).
+The GLRenderer is already mostly implemented in PaintManager and DataLoader.
+        
+Renderer.__init__(scene)
+Renderer.initialize(scene)
+    initialize the GPU, compile the shaders
+
+Renderer.load_data(dataset=None, **kwargs)
+or load_data(dataset=dataset, dataholder=dataholder)
+    load data on the GPU for the given dataset
+
+Renderer.paint()
+    paint all datasets
+    
+A Javascript WebGLRenderer will also need to be written (it is already mostly
+done, named dataloader for now).
+
+
+
+Javascript library
+------------------
+
+The WebGLRenderer object needs to be written. It takes a deserialized JSON
+Scene object with everything in it (datasets, templates, shader codes, data
+as a binary object, etc.) and renders everything within a canvas.
+It also implements set_data functions, which are called by the javascript
+interaction manager.
+
+There is a SceneDeserializer object which takes a serialized version of the scene
+and returns a javascript object with binary data.
+
+
+
