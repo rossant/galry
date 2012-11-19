@@ -13,16 +13,20 @@ of the scene, the datasets, the templates, the data, and the actual
 rendering process. This way, the same logic can be used for the PyOpenGL
 renderer, and the Javascript webgl renderer (in this case, the whole logic
 is serialized and sent as text to the javascript renderer).
+
+New features:
+  * index buffers
+  * use the same buffer in different templates
+  * new abstraction layer (Scene) that can be serialized and that can be used
+    in javascript with a WebGL renderer, or any other renderer
     
 Definitions
 -----------
     
-A scene is defined by a set of datasets.
+A scene is defined by a set of datasets, and a data holder, containing data
+associated to the templates' fields.
 
-A dataset is defined by:
-  
-  * a template
-  * a dataholder, containing data associated to the template's fields
+A dataset is defined by a template.
   
 A template is defined by a set of variables, and a shader generator which
 creates vertex and fragment shader codes from the template parameters.
@@ -143,6 +147,106 @@ interaction manager.
 
 There is a SceneDeserializer object which takes a serialized version of the scene
 and returns a javascript object with binary data.
+
+
+
+
+Example of the expected JSON serialization of a GraphScene
+----------------------------------------------------------
+
+### SCENE
+
+{templates: [
+    {size: 100,
+     primitive_type: Points,
+     fields: [
+        {name: position,
+         id: node_position,
+         vartype: float,
+         ndim: 2,
+         shader_type: attribute,
+         data: BASE64ENCODEDSTRING,
+        },
+        ...
+     ],
+     vertex_shader: "...",
+     fragment_shader: "...",
+     },
+    {size: 300,
+     primitive_type: Lines,
+     fields: [
+        {name: position,
+         ref: 'node_position'},
+        {name: edge_indices,
+         shader_type: indices,
+         data: BASE64ENCODEDSTRING,
+        }],
+     vertex_shader: "...",
+     fragment_shader: "...",
+     }
+     ],
+}
+
+The PaintManager creates a Scene with user-provided data and generates
+the shader codes. The output is a Scene.
+
+Then, the renderer takes the Scene as input and renders it. All the information
+needed to render anything on the screen is contained in the scene, and
+the creation of the buffers, loading data, compiling shaders, etc. happens
+using the Scene information.
+
+
+PaintManager
+------------
+
+
+class GraphEdgeTemplate():
+    def initialize(self):
+        # This creates a new attribute, but no new buffer is associated to it.
+        # Rather, a "edge_position" attribute is expected to exist in the
+        # Scene, and that same buffer will be used by the Renderer.
+        self.add_attribute("position", ref="edge_position")
+        self.add_indices("edge", data=np.arange(N, dtype=np.int32))
+
+        
+create_dataset ==> add_template
+
+def initialize(self, **kwargs):
+    self.add_template(GraphNodeTemplate, color=..., position=...)
+    self.add_template(GraphEdgeTemplate, color=...)
+
+At the end of initialize(), a Scene object is created.
+
+
+
+TODO
+----
+
+  * Write a Scene object example (Graph example) as a Python dict
+  * Write a GLRenderer class that takes this Scene dict as input, and
+    display it on screen. It should be as standalone as possible with respect
+    to the rest of Galry's code.
+  * Write a new PaintTemplate class that creates a template dynamically. The
+    size should not be a parameter of the template. There should be methods
+    to generate the shader codes.
+  * Write a new PaintManager class that creates a Scene object dynamically,
+    with add_template and set_data methods.
+  * Write the SceneSerializer and SceneDeserializer in Python.
+  
+  * Write a WebGLRenderer class in Javascript, as a standalone Javascript 
+    object, in a standalone HTML page.
+  * Write the SceneDeserializer in Javascript.
+
+
+Looking for a better word as a replacement for DataTemplate/Dataset.
+Art lexical field. This word describes something that is rendered on the screen,
+any object, whether it's a set of lines, of points, of polygons, of textures,
+of characters, etc. The point is that it's a homogeneous set of basic elements,
+or primitives.
+
+brush, craft, drawing, visual
+
+http://www.enchantedlearning.com/wordlist/art.shtml
 
 
 

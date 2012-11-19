@@ -84,7 +84,7 @@ class GraphPaintManager(PaintManager):
             primitive_type=PrimitiveType.Points)
 
         # add dataset with the edges
-        coledges = np.hstack((color[edges,:], .25 * np.ones((len(edges), 1))))
+        coledges = np.hstack((color[edges,:], .5 * np.ones((len(edges), 1))))
         self.create_dataset(PlotTemplate, position=posedges,
             primitive_type=PrimitiveType.Lines, color=coledges)
             
