@@ -1,5 +1,6 @@
 VS = """
-precision mediump float;
+#version 100
+//precision mediump float;
 
 attribute vec2 position;
 
@@ -10,8 +11,8 @@ return scale * (position + translation);
             
 void main()
 {
-    vec2 scale = (1., 1.);
-    vec2 translation = (0., 0.);
+    vec2 scale = vec2(1., 1.);
+    vec2 translation = vec2(0., 0.);
     gl_Position = vec4(transform_position(position, scale, translation), 
                    0., 1.);
     gl_PointSize = 16;
@@ -19,7 +20,8 @@ void main()
 """
 
 FS = """
-precision mediump float;
+#version 100
+//precision mediump float;
 
 //uniform sampler2D tex;
 

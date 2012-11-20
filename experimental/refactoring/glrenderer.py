@@ -2,7 +2,19 @@ from galry import QtGui, QtCore, QtOpenGL
 from galry import log_info
 from QtOpenGL import QGLWidget
 import OpenGL.GL as gl
+import numpy as np
 
+def enforce_dtype(arr, dtype, msg=""):
+    """Force the dtype of a Numpy array."""
+    if isinstance(arr, np.ndarray):
+        if arr.dtype is not np.dtype(dtype):
+            log_debug("enforcing dtype for array %s %s" % (str(arr.dtype), msg))
+            return np.array(arr, dtype)
+    return arr
+    
+    
+    
+    
 
 # Low-level OpenGL functions to initialize/load variables
 # -------------------------------------------------------
@@ -41,7 +53,7 @@ class Attribute(object):
         gl.glDeleteBuffers(1, buffer)
         
         
-class Uniform(object):
+class Uniform(object):# TODO
     @staticmethod
     def create():
         pass
@@ -59,13 +71,13 @@ class Uniform(object):
         pass
 
 
-class Texture(object):
+class Texture(object):# TODO
     @staticmethod
     def create():
         pass
         
     @staticmethod
-    def bind():
+    def bind(buffer):
         pass
     
     @staticmethod
@@ -80,7 +92,9 @@ class Texture(object):
 # Shader manager
 # --------------
 class ShaderManager(object):
+    """Handle vertex and fragment shaders."""
     def __init__(self, vertex_shader, fragment_shader):
+        """Compile shaders and create a program."""
         self.vertex_shader = vertex_shader
         self.fragment_shader = fragment_shader
         # compile shaders
@@ -88,35 +102,37 @@ class ShaderManager(object):
         # create program
         self.program = self.create_program()
 
+    def compile_shader(self, source, shader_type):
+        """Compile a shader (vertex or fragment shader).
+        
+        Arguments:
+          * source: the shader source code as a string.
+          * shader_type: either gl.GL_VERTEX_SHADER or gl.GL_FRAGMENT_SHADER.
+        
+        """
+        # compile shader
+        shader = gl.glCreateShader(shader_type)
+        gl.glShaderSource(shader, source)
+        gl.glCompileShader(shader)
+        
+        result = gl.glGetShaderiv(shader, gl.GL_COMPILE_STATUS)
+        infolog = gl.glGetShaderInfoLog(shader)
+        if infolog:
+            infolog = "\n" + infolog
+        # check compilation error
+        if not(result):
+            msg = "Compilation error for %s." % str(shader_type)
+            msg += infolog
+            msg += source
+            raise RuntimeError(msg)
+        else:
+            log_info("Compilation succeeded for %s.%s" % (str(shader_type), infolog))
+        return shader
+        
     def compile(self):
         """Compile the shaders."""
-        # compile vertex shader
-        vs = gl.glCreateShader(gl.GL_VERTEX_SHADER)
-        gl.glShaderSource(vs, self.vertex_shader)
-        gl.glCompileShader(vs)
-        
-        result = gl.glGetShaderiv(vs, gl.GL_COMPILE_STATUS)
-        # check compilation error
-        if not(result):
-            msg = "Compilation error:"
-            msg += gl.glGetShaderInfoLog(vs)
-            msg += self.vertex_shader
-            raise RuntimeError(msg)
-        
-        # compile fragment shader
-        fs = gl.glCreateShader(gl.GL_FRAGMENT_SHADER)
-        gl.glShaderSource(fs, self.fragment_shader)
-        gl.glCompileShader(fs)
-        
-        result = gl.glGetShaderiv(fs, gl.GL_COMPILE_STATUS)
-        # check compilation error
-        if not(result):
-            msg = "Compilation error:"
-            msg += gl.glGetShaderInfoLog(fs)
-            msg += self.fragment_shader
-            raise RuntimeError(msg)
-        
-        self.vs, self.fs = vs, fs
+        self.vs = self.compile_shader(self.vertex_shader, gl.GL_VERTEX_SHADER)
+        self.fs = self.compile_shader(self.fragment_shader, gl.GL_FRAGMENT_SHADER)
         
     def create_program(self):
         """Create shader program and attach shaders."""
@@ -138,29 +154,85 @@ class ShaderManager(object):
     def get_location(self, name):
         """Return the location of an attribute after the shaders have compiled."""
         return gl.glGetAttribLocation(self.program, name)
-
+  
+    def activate_shaders(self):
+        """Activate shaders for the rest of the rendering call."""
+        gl.glUseProgram(self.program)
+        
+    def deactivate_shaders(self):
+        """Deactivate shaders for the rest of the rendering call."""
+        gl.glUseProgram(0)
+        
 
 # Slicing classes
 # ---------------
 MAX_VBO_SIZE = 65000
 
 class Slicer(object):
-    # def __init__(self, size):
-        # self.set_size(size)
-    
-    def set_size(self, size):
-        self.size = size
+    @staticmethod
+    def _get_slices(size):
+        """Return a list of slices for a given dataset size.
         
-    def slice_count(self):
-        # DEBUG
-        return 1
-    
-    def slices(self):
-        """Return a list of slices. Each item is a pair (pos, size)
-        where pos is the position of that slice in the buffer, and size the
-        size of that slice."""
-        # DEBUG
-        return [(0, self.size)]
+        Arguments:
+          * size: the size of the dataset, i.e. the number of points.
+          
+        Returns:
+          * slices: a list of pairs `(position, slice_size)` where `position`
+            is the position of this slice in the original buffer, and
+            `slice_size` the slice size.
+        
+        """
+        maxsize = MAX_VBO_SIZE
+        nslices = int(np.ceil(size / float(maxsize)))
+        return [(i*maxsize, min(maxsize+1, size-i*maxsize)) for i in xrange(nslices)]
+
+    @staticmethod
+    def _slice_bounds(bounds, position, slice_size):
+        """Slice data bounds in a *single* slice according to the VBOs slicing.
+        
+        Arguments:
+          * bounds: the bounds as specified by the user in `create_dataset`.
+          * position: the position of the current slice.
+          * slice_size: the size of the current slice.
+        
+        Returns:
+          * bounds_sliced: the bounds for the current slice. It is a list an
+            1D array of integer indices.
+        
+        TODO: update and make it vectorized? (currently it is called once per
+        slice)
+        
+        """
+        # first bound index after the sliced VBO: nothing to paint
+        if bounds[0] >= position + slice_size:
+            bounds_sliced = None
+        # last bound index before the sliced VBO: nothing to paint
+        elif bounds[-1] < position:
+            bounds_sliced = None
+        # the current sliced VBO intersects the bounds: something to paint
+        else:
+            bounds_sliced = bounds
+            # get the bounds that fall within the sliced VBO
+            ind = (bounds_sliced>=position) & (bounds_sliced<position + slice_size)
+            bounds_sliced = bounds_sliced[ind]
+            # remove the onset (first index of the sliced VBO)
+            bounds_sliced -= position
+            # handle the case when the slice cuts between two bounds
+            if not ind[0]:
+                bounds_sliced = np.hstack((0, bounds_sliced))
+            if not ind[-1]:
+                bounds_sliced = np.hstack((bounds_sliced, slice_size))
+        return enforce_dtype(bounds_sliced, np.int32)
+        
+    def set_size(self, size, bounds):
+        self.size = size
+        self.bounds = bounds
+        # compute the data slicing with respect to bounds (specified in the
+        # template) and to the maximum size of a VBO.
+        self.slice_count = int(np.ceil(self.size / float(MAX_VBO_SIZE)))
+        self.slices = self._get_slices(self.size)
+        self.subdata_bounds = [self._slice_bounds(self.bounds, pos, size) \
+            for pos, size in self.slices]
        
        
 class SlicedAttribute(object):
@@ -173,7 +245,7 @@ class SlicedAttribute(object):
     def set_slicer(self, slicer):
         """Set the slicer."""
         self.slicer = slicer
-        self.slices = self.slicer.slices()
+        self.slices = self.slicer.slices
         self.size = self.slicer.size
         
     def create(self):
@@ -185,7 +257,7 @@ class SlicedAttribute(object):
         # NOTE: the slicer needs to be updated if the size of the data changes
         for buffer, (pos, size) in zip(self.attributes, self.slices):
             Attribute.bind(buffer, self.location)
-            Attribute.load(data[pos:size,:])
+            Attribute.load(data[pos:pos + size,:])
 
     def bind(self, slice):
         Attribute.bind(self.attributes[slice], self.location)
@@ -195,21 +267,27 @@ class SlicedAttribute(object):
 # -------------
 class Painter(object):
     """Provides low-level methods for calling OpenGL rendering commands."""
+    
     @staticmethod
     def draw_arrays(primtype, offset, size):
-        gl.glDrawArrays(gl.GL_POINTS, offset, size)
+        """Render an array of primitives."""
+        gl.glDrawArrays(primtype, offset, size)
         
     @staticmethod
-    def draw_multi_arrays():
-        pass
+    def draw_multi_arrays(bounds):
+        """Render several arrays of primitives."""
+        first = bounds[:-1]
+        count = np.diff(bounds)
+        primcount = len(bounds) - 1
+        gl.glMultiDrawArrays(gl_primitive_type, first, count, primcount)
         
     @staticmethod
     def draw_indexed_arrays():
-        pass
+        pass# TODO
         
     @staticmethod
     def draw_indexed_multi_arrays():
-        pass
+        pass# TODO
 
 
 # Visual renderer
@@ -221,20 +299,29 @@ class GLVisualRenderer(object):
         """Initialize the visual renderer, create the slicer, initialize
         all variables and the shaders."""
         self.visual = visual
+        # set the primitive type from its name
+        self.primitive_type = getattr(gl, "GL_%s" % self.visual['primitive_type'])
         # set the slicer
         self.slicer = Slicer()
-        self.update_size(self.visual['size'])
+        # get size and bounds
+        size = self.visual['size']
+        bounds = np.array(self.visual.get('bounds', [0, size]), np.int32)
+        self.update_size(size, bounds)
         # compile and link the shaders
         self.shader_manager = ShaderManager(self.visual['vertex_shader'],
                                             self.visual['fragment_shader'])
         # initialize all variables
         self.initialize_variables()
         
-    def update_size(self, size):
+    def update_size(self, size, bounds):
         """Update the size of the visual, and update the slicer too."""
         self.size = size
-        self.slicer.set_size(size)
-        self.slices = self.slicer.slices()
+        self.bounds = bounds
+        # update the slicer
+        self.slicer.set_size(size, bounds)
+        # update the slices and sub data bounds (bounds for each slice)
+        self.slices = self.slicer.slices
+        self.subdata_bounds = self.slicer.subdata_bounds
     
     
     # Variable methods
@@ -276,40 +363,40 @@ class GLVisualRenderer(object):
         variable['sliced_attribute'].load(variable.get('data', None))
         
     def initialize_texture(self, name):
-        pass
+        pass# TODO
         
     def initialize_uniform(self, name):
-        pass
+        pass# TODO
         
         
     # Loading methods
     # ---------------
     def load_variables(self):
-        pass
+        pass# TODO
         
     def load_attribute(self, name, data):
-        pass
+        pass# TODO
         
     def load_texture(self, name, data):
-        pass
+        pass# TODO
         
     def load_uniform(self, name, data):
-        pass
+        pass# TODO
         
         
     # Updating methods
     # ----------------
     def update_variables(self):
-        pass
+        pass# TODO
         
     def update_attribute(self, name, data):
-        pass
+        pass# TODO
         
     def update_texture(self, name, data):
-        pass
+        pass# TODO
         
     def update_uniform(self, name, data):
-        pass
+        pass# TODO
         
         
     # Binding methods
@@ -322,15 +409,31 @@ class GLVisualRenderer(object):
             Attribute.set_attribute(variable['location'], variable['ndim'])
             variable['sliced_attribute'].bind(slice)
             
+    def bind_textures(self, slice):
+        """Bind all textures of the visual for the given slice.
+        This method is used during rendering."""
+        textures = self.get_variables('texture')
+        for variable in textures:
+            Texture.bind(variable.get('buffer', None))
+            
         
     # Paint methods
     # -------------
     def paint(self):
+        """Paint the visual slice by slice."""
+        # activate the shaders
+        self.shader_manager.activate_shaders()
         for slice in xrange(len(self.slices)):
+            # get slice bounds
+            slice_bounds = self.subdata_bounds[slice]
+            # bind all attributes for that slice
             self.bind_attributes(slice)
-            Painter.draw_arrays(getattr(gl, "GL_%s" % self.visual['primitive_type']), 
-                0, 100)
-
+            # bind all texturex for that slice
+            self.bind_textures(slice)
+            # call the appropriate OpenGL rendering command
+            Painter.draw_arrays(self.primitive_type, slice_bounds[0],  slice_bounds[1] -  slice_bounds[0])
+            # TODO: handle multi arrays or indexed arrays
+            
         
 # Scene renderer
 # --------------
@@ -429,7 +532,7 @@ class GLRenderer(object):
         # retrieve a visual by its name
         if type(visual) == str:
             visual = self.get_visual(visual)
-        
+        # TODO
         
     # Rendering methods
     # -----------------
@@ -493,7 +596,7 @@ if __name__ == '__main__':
     
     
     
-     
+    
     class GLPlotWidget(QGLWidget):
         def set_renderer(self, renderer):
             self.renderer = renderer
@@ -506,7 +609,7 @@ if __name__ == '__main__':
      
         def resizeGL(self, width, height):
             self.renderer.resize(width, height)
- 
+
     # TEST WINDOW
     import sys
     class TestWindow(QtGui.QMainWindow):
@@ -517,10 +620,9 @@ if __name__ == '__main__':
             self.setGeometry(100, 100, 600, 600)
             self.setCentralWidget(self.widget)
             self.show()
- 
+
     # app = QtGui.QApplication(sys.argv)
     window = TestWindow()
     window.show()
     # app.exec_()
-    
-    
+

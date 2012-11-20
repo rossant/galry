@@ -225,8 +225,8 @@ At the end of initialize(), a Scene object is created.
 TODO
 ----
 
-  * Write a Scene object example (Graph example) as a Python dict
-  * Write a GLRenderer class that takes this Scene dict as input, and
+  * [DONE] Write a Scene object example (Graph example) as a Python dict
+  * [WIP] Write a GLRenderer class that takes this Scene dict as input, and
     display it on screen. It should be as standalone as possible with respect
     to the rest of Galry's code.
   * Write a new PaintTemplate class that creates a template dynamically. The
@@ -241,15 +241,4 @@ TODO
   * Write the SceneDeserializer in Javascript.
 
 
-Looking for a better word as a replacement for DataTemplate/Dataset.
-Art lexical field. This word describes something that is rendered on the screen,
-any object, whether it's a set of lines, of points, of polygons, of textures,
-of characters, etc. The point is that it's a homogeneous set of basic elements,
-or primitives.
-
-brush, craft, drawing, visual
-
-http://www.enchantedlearning.com/wordlist/art.shtml
-
-
-
+Dataset/template ====> VISUAL
