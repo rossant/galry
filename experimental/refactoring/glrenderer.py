@@ -53,23 +53,39 @@ class Attribute(object):
         gl.glDeleteBuffers(1, buffer)
         
         
-class Uniform(object):# TODO
-    @staticmethod
-    def create():
-        pass
-        
-    @staticmethod
-    def bind():
-        pass
+class Uniform(object):
+    float_suffix = {True: 'f', False: 'i'}
+    array_suffix = {True: 'v', False: ''}
+    # glUniform[Matrix]D[f][v]
     
     @staticmethod
-    def load(data):
-        pass
+    def load_scalar(location, data):
+        is_float = type(data) == float
+        funname = 'glUniform1%s' % Uniform.float_suffix[is_float]
+        getattr(gl, funname)(location, data)
+
+    @staticmethod
+    def load_vector(location, data):
+        is_float = type(data[0]) == float
+        ndim = len(data)
+        funname = 'glUniform%d%s' % (ndim, Uniform.float_suffix[is_float])
+        getattr(gl, funname)(location, *data)
+    
+    @staticmethod
+    def load_array(location, data):
+        is_float = (data.dtype == np.float32) or (data.dtype == np.float64)
+        size, ndim = data.shape
+        funname = 'glUniform%d%sv' % (ndim, Uniform.float_suffix[is_float])
+        getattr(gl, funname)(location, size, data)
         
     @staticmethod
-    def update(data):
-        pass
-
+    def load_matrix(location, data):
+        is_float = (data.dtype == np.float32) or (data.dtype == np.float64)
+        n, m = data.shape
+        # TODO: arrays of matrices?
+        funname = 'glUniformMatrix%dx%d%sv' % (n, m, Uniform.float_suffix[is_float])
+        getattr(gl, funname)(location, 1, False, data)
+        
 
 class Texture(object):# TODO
     @staticmethod
@@ -118,7 +134,7 @@ class ShaderManager(object):
         result = gl.glGetShaderiv(shader, gl.GL_COMPILE_STATUS)
         infolog = gl.glGetShaderInfoLog(shader)
         if infolog:
-            infolog = "\n" + infolog
+            infolog = "\n" + infolog.strip()
         # check compilation error
         if not(result):
             msg = "Compilation error for %s." % str(shader_type)
@@ -151,9 +167,13 @@ class ShaderManager(object):
         self.program = program
         return program
         
-    def get_location(self, name):
+    def get_attribute_location(self, name):
         """Return the location of an attribute after the shaders have compiled."""
         return gl.glGetAttribLocation(self.program, name)
+  
+    def get_uniform_location(self, name):
+        """Return the location of a uniform after the shaders have compiled."""
+        return gl.glGetUniformLocation(self.program, name)
   
     def activate_shaders(self):
         """Activate shaders for the rest of the rendering call."""
@@ -312,6 +332,7 @@ class GLVisualRenderer(object):
                                             self.visual['fragment_shader'])
         # initialize all variables
         self.initialize_variables()
+        self.load_variables()
         
     def update_size(self, size, bounds):
         """Update the size of the visual, and update the slicer too."""
@@ -346,7 +367,7 @@ class GLVisualRenderer(object):
     # ----------------------
     def initialize_variables(self):
         """Initialize all variables, after the shaders have compiled."""
-        for var in self.visual['variables']:
+        for var in self.get_variables():
             shader_type = var['shader_type']
             # call initialize_***(name) to initialize that variable
             getattr(self, 'initialize_%s' % shader_type)(var['name'])
@@ -355,40 +376,92 @@ class GLVisualRenderer(object):
         """Initialize an attribute: get the shader location, create the
         sliced buffers, and load the data."""
         # retrieve the location of that attribute in the shader
-        location = self.shader_manager.get_location(name)
+        location = self.shader_manager.get_attribute_location(name)
         variable = self.get_variable(name)
         variable['location'] = location
         # initialize the sliced buffers
         variable['sliced_attribute'] = SlicedAttribute(self.slicer, location)
-        variable['sliced_attribute'].load(variable.get('data', None))
         
     def initialize_texture(self, name):
         pass# TODO
         
     def initialize_uniform(self, name):
-        pass# TODO
+        """Initialize an uniform: get the location after the shaders have
+        been compiled."""
+        location = self.shader_manager.get_uniform_location(name)
+        variable = self.get_variable(name)
+        variable['location'] = location
         
         
     # Loading methods
     # ---------------
     def load_variables(self):
+        """Load data for all variables at initialization."""
+        for var in self.get_variables():
+            shader_type = var['shader_type']
+            # skip uniforms
+            if shader_type == 'uniform':
+                continue
+            # call load_***(name) to load that variable
+            getattr(self, 'load_%s' % shader_type)(var['name'])
+        
+    def load_uniforms(self):
+        """Load all uniforms.
+        
+        IMPORTANT NOTE: this method must be called during the rendering
+        phase, after glUseProgram.
+        
+        """
+        for var in self.get_variables('uniform'):
+            self.load_uniform(var['name'])
+        
+    def load_attribute(self, name, data=None):
+        """Load data for an attribute variable."""
+        variable = self.get_variable(name)
+        if data is None:
+            data = variable.get('data', None)
+        if data is not None:
+            variable['sliced_attribute'].load(data)
+        
+    def load_texture(self, name, data=None):
         pass# TODO
         
-    def load_attribute(self, name, data):
-        pass# TODO
-        
-    def load_texture(self, name, data):
-        pass# TODO
-        
-    def load_uniform(self, name, data):
-        pass# TODO
-        
-        
+    def load_uniform(self, name, data=None):
+        """Load data for an uniform variable."""
+        variable = self.get_variable(name)
+        location = variable['location']
+        if data is None:
+            data = variable.get('data', None)
+        if data is not None:
+            ndim = variable['ndim']
+            size = variable.get('size', None)
+            # one value
+            if not size:
+                # scalar or vector
+                if type(ndim) == int or type(ndim) == long:
+                    if ndim == 1:
+                        Uniform.load_scalar(location, data)
+                    else:
+                        Uniform.load_vector(location, data)
+                # matrix 
+                elif type(ndim) == tuple:
+                    Uniform.load_matrix(location, data)
+            # array
+            else:
+                # scalar or vector
+                if type(ndim) == int or type(ndim) == long:
+                    Uniform.load_array(location, data)
+                    
+            
     # Updating methods
     # ----------------
     def update_variables(self):
-        pass# TODO
-        
+        """Update data for all variables at initialization."""
+        for var in self.get_variables():
+            shader_type = var['shader_type']
+            # call update_***(name) to load that variable
+            getattr(self, 'update_%s' % shader_type)(var['name'])
+    
     def update_attribute(self, name, data):
         pass# TODO
         
@@ -423,6 +496,9 @@ class GLVisualRenderer(object):
         """Paint the visual slice by slice."""
         # activate the shaders
         self.shader_manager.activate_shaders()
+        # load uniforms
+        self.load_uniforms()
+        # draw all sliced buffers
         for slice in xrange(len(self.slices)):
             # get slice bounds
             slice_bounds = self.subdata_bounds[slice]

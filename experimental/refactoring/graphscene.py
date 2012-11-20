@@ -25,9 +25,12 @@ FS = """
 
 //uniform sampler2D tex;
 
+uniform vec4 color;
+
 void main()
 {
     vec4 out_color = vec4(1., 1., 1., 1.);
+    out_color = color;
     
     //out_color = texture2D(tex, gl_PointCoord);
         
@@ -60,6 +63,14 @@ GraphScene = {
                 'ndim': 2,
                 'shader_type': 'attribute',
                 'data': position,
+                },
+                
+                {
+                'name': 'color',
+                'vartype': 'float',
+                'ndim': 4,
+                'shader_type': 'uniform',
+                'data': (1., 1., 0., 1.),
                 },
                 
                 # {
