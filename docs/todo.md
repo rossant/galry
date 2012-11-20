@@ -19,6 +19,8 @@ Galry: high-performance interactive 2D visualization in Python
   * high level interface
   * bug: linux pyside segmentation fault
   * rename "bindings" to "mode"
+  * process_action(action, parameters) in interaction manager for quick 
+    interactivity
   
   * automatic benchmark test
   * automatic screenshots of the examples to generate a gallery

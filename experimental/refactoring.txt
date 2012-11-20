@@ -157,7 +157,9 @@ Example of the expected JSON serialization of a GraphScene
 ### SCENE
 
 {templates: [
-    {size: 100,
+    {
+     name: ...,
+     size: 100,
      primitive_type: Points,
      fields: [
         {name: position,
@@ -172,7 +174,8 @@ Example of the expected JSON serialization of a GraphScene
      vertex_shader: "...",
      fragment_shader: "...",
      },
-    {size: 300,
+    {name: ...,
+     size: 300,
      primitive_type: Lines,
      fields: [
         {name: position,
