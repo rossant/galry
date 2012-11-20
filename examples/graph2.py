@@ -33,10 +33,11 @@ class GraphPaintManager(PaintManager):
         # networkx, on the GPU. This might be a bottleneck when dealing with
         # large graphs, so one should consider doing that on the GPU is
         # possible
-        pos = nx.spring_layout(g)
+        # pos = nx.spring_layout(g)
         
         # get the array with the positions of all nodes
-        positions = np.vstack([pos[i] for i in xrange(len(pos))]) - .5
+        # positions = np.vstack([pos[i] for i in xrange(len(pos))]) - .5
+        positions = rdn.randn(100, 2) * .2
         
         # get the array with the positions of all edges.
         # NOTE: we're wasting a lot of memory and it should be better to use
@@ -152,7 +153,7 @@ class GraphInteractionManager(InteractionManager):
     
 class GraphBinding(DefaultBindingSet):
     def extend(self):
-        self.set(UserActions.LeftButtonMouseMoveAction,
+        self.set(UserActions.MiddleButtonMouseMoveAction,
             "NodeMoved", param_getter=lambda p: p["mouse_press_position"] + p["mouse_position"])
         
             

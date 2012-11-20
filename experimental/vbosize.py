@@ -5,7 +5,7 @@ import OpenGL.GL as gl
 
     
 count = 10
-samples = 500000
+samples = 5000000
 N = count * samples
 
 
@@ -28,7 +28,7 @@ class GLPlotWidget(QGLWidget):
         gl.glBufferData(gl.GL_ARRAY_BUFFER, self.color, gl.GL_DYNAMIC_DRAW)
         
         self.count = count
-        self.first = np.arange(0, self.size, samples)
+        self.first = np.array(np.arange(0, self.size, samples), dtype=np.int32)
         self.counts = samples * np.ones(count, dtype=np.int32)
         
     def paintGL(self):
@@ -61,7 +61,7 @@ if __name__ == '__main__':
             super(TestWindow, self).__init__()
             data = .05 * np.array(rdn.randn(1, 2), dtype=np.float32)
             data = np.tile(data, (N, 1))
-            data[:,1] += .5
+            data[-1,:] += .5
             self.widget = GLPlotWidget()
             self.widget.set_data(data)
             self.setGeometry(100, 100, self.widget.width, self.widget.height)

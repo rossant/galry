@@ -269,6 +269,9 @@ class GalryWidget(QGLWidget):
                     vx = a
                 else:
                     vy = 1. / a
+        # viewport contains the coordinates of the upper-right corner
+        # the viewport is at all times symmetrical with respect to the center
+        # of the window
         self.viewport = (vx, vy)
         self.paint_manager.set_viewport(viewport=self.viewport,
             window_size=(width, height))
