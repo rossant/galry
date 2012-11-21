@@ -1,5 +1,5 @@
 from galry import QtGui, QtCore, QtOpenGL
-from galry import log_info
+from galry import log_info, log_debug, log_warn
 from QtOpenGL import QGLWidget
 import OpenGL.GL as gl
 import numpy as np
@@ -34,27 +34,37 @@ class Attribute(object):
         gl.glVertexAttribPointer(location, ndim, gl.GL_FLOAT, gl.GL_FALSE, 0, None)
     
     @staticmethod
+    def convert_data(data):
+        return enforce_dtype(data, np.float32)
+    
+    @staticmethod
     def load(data):
         """Load data in the buffer for the first time. The buffer must
         have been bound before."""
+        data = Attribute.convert_data(data)
         gl.glBufferData(gl.GL_ARRAY_BUFFER, data, gl.GL_DYNAMIC_DRAW)
         
     @staticmethod
     def update(data, onset=0):
         """Update data in the currently bound buffer."""
+        data = Attribute.convert_data(data)
         # convert onset into bytes count
         onset *= data.shape[1] * data.itemsize
-        gl.glBufferSubData(gl.GL_ARRAY_BUFFER, onset, data)
+        gl.glBufferSubData(gl.GL_ARRAY_BUFFER, int(onset), data)
     
     @staticmethod
-    def delete(buffer):
-        gl.glDeleteBuffers(1, buffer)
+    def delete(*buffers):
+        gl.glDeleteBuffers(len(buffers), buffers)
         
         
 class Uniform(object):
     float_suffix = {True: 'f', False: 'i'}
     array_suffix = {True: 'v', False: ''}
     # glUniform[Matrix]D[f][v]
+    
+    @staticmethod
+    def convert_data(data):
+        return enforce_dtype(data, np.float32)
     
     @staticmethod
     def load_scalar(location, data):
@@ -71,14 +81,16 @@ class Uniform(object):
     
     @staticmethod
     def load_array(location, data):
-        is_float = (data.dtype == np.float32) or (data.dtype == np.float64)
+        data = Attribute.convert_data(data)
+        is_float = (data.dtype == np.float32)
         size, ndim = data.shape
         funname = 'glUniform%d%sv' % (ndim, Uniform.float_suffix[is_float])
         getattr(gl, funname)(location, size, data)
         
     @staticmethod
     def load_matrix(location, data):
-        is_float = (data.dtype == np.float32) or (data.dtype == np.float64)
+        data = Attribute.convert_data(data)
+        is_float = (data.dtype == np.float32)
         n, m = data.shape
         # TODO: arrays of matrices?
         funname = 'glUniformMatrix%dx%d%sv' % (n, m, Uniform.float_suffix[is_float])
@@ -297,7 +309,11 @@ class Slicer(object):
                 bounds_sliced = np.hstack((bounds_sliced, slice_size))
         return enforce_dtype(bounds_sliced, np.int32)
         
-    def set_size(self, size, bounds):
+    def set_size(self, size, bounds=None):
+        """Update the total size of the buffer and/or the bounds, and update
+        the slice information accordingly."""
+        if bounds is None:
+            bounds = np.array([0, size], dtype=np.int32)
         self.size = size
         self.bounds = bounds
         # compute the data slicing with respect to bounds (specified in the
@@ -318,27 +334,46 @@ class SlicedAttribute(object):
     def set_slicer(self, slicer):
         """Set the slicer."""
         self.slicer = slicer
-        self.slices = self.slicer.slices
-        self.size = self.slicer.size
         
     def create(self):
         """Create the sliced buffers."""
-        self.attributes = [Attribute.create() for _ in self.slices]
+        self.buffers = [Attribute.create() for _ in self.slicer.slices]
+    
+    def delete_buffers(self):
+        """Delete all sub-buffers."""
+        # for buffer in self.buffers:
+        Attribute.delete(*self.buffers)
     
     def load(self, data):
         """Load data on all sliced buffers."""
-        # NOTE: the slicer needs to be updated if the size of the data changes
-        for buffer, (pos, size) in zip(self.attributes, self.slices):
+        for buffer, (pos, size) in zip(self.buffers, self.slicer.slices):
             Attribute.bind(buffer, self.location)
             Attribute.load(data[pos:pos + size,:])
 
     def bind(self, slice):
-        Attribute.bind(self.attributes[slice], self.location)
+        Attribute.bind(self.buffers[slice], self.location)
         
-    def update(self):
-        pass# TODO
-        
+    def update(self, data, mask=None):
+        """Update data on all sliced buffers."""
+        # NOTE: the slicer needs to be updated if the size of the data changes
+        # default mask
+        if mask is None:
+            mask = np.ones(self.slicer.size, dtype=np.bool)
+        # is the current subVBO within the given [onset, offset]?
+        within = False
+        # update VBOs
+        for buffer, (pos, size) in zip(self.buffers, self.slicer.slices):
+            subdata = data[pos:pos + size,:]
+            submask = mask[pos:pos + size]
+            # if there is at least one True in the slice mask (submask)
+            if submask.any():
+                # this sub-buffer contains updated indices
+                subonset = submask.argmax()
+                suboffset = len(submask) - 1 - submask[::-1].argmax()
+                Attribute.bind(buffer, self.location)
+                Attribute.update(subdata[subonset:suboffset + 1, :], subonset)
 
+    
 # Painter class
 # -------------
 class Painter(object):
@@ -371,6 +406,9 @@ class Painter(object):
 class GLVisualRenderer(object):
     """Handle rendering of one visual"""
     
+    # hold all data changes until the next rendering pass happens
+    data_updating = {}
+    
     def __init__(self, visual):
         """Initialize the visual renderer, create the slicer, initialize
         all variables and the shaders."""
@@ -382,7 +420,8 @@ class GLVisualRenderer(object):
         # get size and bounds
         size = self.visual['size']
         bounds = np.array(self.visual.get('bounds', [0, size]), np.int32)
-        self.update_size(size, bounds)
+        # self.update_size(size, bounds)
+        self.slicer.set_size(size, bounds)
         # compile and link the shaders
         self.shader_manager = ShaderManager(self.visual['vertex_shader'],
                                             self.visual['fragment_shader'])
@@ -390,17 +429,6 @@ class GLVisualRenderer(object):
         self.initialize_variables()
         self.load_variables()
         
-    def update_size(self, size, bounds):
-        """Update the size of the visual, and update the slicer too."""
-        self.size = size
-        self.bounds = bounds
-        # update the slicer
-        self.slicer.set_size(size, bounds)
-        # update the slices and sub data bounds (bounds for each slice)
-        self.slices = self.slicer.slices
-        self.subdata_bounds = self.slicer.subdata_bounds
-    
-    
     # Variable methods
     # ----------------
     def get_variables(self, shader_type=None):
@@ -415,7 +443,8 @@ class GLVisualRenderer(object):
         """Return a variable by its name."""
         variables = [v for v in self.get_variables() if v.get('name', '') == name]
         if not variables:
-            raise ValueError("The variable %s has not been found" % name)
+            return None
+            # raise ValueError("The variable %s has not been found" % name)
         return variables[0]
         
         
@@ -425,8 +454,12 @@ class GLVisualRenderer(object):
         """Initialize all variables, after the shaders have compiled."""
         for var in self.get_variables():
             shader_type = var['shader_type']
+            name = var['name']
             # call initialize_***(name) to initialize that variable
-            getattr(self, 'initialize_%s' % shader_type)(var['name'])
+            getattr(self, 'initialize_%s' % shader_type)(name)
+        # special case for uniforms: need to load them the first time
+        uniforms = self.get_variables('uniform')
+        self.set_data(**dict([(v['name'], v['data']) for v in uniforms]))
     
     def initialize_attribute(self, name):
         """Initialize an attribute: get the shader location, create the
@@ -461,16 +494,6 @@ class GLVisualRenderer(object):
                 continue
             # call load_***(name) to load that variable
             getattr(self, 'load_%s' % shader_type)(var['name'])
-        
-    def load_uniforms(self):
-        """Load all uniforms.
-        
-        IMPORTANT NOTE: this method must be called during the rendering
-        phase, after glUseProgram.
-        
-        """
-        for var in self.get_variables('uniform'):
-            self.load_uniform(var['name'])
         
     def load_attribute(self, name, data=None):
         """Load data for an attribute variable."""
@@ -517,21 +540,70 @@ class GLVisualRenderer(object):
             
     # Updating methods
     # ----------------
-    def update_variables(self):
-        """Update data for all variables at initialization."""
-        for var in self.get_variables():
-            shader_type = var['shader_type']
-            # call update_***(name) to load that variable
-            getattr(self, 'update_%s' % shader_type)(var['name'])
+    def update_variable(self, name, data, **kwargs):
+        """Update data of a variable."""
+        variable = self.get_variable(name)
+        if variable is None:
+            log_info("Variable '%s' was not found, unable to update it." % name)
+        else:
+            shader_type = variable['shader_type']
+            getattr(self, 'update_%s' % shader_type)(name, data, **kwargs)
     
-    def update_attribute(self, name, data):
-        pass# TODO
+    def update_attribute(self, name, data, bounds=None):
+        """Update data for an attribute variable."""
+        variable = self.get_variable(name)
+        # handle size changing
+        if data.shape[0] != self.slicer.size:
+            # update the slicer size and bounds
+            self.slicer.set_size(data.shape[0], bounds)
+            # delete old buffers
+            variable['sliced_attribute'].delete_buffers()
+            # create new buffers
+            variable['sliced_attribute'].create()
+            # load data
+            variable['sliced_attribute'].load(data)
+        else:
+            # update data
+            variable['sliced_attribute'].update(data)
         
     def update_texture(self, name, data):
-        pass# TODO
+        """Update data for a texture variable."""
+        variable = self.get_variable(name)
+        Texture.bind(variable['buffer'], variable['ndim'])
+        Texture.update(data)
         
     def update_uniform(self, name, data):
-        pass# TODO
+        """Update data for an uniform variable."""
+        # the uniform interface is the same for load/update
+        self.load_uniform(name, data)
+        
+    def set_data(self, **kwargs):
+        """Load data for the specified visual. Uploading does not happen here
+        but in `update_all_variables` instead, since this needs to happen
+        after shader program binding in the paint method.
+        
+        Arguments:
+          * **kwargs: the data to update as name:value pairs. name can be
+            any field of the visual, plus one of the following keywords:
+              * size: the size of the visual,
+              * primitive_type: the GL primitive type,
+              * constrain_ratio: whether to constrain the ratio of the visual,
+              * constrain_navigation: whether to constrain the navigation,
+        
+        """
+        # we register the data changes here so that they can be actually be
+        # done later, in update_all_variables
+        # TODO: handle special keywords
+        self.data_updating.update(**kwargs)
+        
+    def update_all_variables(self):
+        """Upload all new data that needs to be updated."""
+        # go through all data changes
+        for name, data in self.data_updating.iteritems():
+            # log_info("Updating variable '%s'" % name)
+            self.update_variable(name, data)
+        # reset the data updating dictionary
+        self.data_updating.clear()
         
         
     # Binding methods
@@ -555,20 +627,20 @@ class GLVisualRenderer(object):
             else:
                 log_info("Texture '%s' was not propertly initialized." % \
                          variable['name'])
-            
-        
+
+
     # Paint methods
     # -------------
     def paint(self):
         """Paint the visual slice by slice."""
         # activate the shaders
         self.shader_manager.activate_shaders()
-        # load uniforms
-        self.load_uniforms()
+        # update all variables
+        self.update_all_variables()
         # draw all sliced buffers
-        for slice in xrange(len(self.slices)):
+        for slice in xrange(len(self.slicer.slices)):
             # get slice bounds
-            slice_bounds = self.subdata_bounds[slice]
+            slice_bounds = self.slicer.subdata_bounds[slice]
             # bind all attributes for that slice
             self.bind_attributes(slice)
             # bind all texturex for that slice
@@ -591,6 +663,7 @@ class GLRenderer(object):
     # --------------
     def __init__(self, scene):
         self.scene = scene
+        self.initialized = False
     
     def get_renderer_info(self):
         """Return information about the client renderer.
@@ -660,7 +733,9 @@ class GLRenderer(object):
     # Data methods
     # ------------
     def set_data(self, visual, **kwargs):
-        """Load data for the specified visual.
+        """Load data for the specified visual. Uploading does not happen here
+        but in `update_all_variables` instead, since this needs to happen
+        after shader program binding in the paint method.
         
         Arguments:
           * visual: the name of the visual as a string, or a visual dict.
@@ -673,9 +748,11 @@ class GLRenderer(object):
         
         """
         # retrieve a visual by its name
-        if type(visual) == str:
-            visual = self.get_visual(visual)
-        # TODO
+        if type(visual) == dict:
+            visual = visual['name']
+        # call set_data on the given visual renderer
+        self.visual_renderers[visual].set_data(**kwargs)
+        
         
     # Rendering methods
     # -----------------
@@ -687,7 +764,7 @@ class GLRenderer(object):
         # initialize the renderer options using the options set in the Scene
         self.set_renderer_options()
         # create the VisualRenderer objects
-        self.visual_renderers = [GLVisualRenderer(visual) for visual in self.get_visuals()]
+        self.visual_renderers = dict([(visual['name'], GLVisualRenderer(visual)) for visual in self.get_visuals()])
         
     def clear(self):
         """Clear the scene."""
@@ -699,17 +776,17 @@ class GLRenderer(object):
         
     def paint(self):
         """Paint the scene."""
+        # self.initialized = True
         # clear
         self.clear()
         # paint all visual renderers
-        for visual_renderer in self.visual_renderers:
+        for name, visual_renderer in self.visual_renderers.iteritems():
             visual_renderer.paint()
         
     def resize(self, width, height):
         """Resize the canvas and make appropriate changes to the scene."""
         # paint within the whole window
         gl.glViewport(0, 0, width, height)
-
         # compute the constrained viewport
         vx = vy = 1.0
         if height > 0:
@@ -718,14 +795,13 @@ class GLRenderer(object):
                 vx = a
             else:
                 vy = 1. / a
-                
         # update the viewport and window size for all visuals
         for visual in self.get_visuals():
             # get the appropriate viewport, depending on ratio constrain
             if visual.get('constrain_ratio', None):
                 viewport = vx, vy
             else:
-                viewport = 1, 1
+                viewport = 1., 1.
             # update viewport and window_size
             self.set_data(visual,
                           viewport=viewport,
@@ -764,8 +840,10 @@ if __name__ == '__main__':
             self.setCentralWidget(self.widget)
             self.show()
 
-    app = QtGui.QApplication(sys.argv)
+    # app = QtGui.QApplication(sys.argv)
     window = TestWindow()
     window.show()
-    app.exec_()
+    # app.exec_()
 
+
+    

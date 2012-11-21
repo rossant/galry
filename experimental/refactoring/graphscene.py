@@ -3,6 +3,7 @@ VS = """
 //precision mediump float;
 
 attribute vec2 position;
+uniform vec2 viewport;
 
 vec2 transform_position(vec2 position, vec2 scale, vec2 translation)
 {
@@ -15,6 +16,9 @@ void main()
     vec2 translation = vec2(0., 0.);
     gl_Position = vec4(transform_position(position, scale, translation), 
                    0., 1.);
+                   
+    gl_Position.xy = gl_Position.xy / viewport;
+    
     gl_PointSize = 16;
 }
 """
@@ -30,7 +34,7 @@ uniform vec4 color;
 void main()
 {
     vec4 out_color = vec4(1., 1., 1., 1.);
-    out_color = color;
+    //out_color = color;
     
     out_color = texture2D(tex, gl_PointCoord) * color;
         
@@ -82,6 +86,14 @@ GraphScene = {
                 'data': tex,
                 },
                 
+                
+                {
+                'name': 'viewport',
+                'vartype': 'float',
+                'ndim': 2,
+                'shader_type': 'uniform',
+                'data': (1., 1.),
+                },
             ],
             'vertex_shader': VS,
             'fragment_shader': FS,
