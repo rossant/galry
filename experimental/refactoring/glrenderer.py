@@ -31,10 +31,12 @@ class Attribute(object):
         
     @staticmethod
     def set_attribute(location, ndim):
+        """Specify the type of the attribute before rendering."""
         gl.glVertexAttribPointer(location, ndim, gl.GL_FLOAT, gl.GL_FALSE, 0, None)
     
     @staticmethod
     def convert_data(data):
+        """Force 32-bit floating point numbers for data."""
         return enforce_dtype(data, np.float32)
     
     @staticmethod
@@ -54,6 +56,7 @@ class Attribute(object):
     
     @staticmethod
     def delete(*buffers):
+        """Delete buffers."""
         gl.glDeleteBuffers(len(buffers), buffers)
         
         
@@ -159,17 +162,24 @@ class Texture(object):
         """Update a texture."""
         # convert data in a array of uint8 in [0, 255]
         data = Texture.convert_data(data)
+        shape = data.shape
         # get texture info
         ndim, ncomponents, component_type = Texture.get_info(data)
+        textype = getattr(gl, "GL_TEXTURE_%dD" % ndim)
         # update buffer
         if ndim == 1:
-            gl.glTexSubImage1D(textype, 0, 0, size,
+            gl.glTexSubImage1D(textype, 0, 0, shape[1],
                                component_type, gl.GL_UNSIGNED_BYTE, data)
         elif ndim == 2:
-            gl.glTexSubImage2D(textype, 0, 0, 0, size[0], size[1],
+            gl.glTexSubImage2D(textype, 0, 0, 0, shape[0], shape[1],
                                component_type, gl.GL_UNSIGNED_BYTE, data)
 
+    @staticmethod
+    def delete(*buffers):
+        """Delete texture buffers."""
+        gl.glDeleteTextures(buffers)
 
+        
 # Shader manager
 # --------------
 class ShaderManager(object):
@@ -504,6 +514,7 @@ class GLVisualRenderer(object):
             variable['sliced_attribute'].load(data)
         
     def load_texture(self, name, data=None):
+        """Load data for a texture variable."""
         variable = self.get_variable(name)
         if data is None:
             data = variable.get('data', None)
@@ -552,6 +563,7 @@ class GLVisualRenderer(object):
     def update_attribute(self, name, data, bounds=None):
         """Update data for an attribute variable."""
         variable = self.get_variable(name)
+        variable['data'] = data
         # handle size changing
         if data.shape[0] != self.slicer.size:
             # update the slicer size and bounds
@@ -569,11 +581,27 @@ class GLVisualRenderer(object):
     def update_texture(self, name, data):
         """Update data for a texture variable."""
         variable = self.get_variable(name)
-        Texture.bind(variable['buffer'], variable['ndim'])
-        Texture.update(data)
+        prevshape = variable['data'].shape
+        variable['data'] = data
+        # handle size changing
+        if data.shape != prevshape:
+            # delete old buffers
+            Texture.delete(variable['buffer'])
+            variable['ndim'], variable['ncomponents'], _ = Texture.get_info(data)
+            # create new buffer
+            variable['buffer'] = Texture.create(variable['ndim'])
+            # load data
+            Texture.bind(variable['buffer'], variable['ndim'])
+            Texture.load(data)
+        else:
+            # update data
+            Texture.bind(variable['buffer'], variable['ndim'])
+            Texture.update(data)
         
     def update_uniform(self, name, data):
         """Update data for an uniform variable."""
+        variable = self.get_variable(name)
+        variable['data'] = data
         # the uniform interface is the same for load/update
         self.load_uniform(name, data)
         
@@ -840,10 +868,10 @@ if __name__ == '__main__':
             self.setCentralWidget(self.widget)
             self.show()
 
-    # app = QtGui.QApplication(sys.argv)
+    app = QtGui.QApplication(sys.argv)
     window = TestWindow()
     window.show()
-    # app.exec_()
+    app.exec_()
 
 
     
