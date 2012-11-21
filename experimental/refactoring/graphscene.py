@@ -23,7 +23,7 @@ FS = """
 #version 100
 //precision mediump float;
 
-//uniform sampler2D tex;
+uniform sampler2D tex;
 
 uniform vec4 color;
 
@@ -32,7 +32,7 @@ void main()
     vec4 out_color = vec4(1., 1., 1., 1.);
     out_color = color;
     
-    //out_color = texture2D(tex, gl_PointCoord);
+    out_color = texture2D(tex, gl_PointCoord) * color;
         
     gl_FragColor = out_color;
 }
@@ -73,14 +73,14 @@ GraphScene = {
                 'data': (1., 1., 0., 1.),
                 },
                 
-                # {
-                # 'name': 'tex',
-                # 'ndim': 2,
-                # 'ncomponents': 4,
-                # 'size': (16, 16),
-                # 'shader_type': 'texture',
-                # 'data': tex,
-                # },
+                {
+                'name': 'tex',
+                'ndim': 2,
+                'ncomponents': 4,
+                'size': (16, 16),
+                'shader_type': 'texture',
+                'data': tex,
+                },
                 
             ],
             'vertex_shader': VS,

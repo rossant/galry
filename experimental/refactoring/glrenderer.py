@@ -4,6 +4,7 @@ from QtOpenGL import QGLWidget
 import OpenGL.GL as gl
 import numpy as np
 
+
 def enforce_dtype(arr, dtype, msg=""):
     """Force the dtype of a Numpy array."""
     if isinstance(arr, np.ndarray):
@@ -11,9 +12,6 @@ def enforce_dtype(arr, dtype, msg=""):
             log_debug("enforcing dtype for array %s %s" % (str(arr.dtype), msg))
             return np.array(arr, dtype)
     return arr
-    
-    
-    
     
 
 # Low-level OpenGL functions to initialize/load variables
@@ -87,22 +85,77 @@ class Uniform(object):
         getattr(gl, funname)(location, 1, False, data)
         
 
-class Texture(object):# TODO
+class Texture(object):
     @staticmethod
-    def create():
-        pass
+    def create(ndim):
+        """Create a texture with the specifyed number of dimensions."""
+        buffer = gl.glGenTextures(1)
+        gl.glPixelStorei(gl.GL_UNPACK_ALIGNMENT, 1)
+        Texture.bind(buffer, ndim)
+        textype = getattr(gl, "GL_TEXTURE_%dD" % ndim)
+        gl.glTexParameteri(textype, gl.GL_TEXTURE_WRAP_S, gl.GL_CLAMP)
+        gl.glTexParameteri(textype, gl.GL_TEXTURE_WRAP_T, gl.GL_CLAMP)
+        gl.glTexParameteri(textype, gl.GL_TEXTURE_MAG_FILTER, gl.GL_NEAREST)
+        gl.glTexParameteri(textype, gl.GL_TEXTURE_MIN_FILTER, gl.GL_NEAREST)
+        return buffer
         
     @staticmethod
-    def bind(buffer):
-        pass
+    def bind(buffer, ndim):
+        """Bind a texture buffer."""
+        textype = getattr(gl, "GL_TEXTURE_%dD" % ndim)
+        gl.glBindTexture(textype, buffer)
+    
+    @staticmethod
+    def get_info(data):
+        """Return information about texture data."""
+        # find shape, ndim, ncomponents
+        shape = data.shape
+        if shape[0] == 1:
+            ndim = 1
+        elif shape[0] > 1:
+            ndim = 2
+        ncomponents = shape[2]
+        # ncomponents==1 ==> GL_R, 3 ==> GL_RGB, 4 ==> GL_RGBA
+        component_type = getattr(gl, ["GL_INTENSITY8", None, "GL_RGB", "GL_RGBA"] \
+                                            [ncomponents - 1])
+        return ndim, ncomponents, component_type
+
+    @staticmethod    
+    def convert_data(data):
+        """convert data in a array of uint8 in [0, 255]."""
+        return np.array(255 * data, dtype=np.uint8)
     
     @staticmethod
     def load(data):
-        pass
+        """Load texture data in a bound texture buffer."""
+        # convert data in a array of uint8 in [0, 255]
+        data = Texture.convert_data(data)
+        shape = data.shape
+        # get texture info
+        ndim, ncomponents, component_type = Texture.get_info(data)
+        textype = getattr(gl, "GL_TEXTURE_%dD" % ndim)
+        # load data in the buffer
+        if ndim == 1:
+            gl.glTexImage1D(textype, 0, component_type, shape[1], 0, component_type,
+                            gl.GL_UNSIGNED_BYTE, data)
+        elif ndim == 2:
+            gl.glTexImage2D(textype, 0, component_type, shape[0], shape[1], 0,
+                            component_type, gl.GL_UNSIGNED_BYTE, data)
         
     @staticmethod
     def update(data):
-        pass
+        """Update a texture."""
+        # convert data in a array of uint8 in [0, 255]
+        data = Texture.convert_data(data)
+        # get texture info
+        ndim, ncomponents, component_type = Texture.get_info(data)
+        # update buffer
+        if ndim == 1:
+            gl.glTexSubImage1D(textype, 0, 0, size,
+                               component_type, gl.GL_UNSIGNED_BYTE, data)
+        elif ndim == 2:
+            gl.glTexSubImage2D(textype, 0, 0, 0, size[0], size[1],
+                               component_type, gl.GL_UNSIGNED_BYTE, data)
 
 
 # Shader manager
@@ -282,6 +335,9 @@ class SlicedAttribute(object):
     def bind(self, slice):
         Attribute.bind(self.attributes[slice], self.location)
         
+    def update(self):
+        pass# TODO
+        
 
 # Painter class
 # -------------
@@ -383,7 +439,8 @@ class GLVisualRenderer(object):
         variable['sliced_attribute'] = SlicedAttribute(self.slicer, location)
         
     def initialize_texture(self, name):
-        pass# TODO
+        variable = self.get_variable(name)
+        variable['buffer'] = Texture.create(variable['ndim'])
         
     def initialize_uniform(self, name):
         """Initialize an uniform: get the location after the shaders have
@@ -424,7 +481,12 @@ class GLVisualRenderer(object):
             variable['sliced_attribute'].load(data)
         
     def load_texture(self, name, data=None):
-        pass# TODO
+        variable = self.get_variable(name)
+        if data is None:
+            data = variable.get('data', None)
+        if data is not None:
+            Texture.bind(variable['buffer'], variable['ndim'])
+            Texture.load(data)
         
     def load_uniform(self, name, data=None):
         """Load data for an uniform variable."""
@@ -487,7 +549,12 @@ class GLVisualRenderer(object):
         This method is used during rendering."""
         textures = self.get_variables('texture')
         for variable in textures:
-            Texture.bind(variable.get('buffer', None))
+            buffer = variable.get('buffer', None)
+            if buffer is not None:
+                Texture.bind(buffer, variable['ndim'])
+            else:
+                log_info("Texture '%s' was not propertly initialized." % \
+                         variable['name'])
             
         
     # Paint methods
@@ -697,8 +764,8 @@ if __name__ == '__main__':
             self.setCentralWidget(self.widget)
             self.show()
 
-    # app = QtGui.QApplication(sys.argv)
+    app = QtGui.QApplication(sys.argv)
     window = TestWindow()
     window.show()
-    # app.exec_()
+    app.exec_()
 
