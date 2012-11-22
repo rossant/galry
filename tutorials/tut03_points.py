@@ -21,8 +21,7 @@ class MyPaintManager(PaintManager):
         
         # We plot data with coordinates X and Y, rendered by default
         # as yellow points.
-        ds = self.create_dataset(PlotTemplate, position=data, 
-            primitive_type=PrimitiveType.Points)
+        self.add_visual(PlotVisual, position=data, primitive_type='POINTS')
 
 # By default, you can navigate into the window with the following commands:
 #   * wheel scroll to zoom in/out,
@@ -30,4 +29,4 @@ class MyPaintManager(PaintManager):
 #   * mouse move while pressing the middle button to drag a zoom box,
 #   * mouse move while pressing the right button to zoom in/out,
 #   * double click or press R to reinitialize the view.
-win=show_basic_window(paint_manager=MyPaintManager, display_fps=True)
+window = show_basic_window(paint_manager=MyPaintManager)

@@ -19,7 +19,7 @@ class InteractionManager(object):
     
     # zoom box
     navigation_rectangle = None
-    constrain_navigation = True
+    constrain_navigation = False
     
     def __init__(self):
         # initialize navigation

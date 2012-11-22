@@ -1,4 +1,4 @@
-"""Galry: high-performance interactive 2D visualization in Python"""
+"""Galry: high-performance interactive visualization in Python"""
 
 from debugtools import *
 
@@ -12,10 +12,12 @@ from useractions import *
 from interactionevents import *
 from interactionmanager import *
 from bindingmanager import *
-from primitives import *
-from templates import *
-from dataloader import *
+# from primitives import *
+# from templates import *
+# from dataloader import *
+from visuals import *
+from glrenderer import *
 from paintmanager import *
 from datanormalizer import *
 from icons import *
-from plot import *
+# from plot import *

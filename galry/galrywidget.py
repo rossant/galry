@@ -108,6 +108,12 @@ class GalryWidget(QGLWidget):
             self.initialize_companion_classes()
         self.initialize_bindings()
         
+        # update rendering options
+        self.paint_manager.set_rendering_options(
+            constrain_ratio=self.constrain_ratio,
+            )
+        self.interaction_manager.constrain_navigation = self.constrain_navigation
+        
     def set_bindings(self, *bindings):
         """Set the interaction mode by specifying the binding object.
         
@@ -194,9 +200,9 @@ class GalryWidget(QGLWidget):
         """
         pass
         
-    def initialized(self):
-        """This method is called at the end of `initializeGL`."""
-        pass
+    # def initialized(self):
+        # """This method is called at the end of `initializeGL`."""
+        # pass
         
     def clear(self):
         """Clear the view."""
@@ -212,19 +218,12 @@ class GalryWidget(QGLWidget):
         self.resizeGL(self.width, self.height)
         self.updateGL()
         
+        
     # OpenGL widget methods
     # ---------------------
     def initializeGL(self):
         """Initialize OpenGL parameters."""
-        
-        # initialize data manager and shaders
-        self.clear()
-        self.paint_manager.initialize()
-        self.paint_manager.initialize_default()
-        self.paint_manager.initialize_gl()
-        self.paint_manager.initialize_gpu()
-        
-        self.initialized()
+        self.paint_manager.initializeGL()
         
     def paintGL(self):
         """Paint the scene.
@@ -235,11 +234,11 @@ class GalryWidget(QGLWidget):
         This method calls the `paint_all` method of the PaintManager.
         
         """
-        # paint everything
-        self.paint_manager.paint_all()
         # paint fps
         if self.display_fps:
             self.paint_fps()
+        # paint everything
+        self.paint_manager.paintGL()
         # flush GL commands
         gl.glFlush()
         # compute FPS
@@ -250,34 +249,11 @@ class GalryWidget(QGLWidget):
         self.paint_manager.update_fps(int(self.fps_counter.get_fps()))
         
     def resizeGL(self, width, height):
-        """Reinitialize the viewport.
-        
-        Called when the user resizes the window. 
-        
-        """
-        self.width, self.height = width, height
-        
-        # paint within the whole window
-        gl.glViewport(0, 0, width, height)
-
-        vx = vy = 1.0
-        # viewport in the case where the ratio should be kept constant
-        if self.constrain_ratio:
-            if height > 0:
-                a = float(width) / height
-                if a > 1:
-                    vx = a
-                else:
-                    vy = 1. / a
-        # viewport contains the coordinates of the upper-right corner
-        # the viewport is at all times symmetrical with respect to the center
-        # of the window
-        self.viewport = (vx, vy)
-        self.paint_manager.set_viewport(viewport=self.viewport,
-            window_size=(width, height))
+        self.paint_manager.resizeGL(width, height)
         
     def sizeHint(self):
         return QtCore.QSize(self.width, self.height)
+        
         
     # Event methods
     # -------------
@@ -308,11 +284,12 @@ class GalryWidget(QGLWidget):
         self.user_action_generator.wheelEvent(e)
         self.process_interaction()
         
+        
     # Normalization methods
     # ---------------------
     def normalize_position(self, x, y):
         """Window coordinates ==> world coordinates."""
-        vx, vy = self.viewport
+        vx, vy = self.paint_manager.renderer.viewport
         x = -vx + 2 * vx * x / float(self.width)
         y = -(-vy + 2 * vy * y / float(self.height))
         return x, y
@@ -321,7 +298,7 @@ class GalryWidget(QGLWidget):
         """Normalize the coordinates of a difference vector between two
         points.
         """
-        vx, vy = self.viewport
+        vx, vy = self.paint_manager.renderer.viewport
         x = 2 * vx * x/float(self.width)
         y = -2 * vy * y/float(self.height)
         return x, y
@@ -346,6 +323,7 @@ class GalryWidget(QGLWidget):
         parameters["mouse_press_position"] = self.normalize_position(\
                                             *parameters["mouse_press_position"])
         return parameters
+    
     
     # Signal methods
     # --------------
@@ -394,6 +372,7 @@ class GalryWidget(QGLWidget):
         
         """
         self.events_to_signals[event] = signal
+        
         
     # Interaction methods
     # -------------------
@@ -506,6 +485,7 @@ class GalryWidget(QGLWidget):
         image = self.grabFrameBuffer()
         image.save(file,"PNG")
     
+    
     # Focus methods
     # -------------
     def focusOutEvent(self, event):
@@ -578,7 +558,7 @@ class GalryTimerWidget(GalryWidget):
 def create_custom_widget(bindings=None,
                          antialiasing=False,
                          constrain_ratio=False,
-                         constrain_navigation=True,
+                         constrain_navigation=False,
                          display_fps=False,
                          update_interval=None,
                         **companion_classes):
@@ -588,7 +568,7 @@ def create_custom_widget(bindings=None,
       * bindings=None: the bindings class, instance, or a list of those.
       * antialiasing=False: whether to activate antialiasing or not. It can
         hurt performance.
-      * constrain_ration=False: if True, the ratio is 1:1 at all times.
+      * constrain_ratio=False: if True, the ratio is 1:1 at all times.
       * constrain_navigation=True: if True, the viewbox cannot be greater
         than [-1,1]^2 by default (but it can be customized in 
         interactionmanager.MAX_VIEWBOX).
