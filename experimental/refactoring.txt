@@ -230,12 +230,15 @@ TODO
   * [DONE] Write a GLRenderer class that takes this Scene dict as input, and
     display it on screen. It should be as standalone as possible with respect
     to the rest of Galry's code.
-  * Write a new PaintTemplate class that creates a template dynamically. The
+  * [DONE] Write a new PaintTemplate class that creates a template dynamically. The
     size should not be a parameter of the template. There should be methods
     to generate the shader codes.
-  * Write a new PaintManager class that creates a Scene object dynamically,
+  * [WIP] Write a new PaintManager class that creates a Scene object dynamically,
     with add_template and set_data methods.
 
+  * Update all templates
+  * Integrate the new version in the code
+    
   * Write the SceneSerializer and SceneDeserializer in Python.  
   * Write a WebGLRenderer class in Javascript, as a standalone Javascript 
     object, in a standalone HTML page.

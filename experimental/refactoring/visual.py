@@ -18,8 +18,8 @@ OLDGLSL = True
 # ----------------
 if not OLDGLSL:
     VS_TEMPLATE = """
-%GLSL_VERSION_HEADER%
-precision mediump float;
+//%GLSL_VERSION_HEADER%
+//%GLSL_PRECISION_HEADER%
 
 %VERTEX_HEADER%
 void main()
@@ -30,8 +30,8 @@ void main()
 """
 
     FS_TEMPLATE = """
-%GLSL_VERSION_HEADER%
-precision mediump float;
+//%GLSL_VERSION_HEADER%
+//%GLSL_PRECISION_HEADER%
 
 %FRAGMENT_HEADER%
 out vec4 out_color;
@@ -42,12 +42,10 @@ void main()
 
 """
 
-
-
 else:
     VS_TEMPLATE = """
 //%GLSL_VERSION_HEADER%
-precision mediump float;
+//%GLSL_PRECISION_HEADER%
 
 %VERTEX_HEADER%
 void main()
@@ -59,7 +57,7 @@ void main()
 
     FS_TEMPLATE = """
 //%GLSL_VERSION_HEADER%
-precision mediump float;
+//%GLSL_PRECISION_HEADER%
 
 %FRAGMENT_HEADER%
 void main()
@@ -70,12 +68,6 @@ void main()
 }
 
 """
-
-
-
-
-
-
 
 def _get_shader_type(varinfo):
     """Return the GLSL variable declaration statement from a variable 
@@ -343,14 +335,12 @@ def get_varying_declarations(varying):
 
 
 
-
-
-
-
-
 class ShaderCreator(object):
     """Create the shader codes using the defined variables in the visual."""
     def __init__(self):
+        self.version_header = '#version 120'
+        self.precision_header = 'precision mediump float;'
+        
         # list of headers and main code portions of the vertex shader
         self.vs_headers = []
         self.vs_mains = []
@@ -358,6 +348,10 @@ class ShaderCreator(object):
         # list of headers and main code portions of the fragment shader
         self.fs_headers = []
         self.fs_mains = []
+        
+        # number of shader snippets to insert at the end
+        self.vs_main_end = 0
+        self.fs_main_end = 0
         
     def set_variables(self, **kwargs):
         # record all visual variables in the shader creator
@@ -383,11 +377,14 @@ class ShaderCreator(object):
             function. By default (index=None), the code is appended at the end
             of the main function. With index=0, it is at the beginning of the
             main function. Other integer values may be used when using several
-            calls to `add_vertex_main`.
+            calls to `add_vertex_main`. Or it can be 'end'.
         
         """
-        if index is None:
+        if index == 'end':
+            self.vs_main_end += 1
             index = len(self.vs_mains)
+        elif index is None:
+            index = len(self.vs_mains) - self.vs_main_end
         self.vs_mains.insert(index, code)
         
     def add_fragment_header(self, code):
@@ -409,8 +406,11 @@ class ShaderCreator(object):
             calls to `add_fragment_main`.
         
         """
-        if index is None:
+        if index == 'end':
+            self.fs_main_end += 1
             index = len(self.fs_mains)
+        elif index is None:
+            index = len(self.fs_mains) - self.fs_main_end
         self.fs_mains.insert(index, code)
     
     def get_shader_codes(self):
@@ -465,11 +465,13 @@ class ShaderCreator(object):
         # set default color
         fs = fs.replace('%DEFAULT_COLOR%', str(self.default_color))
         
-        # TODO: maybe change this as a function of 
-        # gl.glGetString(gl.GL_SHADING_LANGUAGE_VERSION) ?
-        glslversion = '#version 120'
-        vs = vs.replace('%GLSL_VERSION_HEADER%', glslversion)
-        fs = fs.replace('%GLSL_VERSION_HEADER%', glslversion)
+        # replace GLSL version header
+        vs = vs.replace('%GLSL_VERSION_HEADER%', self.version_header)
+        fs = fs.replace('%GLSL_VERSION_HEADER%', self.version_header)
+        
+        # replace GLSL precision header
+        vs = vs.replace('%GLSL_PRECISION_HEADER%', self.precision_header)
+        fs = fs.replace('%GLSL_PRECISION_HEADER%', self.precision_header)
     
         return vs, fs
     
@@ -490,7 +492,7 @@ class Visual(object):
         self.constrain_navigation = kwargs.pop('constrain_navigation', False)
         # initialize the visual
         self.initialize_default()
-        self.initialize(**kwargs)
+        self.initialize(*args, **kwargs)
         # initialize the shader creator
         self.shader_creator.set_variables(
             attributes=self.get_variables('attribute'),
@@ -511,6 +513,9 @@ class Visual(object):
     def add_foo(self, shader_type, name, **kwargs):
         kwargs['shader_type'] = shader_type
         kwargs['name'] = name
+        # default parameters
+        kwargs['vartype'] = kwargs.get('vartype', 'float')
+        kwargs['size'] = kwargs.get('size', None)
         self.variables[name] = kwargs
         
     def add_attribute(self, name, **kwargs):
@@ -579,15 +584,15 @@ class Visual(object):
             """)
             
         # add transformation only if there is something to display
-        if self.get_variables('attribute'):
-            if not self.is_static:
-                self.add_vertex_main("""
-            gl_Position = vec4(transform_position(%s, scale, translation), 
-                           0., 1.);""" % self.position_attribute_name)
-            # static
-            else:
-                self.add_vertex_main("""
-                gl_Position = vec4(%s, 0., 1.);""" % self.position_attribute_name)
+        # if self.get_variables('attribute'):
+        if not self.is_static:
+            self.add_vertex_main("""
+                gl_Position = vec4(transform_position(%s, scale, translation), 
+                               0., 1.);""" % self.position_attribute_name, 'end')
+        # static
+        else:
+            self.add_vertex_main("""
+                gl_Position = vec4(%s, 0., 1.);""" % self.position_attribute_name, 'end')
         
     def initialize(self, *args, **kwargs):
         pass
@@ -614,6 +619,7 @@ class Visual(object):
         for name, data in kwargs.iteritems():
             self.variables[name]['data'] = data
     
+    
     # Output methods
     # --------------
     def get_dic(self):
@@ -632,8 +638,13 @@ class Visual(object):
         
     
 class PlotVisual(Visual):
-    def initialize(self, *args, **kwargs):
-        pass
+    def initialize(self, x, y, color=None):
+        self.size = len(x)
+        self.bounds = [0, self.size]
+        position = np.empty((self.size, 2), dtype=np.float32)
+        position[:,0] = x
+        position[:,1] = y
+        self.add_attribute('position', ndim=2, data=position)
     
     
     
@@ -643,11 +654,12 @@ if __name__ == '__main__':
     v = PlotVisual(x, y, color=(1., 1., 0.))
     
     d = v.get_dic()
-    d['name'] = 'visual'
-
-    scene = {'visuals': [d]}
+    print d['vertex_shader']
+    print d['fragment_shader']
+    import pprint
+    pprint.pprint(d)
     
-    from glrenderer import show_scene
-    show_scene(scene)
+    from glrenderer import show_scene, show_visual
+    show_visual(d)
 
     

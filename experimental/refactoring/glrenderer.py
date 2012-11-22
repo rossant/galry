@@ -47,7 +47,36 @@ def show_window(window, **kwargs):
     return window
     
     
+class GLVersion(object):
+    # self.version_header = '#version 120'
+    # self.precision_header = 'precision mediump float;'
+    @staticmethod
+    def get_renderer_info():
+        """Return information about the client renderer.
+        
+        Arguments:
+          * info: a dictionary with the following keys:
+              * renderer_name
+              * opengl_version
+              * glsl_version
+              
+        """
+        return {
+            'renderer_name': gl.glGetString(gl.GL_RENDERER),
+            'opengl_version': gl.glGetString(gl.GL_VERSION),
+            'glsl_version': gl.glGetString(gl.GL_SHADING_LANGUAGE_VERSION)
+        }
     
+    @staticmethod
+    def version_header():
+        return '#version 120'
+        
+    @staticmethod
+    def precision_header():
+        if GLVersion.get_renderer_info()['glsl_version'] >= '1.3':
+            return 'precision mediump float;'
+        else:
+            return ''
     
     
 # Low-level OpenGL functions to initialize/load variables
@@ -230,6 +259,10 @@ class ShaderManager(object):
     """Handle vertex and fragment shaders."""
     def __init__(self, vertex_shader, fragment_shader):
         """Compile shaders and create a program."""
+        # add headers
+        vertex_shader = GLVersion.version_header() + vertex_shader
+        fragment_shader = GLVersion.version_header() + fragment_shader
+        # set shader source
         self.vertex_shader = vertex_shader
         self.fragment_shader = fragment_shader
         # compile shaders
@@ -461,14 +494,6 @@ class Painter(object):
     @staticmethod
     def draw_indexed_arrays(primtype, size):
         gl.glDrawElements(primtype, size, gl.GL_UNSIGNED_INT, None)
-
-    # badly supported in GPU driver, we just discard it for now
-    # @staticmethod
-    # def draw_multi_indexed_arrays(primtype, bounds):
-        # first = bounds[:-1]
-        # count = np.diff(bounds)
-        # primcount = len(bounds) - 1
-        # gl.glMultiDrawElements(primtype, count, gl.GL_UNSIGNED_INT, None, primcount)
 
 
 # Visual renderer
@@ -820,21 +845,21 @@ class GLRenderer(object):
         self.scene = scene
         self.initialized = False
     
-    def get_renderer_info(self):
-        """Return information about the client renderer.
+    # def get_renderer_info(self):
+        # """Return information about the client renderer.
         
-        Arguments:
-          * info: a dictionary with the following keys:
-              * renderer_name
-              * opengl_version
-              * glsl_version
+        # Arguments:
+          # * info: a dictionary with the following keys:
+              # * renderer_name
+              # * opengl_version
+              # * glsl_version
               
-        """
-        return {
-            'renderer_name': gl.glGetString(gl.GL_RENDERER),
-            'opengl_version': gl.glGetString(gl.GL_VERSION),
-            'glsl_version': gl.glGetString(gl.GL_SHADING_LANGUAGE_VERSION)
-        }
+        # """
+        # return {
+            # 'renderer_name': gl.glGetString(gl.GL_RENDERER),
+            # 'opengl_version': gl.glGetString(gl.GL_VERSION),
+            # 'glsl_version': gl.glGetString(gl.GL_SHADING_LANGUAGE_VERSION)
+        # }
     
     def set_renderer_options(self):
         """Set the OpenGL options."""
@@ -914,7 +939,7 @@ class GLRenderer(object):
     def initialize(self):
         """Initialize the renderer."""
         # print the renderer information
-        for key, value in self.get_renderer_info().iteritems():
+        for key, value in GLVersion.get_renderer_info().iteritems():
             log_info(key + ": " + value)
         # initialize the renderer options using the options set in the Scene
         self.set_renderer_options()
@@ -963,8 +988,13 @@ class GLRenderer(object):
                           window_size=(width, height))
                           
 
+def show_visual(visual):
+    visual['name'] = 'visual'
+    scene = {'visuals': [visual]}
+    show_scene(scene)
+                          
 def show_scene(scene):
-    r = GLRenderer(scene)#.get_dic())
+    r = GLRenderer(scene)
     
     class GLPlotWidget(QGLWidget):
         def set_renderer(self, renderer):
