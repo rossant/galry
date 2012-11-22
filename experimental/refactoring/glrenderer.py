@@ -3,6 +3,7 @@ from galry import log_info, log_debug, log_warn
 from QtOpenGL import QGLWidget
 import OpenGL.GL as gl
 import numpy as np
+import sys
 
 
 def enforce_dtype(arr, dtype, msg=""):
@@ -13,7 +14,42 @@ def enforce_dtype(arr, dtype, msg=""):
             return np.array(arr, dtype)
     return arr
     
-
+def get_application():
+    """Get the current QApplication, or create a new one."""
+    app_created = False
+    app = QtCore.QCoreApplication.instance()
+    if app is None:
+        log_debug("creating a new QApplication in order to show the window")
+        app = QtGui.QApplication(sys.argv)
+        app_created = True
+    return app, app_created
+    
+def show_window(window, **kwargs):
+    """Create a QT window in Python, or interactively in IPython with QT GUI
+    event loop integration:
+    
+        # in ~/.ipython/ipython_config.py
+        c.TerminalIPythonApp.gui = 'qt'
+        c.TerminalIPythonApp.pylab = 'qt'
+    
+    See also:
+        http://ipython.org/ipython-doc/dev/interactive/qtconsole.html#qt-and-the-qtconsole
+    
+    """
+    app, app_created = get_application()
+    app.references = set()
+    if not isinstance(window, QtGui.QWidget):
+        window = window(**kwargs)
+    app.references.add(window)
+    window.show()
+    if app_created:
+        app.exec_()
+    return window
+    
+    
+    
+    
+    
 # Low-level OpenGL functions to initialize/load variables
 # -------------------------------------------------------
 class Attribute(object):
@@ -287,7 +323,10 @@ class Slicer(object):
         """
         if maxsize is None:
             maxsize = MAX_VBO_SIZE
-        nslices = int(np.ceil(size / float(maxsize)))
+        if maxsize > 0:
+            nslices = int(np.ceil(size / float(maxsize)))
+        else:
+            nslices = 0
         return [(i*maxsize, min(maxsize+1, size-i*maxsize)) for i in xrange(nslices)]
 
     @staticmethod
@@ -445,7 +484,7 @@ class GLVisualRenderer(object):
         all variables and the shaders."""
         self.visual = visual
         # set the primitive type from its name
-        self.primitive_type = getattr(gl, "GL_%s" % self.visual['primitive_type'])
+        self.set_primitive_type(self.visual['primitive_type'])
         # set the slicer
         self.slicer = Slicer()
         # used when slicing needs to be deactivated (like for indexed arrays)
@@ -463,6 +502,10 @@ class GLVisualRenderer(object):
         self.initialize_variables()
         self.load_variables()
         
+    def set_primitive_type(self, primtype):
+        # set the primitive type from its name
+        self.primitive_type = getattr(gl, "GL_%s" % primtype)
+    
     # Variable methods
     # ----------------
     def get_variables(self, shader_type=None):
@@ -668,7 +711,30 @@ class GLVisualRenderer(object):
         """
         # we register the data changes here so that they can be actually be
         # done later, in update_all_variables
-        # TODO: handle special keywords
+        
+        # handle size and bounds keyword
+        size = kwargs.pop('size', None)
+        bounds = kwargs.pop('bounds', None)
+        if size is not None or bounds is not None:
+            self.slicer.set_size(size, bounds)
+        
+        # handle primitive type special keyword
+        primitive_type = kwargs.pop('primitive_type', None)
+        if primitive_type is not None:
+            self.visual['primitive_type'] = primitive_type
+            self.set_primitive_type(primitive_type)
+        
+        # handle constrain_ratio keyword
+        constrain_ratio = kwargs.pop('constrain_ratio', None)
+        if constrain_ratio is not None:
+            self.visual['constrain_ratio'] = constrain_ratio
+        
+        # handle constrain_navigation keyword
+        constrain_navigation = kwargs.pop('constrain_navigation', None)
+        if constrain_navigation is not None:
+            self.visual['constrain_navigation'] = constrain_navigation
+        
+        # flag the other variables as to be updated
         self.data_updating.update(**kwargs)
         
     def update_all_variables(self):
@@ -732,8 +798,11 @@ class GLVisualRenderer(object):
                 # bind all attributes for that slice
                 self.bind_attributes(slice)
                 # call the appropriate OpenGL rendering command
-                Painter.draw_arrays(self.primitive_type, slice_bounds[0],  slice_bounds[1] -  slice_bounds[0])
-                # TODO: handle multi arrays
+                # if len(self.slicer.bounds) <= 2:
+                if len(slice_bounds) <= 2:
+                    Painter.draw_arrays(self.primitive_type, slice_bounds[0],  slice_bounds[1] -  slice_bounds[0])
+                else:
+                    Painter.draw_multi_arrays(self.primitive_type, slice_bounds)
             
         
 # Scene renderer
@@ -893,14 +962,9 @@ class GLRenderer(object):
                           viewport=viewport,
                           window_size=(width, height))
                           
-            
-if __name__ == '__main__':
-    
-    from graphscene import GraphScene
-    r = GLRenderer(GraphScene)
-    
-    
-    
+
+def show_scene(scene):
+    r = GLRenderer(scene)#.get_dic())
     
     class GLPlotWidget(QGLWidget):
         def set_renderer(self, renderer):
@@ -916,7 +980,6 @@ if __name__ == '__main__':
             self.renderer.resize(width, height)
 
     # TEST WINDOW
-    import sys
     class TestWindow(QtGui.QMainWindow):
         def __init__(self):
             super(TestWindow, self).__init__()
@@ -926,10 +989,11 @@ if __name__ == '__main__':
             self.setCentralWidget(self.widget)
             self.show()
 
-    app = QtGui.QApplication(sys.argv)
-    window = TestWindow()
-    window.show()
-    app.exec_()
-
-
+    show_window(TestWindow)
+                          
+if __name__ == '__main__':
+    
+    from graphscene import GraphScene
+    show_scene(GraphScene)
+    
     

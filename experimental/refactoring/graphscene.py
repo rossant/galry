@@ -34,9 +34,9 @@ uniform vec4 color;
 void main()
 {
     vec4 out_color = vec4(1., 1., 1., 1.);
-    //out_color = color;
+    out_color = color;
     
-    out_color = texture2D(tex, gl_PointCoord) * color;
+    //out_color = texture2D(tex, gl_PointCoord) * color;
         
     gl_FragColor = out_color;
 }
@@ -44,7 +44,7 @@ void main()
 
 import numpy as np
 import numpy.random as rdn
-position = np.array(.2 * rdn.randn(100, 2), dtype=np.float32)
+position = np.array(.2 * rdn.randn(10, 2), dtype=np.float32)
 tex = np.array(np.random.rand(16, 16, 4) * .5, dtype=np.float32)
 index = np.array(np.arange(len(position)) / 10, dtype=np.int32)
 
@@ -56,7 +56,8 @@ GraphScene = {
         {
             'name': 'nodes',
             'size': len(position),
-            'primitive_type': 'POINTS',
+            'bounds': [0,2, 4, 8, len(position)],
+            'primitive_type': 'LINE_STRIP',
             'constrain_ratio': False,
             'constrain_navigation': False,
             'variables': 
@@ -70,11 +71,11 @@ GraphScene = {
                 'data': position,
                 },
                 
-                {
-                'name': 'index',
-                'shader_type': 'index',
-                'data': index,
-                },
+                # {
+                # 'name': 'index',
+                # 'shader_type': 'index',
+                # 'data': index,
+                # },
                 
                 {
                 'name': 'color',

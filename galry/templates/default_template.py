@@ -14,20 +14,20 @@ class DefaultTemplate(DataTemplate):
             self.add_uniform("translation", vartype="float", ndim=2, data=(0., 0.))
             
             self.add_vertex_header("""
-// Transform a position according to a given scaling and translation.
-vec2 transform_position(vec2 position, vec2 scale, vec2 translation)
-{
-return scale * (position + translation);
-}
+        // Transform a position according to a given scaling and translation.
+        vec2 transform_position(vec2 position, vec2 scale, vec2 translation)
+        {
+        return scale * (position + translation);
+        }
             """)
             
             self.add_vertex_main("""
-    gl_Position = vec4(transform_position(%s, scale, translation), 
-                   0., 1.);""" % self.position_attribute_name)
+        gl_Position = vec4(transform_position(%s, scale, translation), 
+                       0., 1.);""" % self.position_attribute_name)
         # static
         else:
             self.add_vertex_main("""
-    gl_Position = vec4(%s, 0., 1.);""" % self.position_attribute_name)
+            gl_Position = vec4(%s, 0., 1.);""" % self.position_attribute_name)
         
     def add_constrain_ratio(self, constrain_ratio=False):
         """Add viewport-related code."""
