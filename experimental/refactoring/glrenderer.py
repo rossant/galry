@@ -94,9 +94,9 @@ class Attribute(object):
             gltype = gl.GL_ARRAY_BUFFER
         else:
             gltype = gl.GL_ELEMENT_ARRAY_BUFFER
+        gl.glBindBuffer(gltype, buffer)
         if location >= 0:
             gl.glEnableVertexAttribArray(location)
-        gl.glBindBuffer(gltype, buffer)
         
     @staticmethod
     def set_attribute(location, ndim):
@@ -429,9 +429,6 @@ class SlicedAttribute(object):
         # create the sliced buffers
         self.create()
         
-    # def set_slicer(self, slicer):
-        # """Set the slicer."""
-        
     def create(self):
         """Create the sliced buffers."""
         self.buffers = [Attribute.create() for _ in self.slicer.slices]
@@ -566,6 +563,9 @@ class GLVisualRenderer(object):
         # initialize all variables
         for var in self.get_variables():
             shader_type = var['shader_type']
+            # skip varying
+            if shader_type == 'varying':
+                continue
             name = var['name']
             # call initialize_***(name) to initialize that variable
             getattr(self, 'initialize_%s' % shader_type)(name)
@@ -597,6 +597,9 @@ class GLVisualRenderer(object):
         location = self.shader_manager.get_uniform_location(name)
         variable = self.get_variable(name)
         variable['location'] = location
+    
+    def initialize_compound(self, name):
+        pass
         
         
     # Loading methods
@@ -606,7 +609,7 @@ class GLVisualRenderer(object):
         for var in self.get_variables():
             shader_type = var['shader_type']
             # skip uniforms
-            if shader_type == 'uniform':
+            if shader_type == 'uniform' or shader_type == 'varying':
                 continue
             # call load_***(name) to load that variable
             getattr(self, 'load_%s' % shader_type)(var['name'])
@@ -662,7 +665,10 @@ class GLVisualRenderer(object):
                 # scalar or vector
                 if type(ndim) == int or type(ndim) == long:
                     Uniform.load_array(location, data)
-                    
+            
+    def load_compound(self, name, data=None):
+        pass
+            
             
     # Updating methods
     # ----------------
@@ -673,7 +679,11 @@ class GLVisualRenderer(object):
             log_info("Variable '%s' was not found, unable to update it." % name)
         else:
             shader_type = variable['shader_type']
-            getattr(self, 'update_%s' % shader_type)(name, data, **kwargs)
+            # skip compound, which is handled in set_data
+            if shader_type == 'compound' or shader_type == 'varying':
+                pass
+            else:
+                getattr(self, 'update_%s' % shader_type)(name, data, **kwargs)
     
     def update_attribute(self, name, data, bounds=None):
         """Update data for an attribute variable."""
@@ -737,6 +747,15 @@ class GLVisualRenderer(object):
         # we register the data changes here so that they can be actually be
         # done later, in update_all_variables
         
+        # handle compound variables
+        kwargs2 = kwargs.copy()
+        for name, data in kwargs2.iteritems():
+            variable = self.get_variable(name)
+            if variable['shader_type'] == 'compound':
+                fun = variable['fun']
+                kwargs.pop(name)
+                kwargs.update(**fun(data))
+        
         # handle size and bounds keyword
         size = kwargs.pop('size', None)
         bounds = kwargs.pop('bounds', None)
@@ -779,8 +798,8 @@ class GLVisualRenderer(object):
         This method is used during rendering."""
         attributes = self.get_variables('attribute')
         for variable in attributes:
-            Attribute.set_attribute(variable['location'], variable['ndim'])
             variable['sliced_attribute'].bind(slice)
+            Attribute.set_attribute(variable['location'], variable['ndim'])
             
     def bind_indices(self):
         indices = self.get_variables('index')

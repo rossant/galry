@@ -1,17 +1,12 @@
-
 import numpy as np
+import collections
 
-
-
-
-
-# HACK: Linux in VirtualBox uses OpenGL ES, which requires a special API
-# in GLSL. This variable is true when OpenGL ES version 120 is used
-# info_level()
-# UPDATE: OLDGLSL=True is also necessary for Mac OS X 10.6
+# HACK: if True, activate the OpenGL ES syntax, which is deprecated in the
+# desktop version. However with the appropriate #version command in the shader
+# most drivers should accept this syntax in the compatibility profile.
+# Another option would be to activate/deactivate this variable depending
+# on the OpenGL version: TODO
 OLDGLSL = True
-# OLDGLSL = sys.platform != "win32"
-# log_info("OLDGLSL=%s" % str(OLDGLSL))
 
 
 # Shader templates
@@ -333,8 +328,8 @@ def get_varying_declarations(varying):
     return vs_declaration, fs_declaration
 
 
-
-
+# Shader creator
+# --------------
 class ShaderCreator(object):
     """Create the shader codes using the defined variables in the visual."""
     def __init__(self):
@@ -475,10 +470,14 @@ class ShaderCreator(object):
     
         return vs, fs
     
-
+    
+# Visual creator
+# --------------
 class Visual(object):
+    """This class defines a visual to be displayed in the scene. It should
+    be overriden."""
     def __init__(self, *args, **kwargs):
-        self.variables = {}
+        self.variables = collections.OrderedDict()
         # initialize the shader creator
         self.shader_creator = ShaderCreator()
         # default options
@@ -530,6 +529,20 @@ class Visual(object):
     def add_index(self, name, **kwargs):
         self.add_foo('index', name, **kwargs)
         
+    def add_varying(self, name, **kwargs):
+        self.add_foo('varying', name, **kwargs)
+        
+    def add_compound(self, name, **kwargs):
+        # add the compound as a variable
+        self.add_foo('compound', name, **kwargs)
+        # process the compound: add the associated data in the corresponding
+        # variables
+        fun = kwargs['fun']
+        data = kwargs['data']
+        kwargs = fun(data)
+        for name, value in kwargs.iteritems():
+            self.variables[name]['data'] = value
+        
     def get_variables(self, shader_type=None):
         """Return all variables defined in the visual."""
         if not shader_type:
@@ -554,7 +567,7 @@ class Visual(object):
         self.shader_creator.add_fragment_main(*args, **kwargs)
         
         
-    # Initialization methods
+    # Default visual methods
     # ----------------------
     def initialize_default(self):
         """Default initialization for all child visuals."""
@@ -594,8 +607,11 @@ class Visual(object):
             self.add_vertex_main("""
                 gl_Position = vec4(%s, 0., 1.);""" % self.position_attribute_name, 'end')
         
+        
+    # Initialization methods
+    # ----------------------
     def initialize(self, *args, **kwargs):
-        pass
+        """The visual should be defined dynamically here."""
     
     def finalize(self):
         """Finalize the template to make sure that shaders are compilable.
@@ -645,19 +661,22 @@ class PlotVisual(Visual):
         position[:,0] = x
         position[:,1] = y
         self.add_attribute('position', ndim=2, data=position)
-    
+        self.add_attribute('color', ndim=4, data=color)
+        self.add_varying('vcolor', ndim=4)
+        self.add_vertex_main("""vcolor = color;""")
+        self.add_fragment_main("""out_color = vcolor;""")
     
     
 if __name__ == '__main__':
-    x = np.linspace(-1., 1., 100)
+    x = np.linspace(-1., 1., 1000)
     y = np.sin(10 * x)
-    v = PlotVisual(x, y, color=(1., 1., 0.))
+    v = PlotVisual(x, y, color=np.random.rand(len(x), 4))
     
     d = v.get_dic()
-    print d['vertex_shader']
-    print d['fragment_shader']
-    import pprint
-    pprint.pprint(d)
+    # print d['vertex_shader']
+    # print d['fragment_shader']
+    # import pprint
+    # pprint.pprint(d)
     
     from glrenderer import show_scene, show_visual
     show_visual(d)
