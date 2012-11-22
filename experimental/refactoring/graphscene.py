@@ -1,62 +1,43 @@
-VS = """
-#version 100
-//precision mediump float;
+from numpy import *
 
+VS = """
 attribute vec2 position;
 uniform vec2 viewport;
 
-vec2 transform_position(vec2 position, vec2 scale, vec2 translation)
-{
-return scale * (position + translation);
-}
-            
 void main()
 {
-    vec2 scale = vec2(1., 1.);
-    vec2 translation = vec2(0., 0.);
-    gl_Position = vec4(transform_position(position, scale, translation), 
-                   0., 1.);
-                   
-    gl_Position.xy = gl_Position.xy / viewport;
-    
-    gl_PointSize = 16;
+    gl_Position = vec4(position, 0, 1);
 }
 """
 
 FS = """
-#version 100
-//precision mediump float;
-
-uniform sampler2D tex;
 
 uniform vec4 color;
 
 void main()
 {
     vec4 out_color = vec4(1., 1., 1., 1.);
-    out_color = color;
-    
-    //out_color = texture2D(tex, gl_PointCoord) * color;
-        
+    //out_color = color;    
     gl_FragColor = out_color;
 }
 """
 
 import numpy as np
 import numpy.random as rdn
-position = np.array(.2 * rdn.randn(10, 2), dtype=np.float32)
-tex = np.array(np.random.rand(16, 16, 4) * .5, dtype=np.float32)
-index = np.array(np.arange(len(position)) / 10, dtype=np.int32)
+position = array([[-0.5, -0.5],
+       [ 0.5, -0.5],
+       [ 0.5,  0.5]], dtype=float32)
 
-# A Scene is made of multiple visuals, homogeneous sets of primitives rendered
-# in a single call with OpenGL.
-GraphScene = {
-    'visuals': 
-    [   
-        {
+position2 = array([[ 0.5,  0.5],
+       [-0.5,  0.5],
+       [-0.5, -0.5]], dtype=float32)
+       
+       
+
+v =         {
             'name': 'nodes',
             'size': len(position),
-            'bounds': [0,2, 4, 8, len(position)],
+            'bounds': [0, len(position)],
             'primitive_type': 'LINE_STRIP',
             'constrain_ratio': False,
             'constrain_navigation': False,
@@ -71,27 +52,12 @@ GraphScene = {
                 'data': position,
                 },
                 
-                # {
-                # 'name': 'index',
-                # 'shader_type': 'index',
-                # 'data': index,
-                # },
-                
                 {
                 'name': 'color',
                 'vartype': 'float',
                 'ndim': 4,
                 'shader_type': 'uniform',
                 'data': (1., 1., 0., 1.),
-                },
-                
-                {
-                'name': 'tex',
-                'ndim': 2,
-                'ncomponents': 4,
-                'size': (16, 16),
-                'shader_type': 'texture',
-                'data': tex,
                 },
                 
                 {
@@ -113,6 +79,69 @@ GraphScene = {
             'vertex_shader': VS,
             'fragment_shader': FS,
         }
+
+
+        
+        
+        
+        
+v2 =         {
+            'name': 'nodes2',
+            'size': len(position),
+            'bounds': [0, len(position)],
+            'primitive_type': 'LINE_STRIP',
+            'constrain_ratio': False,
+            'constrain_navigation': False,
+            'variables': 
+            [
+                {
+                'name': 'position',
+                'id': 'node_position',
+                'vartype': 'float',
+                'ndim': 2,
+                'shader_type': 'attribute',
+                'data': position2,
+                },
+                
+                {
+                'name': 'color',
+                'vartype': 'float',
+                'ndim': 4,
+                'shader_type': 'uniform',
+                'data': (1., 1., 0., 1.),
+                },
+                
+                {
+                'name': 'viewport',
+                'vartype': 'float',
+                'ndim': 2,
+                'shader_type': 'uniform',
+                'data': (1., 1.),
+                },
+                
+                {
+                'name': 'window_size',
+                'vartype': 'float',
+                'ndim': 2,
+                'shader_type': 'uniform',
+                'data': (600., 600.),
+                },
+            ],
+            'vertex_shader': VS,
+            'fragment_shader': FS,
+        }
+
+
+        
+        
+        
+        
+        
+# A Scene is made of multiple visuals, homogeneous sets of primitives rendered
+# in a single call with OpenGL.
+GraphScene = {
+    'visuals': 
+    [   v, v2
     ],
     'renderer_options':
     {

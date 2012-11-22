@@ -489,6 +489,7 @@ class Visual(object):
         self.primitive_type = kwargs.pop('primitive_type', 'LINE_STRIP')
         self.constrain_ratio = kwargs.pop('constrain_ratio', False)
         self.constrain_navigation = kwargs.pop('constrain_navigation', False)
+        self.visible = kwargs.pop('visible', True)
         # initialize the visual
         self.initialize_default()
         self.initialize(*args, **kwargs)
@@ -637,6 +638,7 @@ class Visual(object):
     def get_dic(self):
         """Return the dict representation of the visual."""
         dic = {
+            'visible': self.visible,
             'size': self.size,
             'bounds': self.bounds,
             'primitive_type': self.primitive_type,

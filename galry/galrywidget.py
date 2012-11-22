@@ -64,7 +64,8 @@ class GalryWidget(QGLWidget):
     """
     # background color as a 4-tuple (R,G,B,A)
     bgcolor = (0, 0, 0, 0)
-
+    autosave = None
+    
     # default window size
     width, height = 600, 600
     
@@ -82,7 +83,7 @@ class GalryWidget(QGLWidget):
     
     # Initialization methods
     # ----------------------
-    def __init__(self, format=None, **kwargs):
+    def __init__(self, format=None, autosave=None, **kwargs):
         """Constructor. Call `initialize` and initialize the companion classes
         as well."""
         super(GalryWidget, self).__init__(format)
@@ -113,6 +114,8 @@ class GalryWidget(QGLWidget):
             constrain_ratio=self.constrain_ratio,
             )
         self.interaction_manager.constrain_navigation = self.constrain_navigation
+        
+        self.autosave = autosave
         
     def set_bindings(self, *bindings):
         """Set the interaction mode by specifying the binding object.
@@ -243,6 +246,8 @@ class GalryWidget(QGLWidget):
         gl.glFlush()
         # compute FPS
         self.fps_counter.tick()
+        if self.autosave:
+            self.save_image(self.autosave)
         
     def paint_fps(self):
         """Display the FPS on the top-left of the screen."""
@@ -561,6 +566,7 @@ def create_custom_widget(bindings=None,
                          constrain_navigation=False,
                          display_fps=False,
                          update_interval=None,
+                         autosave=None,
                         **companion_classes):
     """Helper function to create a custom widget class from various parameters.
     
@@ -598,7 +604,7 @@ def create_custom_widget(bindings=None,
             format = QGLFormat()
             if antialiasing:
                 format.setSampleBuffers(True)
-            super(MyWidget, self).__init__(format=format)
+            super(MyWidget, self).__init__(format=format, autosave=autosave)
         
         def initialize(self):
             self.set_bindings(*bindings)

@@ -55,12 +55,14 @@ class PaintManager(object):
     def show_navigation_rectangle(self, coordinates):
         """Show the navigation rectangle with the specified coordinates 
         (in relative window coordinates)."""
-        self.set_data(coordinates=coordinates, visible=True,
-                      visual='navigation_rectangle')
+        # TODO
+        # self.set_data(coordinates=coordinates, visible=True,
+                      # visual='navigation_rectangle')
             
     def hide_navigation_rectangle(self):
         """Hide the navigation rectangle."""
-        self.set_data(visible=False, visual='navigation_rectangle')
+        # TODO
+        # self.set_data(visible=False, visual='navigation_rectangle')
         
         
     # Data creation methods

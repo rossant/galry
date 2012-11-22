@@ -502,6 +502,9 @@ class GLVisualRenderer(object):
         # set the primitive type from its name
         self.primitive_type = getattr(gl, "GL_%s" % primtype)
     
+    def getarg(self, name):
+        return self.visual.get(name, None)
+    
     
     # Variable methods
     # ----------------
@@ -732,7 +735,9 @@ class GLVisualRenderer(object):
                 kwargs.update(**fun(data))
         
         # handle visual visibility
-        self.visual['visible'] = kwargs.pop('visible', True)
+        visible = kwargs.pop('visible', None)
+        if visible is not None:
+            self.visual['visible'] = visible
         
         # handle size and bounds keyword
         size = kwargs.pop('size', None)
@@ -810,11 +815,12 @@ class GLVisualRenderer(object):
         self.update_all_variables()
         # bind all texturex for that slice
         self.bind_textures()
-        
+        # paint using indices
         if self.use_index:
             self.bind_attributes()
             self.bind_indices()
             Painter.draw_indexed_arrays(self.primitive_type, self.slicer.size)
+        # or paint without
         else:
             # draw all sliced buffers
             for slice in xrange(len(self.slicer.slices)):
@@ -825,10 +831,12 @@ class GLVisualRenderer(object):
                 # call the appropriate OpenGL rendering command
                 # if len(self.slicer.bounds) <= 2:
                 if len(slice_bounds) <= 2:
-                    Painter.draw_arrays(self.primitive_type, slice_bounds[0],  slice_bounds[1] -  slice_bounds[0])
+                    Painter.draw_arrays(self.primitive_type, slice_bounds[0], 
+                        slice_bounds[1] -  slice_bounds[0])
                 else:
                     Painter.draw_multi_arrays(self.primitive_type, slice_bounds)
-            
+        # deactivate the shaders
+        self.shader_manager.deactivate_shaders()
             
     # Cleanup methods
     # ---------------
@@ -856,6 +864,10 @@ class GLRenderer(object):
         
         """
         self.scene = scene
+        
+        import pprint
+        pprint.pprint(scene)
+        
         self.visual_renderers = {}
     
     def set_renderer_options(self):

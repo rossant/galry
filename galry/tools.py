@@ -81,12 +81,6 @@ def show_window(window, **kwargs):
         http://ipython.org/ipython-doc/dev/interactive/qtconsole.html#qt-and-the-qtconsole
     
     """
-    # app_created = False
-    # app = QtCore.QCoreApplication.instance()
-    # if app is None:
-        # log_debug("creating a new QApplication in order to show the window")
-        # app = QtGui.QApplication(sys.argv)
-        # app_created = True
     app, app_created = get_application()
     app.references = set()
     if not isinstance(window, QtGui.QWidget):
@@ -95,8 +89,6 @@ def show_window(window, **kwargs):
     window.show()
     if app_created:
         app.exec_()
-    # import cursors
-    # global cursors
     return window
     
 def run_all_scripts(dir=".", autodestruct=True, condition=None):

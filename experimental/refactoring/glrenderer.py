@@ -833,9 +833,8 @@ class GLVisualRenderer(object):
         self.shader_manager.activate_shaders()
         # update all variables
         self.update_all_variables()
-        # bind all texturex for that slice
+        # bind all textures for that slice
         self.bind_textures()
-        
         if self.use_index:
             self.bind_attributes()
             self.bind_indices()
@@ -850,10 +849,11 @@ class GLVisualRenderer(object):
                 # call the appropriate OpenGL rendering command
                 # if len(self.slicer.bounds) <= 2:
                 if len(slice_bounds) <= 2:
-                    Painter.draw_arrays(self.primitive_type, slice_bounds[0],  slice_bounds[1] -  slice_bounds[0])
+                    Painter.draw_arrays(self.primitive_type, slice_bounds[0],
+                        slice_bounds[1] -  slice_bounds[0])
                 else:
                     Painter.draw_multi_arrays(self.primitive_type, slice_bounds)
-            
+        self.shader_manager.deactivate_shaders()    
             
     # Cleanup methods
     # ---------------
@@ -958,7 +958,7 @@ class GLRenderer(object):
         self.set_renderer_options()
         # create the VisualRenderer objects
         self.visual_renderers = dict([(visual['name'], GLVisualRenderer(visual)) for visual in self.get_visuals()])
-        
+            
     def clear(self):
         """Clear the scene."""
         # clear the buffer (and depth buffer is 3D is activated)
@@ -1067,7 +1067,7 @@ def show_scene(scene):
                           
 if __name__ == '__main__':
     
-    from graphscene import GraphScene
+    from graphscene2 import GraphScene
     show_scene(GraphScene)
     
     
