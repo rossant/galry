@@ -515,6 +515,7 @@ class Visual(object):
         # default parameters
         kwargs['vartype'] = kwargs.get('vartype', 'float')
         kwargs['size'] = kwargs.get('size', None)
+        kwargs['ndim'] = kwargs.get('ndim', 1)
         self.variables[name] = kwargs
         
     def add_attribute(self, name, **kwargs):
@@ -630,10 +631,10 @@ class Visual(object):
         # ensure the type of bounds
         self.bounds = np.array(self.bounds, dtype=np.int32)
     
-    def set_data(self, **kwargs):
-        """Set data for any variable."""
-        for name, data in kwargs.iteritems():
-            self.variables[name]['data'] = data
+    # def set_data(self, **kwargs):
+        # """Set data for any variable."""
+        # for name, data in kwargs.iteritems():
+            # self.variables[name]['data'] = data
     
     
     # Output methods
@@ -652,33 +653,4 @@ class Visual(object):
         }
         return dic
         
-    
-class PlotVisual(Visual):
-    def initialize(self, x, y, color=None):
-        self.size = len(x)
-        self.bounds = [0, self.size]
-        position = np.empty((self.size, 2), dtype=np.float32)
-        position[:,0] = x
-        position[:,1] = y
-        self.add_attribute('position', ndim=2, data=position)
-        self.add_attribute('color', ndim=4, data=color)
-        self.add_varying('vcolor', ndim=4)
-        self.add_vertex_main("""vcolor = color;""")
-        self.add_fragment_main("""out_color = vcolor;""")
-    
-    
-if __name__ == '__main__':
-    x = np.linspace(-1., 1., 1000)
-    y = np.sin(10 * x)
-    v = PlotVisual(x, y, color=np.random.rand(len(x), 4))
-    
-    d = v.get_dic()
-    # print d['vertex_shader']
-    # print d['fragment_shader']
-    # import pprint
-    # pprint.pprint(d)
-    
-    from glrenderer import show_scene, show_visual
-    show_visual(d)
-
     

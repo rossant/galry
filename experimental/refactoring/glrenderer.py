@@ -442,7 +442,7 @@ class SlicedAttribute(object):
         """Load data on all sliced buffers."""
         for buffer, (pos, size) in zip(self.buffers, self.slicer.slices):
             Attribute.bind(buffer, self.location)
-            Attribute.load(data[pos:pos + size,:])
+            Attribute.load(data[pos:pos + size,...])
 
     def bind(self, slice=None):
         if slice is None:
@@ -756,6 +756,9 @@ class GLVisualRenderer(object):
                 kwargs.pop(name)
                 kwargs.update(**fun(data))
         
+        # handle visual visibility
+        self.visual['visible'] = kwargs.pop('visible', True)
+        
         # handle size and bounds keyword
         size = kwargs.pop('size', None)
         bounds = kwargs.pop('bounds', None)
@@ -823,6 +826,9 @@ class GLVisualRenderer(object):
     # -------------
     def paint(self):
         """Paint the visual slice by slice."""
+        # do not display non-visible visuals
+        if not self.visual.get('visible', True):
+            return
         # activate the shaders
         self.shader_manager.activate_shaders()
         # update all variables
@@ -848,6 +854,12 @@ class GLVisualRenderer(object):
                 else:
                     Painter.draw_multi_arrays(self.primitive_type, slice_bounds)
             
+            
+    # Cleanup methods
+    # ---------------
+    def cleanup(self):
+        pass
+        
         
 # Scene renderer
 # --------------
@@ -864,22 +876,6 @@ class GLRenderer(object):
         self.scene = scene
         self.initialized = False
     
-    # def get_renderer_info(self):
-        # """Return information about the client renderer.
-        
-        # Arguments:
-          # * info: a dictionary with the following keys:
-              # * renderer_name
-              # * opengl_version
-              # * glsl_version
-              
-        # """
-        # return {
-            # 'renderer_name': gl.glGetString(gl.GL_RENDERER),
-            # 'opengl_version': gl.glGetString(gl.GL_VERSION),
-            # 'glsl_version': gl.glGetString(gl.GL_SHADING_LANGUAGE_VERSION)
-        # }
-    
     def set_renderer_options(self):
         """Set the OpenGL options."""
         options = self.scene.get('renderer_options', {})
@@ -892,12 +888,12 @@ class GLRenderer(object):
             gl.glEnable(gl.GL_MULTISAMPLE)
             
         # used for sprites
-        if options.get('sprites', None):
+        if options.get('sprites', True):
             gl.glEnable(gl.GL_VERTEX_PROGRAM_POINT_SIZE)
             gl.glEnable(gl.GL_POINT_SPRITE)
         
         # enable transparency
-        if options.get('transparency', None):
+        if options.get('transparency', True):
             gl.glEnable(gl.GL_BLEND)
             gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
             
@@ -931,7 +927,7 @@ class GLRenderer(object):
         
     # Data methods
     # ------------
-    def set_data(self, visual, **kwargs):
+    def set_data(self, name, **kwargs):
         """Load data for the specified visual. Uploading does not happen here
         but in `update_all_variables` instead, since this needs to happen
         after shader program binding in the paint method.
@@ -946,11 +942,9 @@ class GLRenderer(object):
               * constrain_navigation: whether to constrain the navigation,
         
         """
-        # retrieve a visual by its name
-        if type(visual) == dict:
-            visual = visual['name']
         # call set_data on the given visual renderer
-        self.visual_renderers[visual].set_data(**kwargs)
+        if hasattr(self, 'visual_renderers') and name in self.visual_renderers:
+            self.visual_renderers[name].set_data(**kwargs)
         
         
     # Rendering methods
@@ -1002,10 +996,41 @@ class GLRenderer(object):
             else:
                 viewport = 1., 1.
             # update viewport and window_size
-            self.set_data(visual,
+            self.set_data(visual['name'],
                           viewport=viewport,
                           window_size=(width, height))
-                          
+    
+    
+    # Cleanup methods
+    # ---------------
+    def cleanup(self):
+        pass# TODO
+        
+    # def cleanup_buffer(self, buffer):
+        # """Clean up a buffer.
+        
+        # Arguments:
+          # * buffer: a buffer object.
+          
+        # """
+        # if "vbos" in buffer:
+            # bfs = [b[0] for b in buffer["vbos"]]
+            # gl.glDeleteBuffers(len(bfs), bfs)
+    
+    # def cleanup_visual(self, visual):
+        # """Cleanup the visual by deleting the associated shader program.
+        
+        # Arguments:
+          # * visual: the visual to clean up.
+        
+        # """
+        # program = visual["loader"].shaders_program
+        # try:
+            # gl.glDeleteProgram(program)
+        # except Exception as e:
+            # log_info("error when deleting shader program")
+        # for buffer in visual["loader"].attributes.itervalues():
+            # self.cleanup_buffer(buffer)
 
 def show_visual(visual):
     visual['name'] = 'visual'
