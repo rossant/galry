@@ -23,11 +23,15 @@ class Attribute(object):
         return gl.glGenBuffers(1)
         
     @staticmethod
-    def bind(buffer, location=None):
+    def bind(buffer, location=None, index=False):
         """Bind a buffer and associate a given location."""
+        if not index:
+            gltype = gl.GL_ARRAY_BUFFER
+        else:
+            gltype = gl.GL_ELEMENT_ARRAY_BUFFER
         if location >= 0:
             gl.glEnableVertexAttribArray(location)
-        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, buffer)
+        gl.glBindBuffer(gltype, buffer)
         
     @staticmethod
     def set_attribute(location, ndim):
@@ -40,11 +44,15 @@ class Attribute(object):
         return enforce_dtype(data, np.float32)
     
     @staticmethod
-    def load(data):
+    def load(data, index=False):
         """Load data in the buffer for the first time. The buffer must
         have been bound before."""
-        data = Attribute.convert_data(data)
-        gl.glBufferData(gl.GL_ARRAY_BUFFER, data, gl.GL_DYNAMIC_DRAW)
+        if not index:
+            gltype = gl.GL_ARRAY_BUFFER
+            data = Attribute.convert_data(data)
+        else:
+            gltype = gl.GL_ELEMENT_ARRAY_BUFFER
+        gl.glBufferData(gltype, data, gl.GL_DYNAMIC_DRAW)
         
     @staticmethod
     def update(data, onset=0):
@@ -265,7 +273,7 @@ MAX_VBO_SIZE = 65000
 
 class Slicer(object):
     @staticmethod
-    def _get_slices(size):
+    def _get_slices(size, maxsize=None):
         """Return a list of slices for a given dataset size.
         
         Arguments:
@@ -277,7 +285,8 @@ class Slicer(object):
             `slice_size` the slice size.
         
         """
-        maxsize = MAX_VBO_SIZE
+        if maxsize is None:
+            maxsize = MAX_VBO_SIZE
         nslices = int(np.ceil(size / float(maxsize)))
         return [(i*maxsize, min(maxsize+1, size-i*maxsize)) for i in xrange(nslices)]
 
@@ -319,31 +328,37 @@ class Slicer(object):
                 bounds_sliced = np.hstack((bounds_sliced, slice_size))
         return enforce_dtype(bounds_sliced, np.int32)
         
-    def set_size(self, size, bounds=None):
+    def set_size(self, size, bounds=None, doslice=True):
         """Update the total size of the buffer and/or the bounds, and update
         the slice information accordingly."""
         if bounds is None:
             bounds = np.array([0, size], dtype=np.int32)
+        # deactivate slicing by using a maxsize number larger than the
+        # actual size
+        if doslice:
+            maxsize = 2 * size
+        else:
+            maxsize = None
         self.size = size
         self.bounds = bounds
         # compute the data slicing with respect to bounds (specified in the
         # template) and to the maximum size of a VBO.
-        self.slice_count = int(np.ceil(self.size / float(MAX_VBO_SIZE)))
-        self.slices = self._get_slices(self.size)
+        self.slices = self._get_slices(self.size, maxsize)
+        self.slice_count = len(self.slices)
         self.subdata_bounds = [self._slice_bounds(self.bounds, pos, size) \
             for pos, size in self.slices]
        
        
 class SlicedAttribute(object):
     def __init__(self, slicer, location):
-        self.set_slicer(slicer)
+        # self.set_slicer(slicer)
+        self.slicer = slicer
         self.location = location
         # create the sliced buffers
         self.create()
         
-    def set_slicer(self, slicer):
-        """Set the slicer."""
-        self.slicer = slicer
+    # def set_slicer(self, slicer):
+        # """Set the slicer."""
         
     def create(self):
         """Create the sliced buffers."""
@@ -360,7 +375,9 @@ class SlicedAttribute(object):
             Attribute.bind(buffer, self.location)
             Attribute.load(data[pos:pos + size,:])
 
-    def bind(self, slice):
+    def bind(self, slice=None):
+        if slice is None:
+            slice = 0
         Attribute.bind(self.buffers[slice], self.location)
         
     def update(self, data, mask=None):
@@ -395,20 +412,24 @@ class Painter(object):
         gl.glDrawArrays(primtype, offset, size)
         
     @staticmethod
-    def draw_multi_arrays(bounds):
+    def draw_multi_arrays(primtype, bounds):
         """Render several arrays of primitives."""
         first = bounds[:-1]
         count = np.diff(bounds)
         primcount = len(bounds) - 1
-        gl.glMultiDrawArrays(gl_primitive_type, first, count, primcount)
+        gl.glMultiDrawArrays(primtype, first, count, primcount)
         
     @staticmethod
-    def draw_indexed_arrays():
-        pass# TODO
-        
-    @staticmethod
-    def draw_indexed_multi_arrays():
-        pass# TODO
+    def draw_indexed_arrays(primtype, size):
+        gl.glDrawElements(primtype, size, gl.GL_UNSIGNED_INT, None)
+
+    # badly supported in GPU driver, we just discard it for now
+    # @staticmethod
+    # def draw_multi_indexed_arrays(primtype, bounds):
+        # first = bounds[:-1]
+        # count = np.diff(bounds)
+        # primcount = len(bounds) - 1
+        # gl.glMultiDrawElements(primtype, count, gl.GL_UNSIGNED_INT, None, primcount)
 
 
 # Visual renderer
@@ -427,11 +448,14 @@ class GLVisualRenderer(object):
         self.primitive_type = getattr(gl, "GL_%s" % self.visual['primitive_type'])
         # set the slicer
         self.slicer = Slicer()
+        # used when slicing needs to be deactivated (like for indexed arrays)
+        self.noslicer = Slicer()
         # get size and bounds
         size = self.visual['size']
         bounds = np.array(self.visual.get('bounds', [0, size]), np.int32)
         # self.update_size(size, bounds)
         self.slicer.set_size(size, bounds)
+        self.noslicer.set_size(size, bounds, doslice=False)
         # compile and link the shaders
         self.shader_manager = ShaderManager(self.visual['vertex_shader'],
                                             self.visual['fragment_shader'])
@@ -462,6 +486,16 @@ class GLVisualRenderer(object):
     # ----------------------
     def initialize_variables(self):
         """Initialize all variables, after the shaders have compiled."""
+        # find out whether indexing is used or not, because in this case
+        # the slicing needs to be deactivated
+        if self.get_variables('index'):
+            # deactivate slicing
+            self.slicer = self.noslicer
+            log_info("deactivating slicing")
+            self.use_index = True
+        else:
+            self.use_index = False
+        # initialize all variables
         for var in self.get_variables():
             shader_type = var['shader_type']
             name = var['name']
@@ -480,6 +514,10 @@ class GLVisualRenderer(object):
         variable['location'] = location
         # initialize the sliced buffers
         variable['sliced_attribute'] = SlicedAttribute(self.slicer, location)
+        
+    def initialize_index(self, name):
+        variable = self.get_variable(name)
+        variable['buffer'] = Attribute.create()
         
     def initialize_texture(self, name):
         variable = self.get_variable(name)
@@ -512,6 +550,15 @@ class GLVisualRenderer(object):
             data = variable.get('data', None)
         if data is not None:
             variable['sliced_attribute'].load(data)
+        
+    def load_index(self, name, data=None):
+        """Load data for an index variable."""
+        variable = self.get_variable(name)
+        if data is None:
+            data = variable.get('data', None)
+        if data is not None:
+            Attribute.bind(variable['buffer'], index=True)
+            Attribute.load(data, index=True)
         
     def load_texture(self, name, data=None):
         """Load data for a texture variable."""
@@ -567,7 +614,7 @@ class GLVisualRenderer(object):
         # handle size changing
         if data.shape[0] != self.slicer.size:
             # update the slicer size and bounds
-            self.slicer.set_size(data.shape[0], bounds)
+            self.slicer.set_size(data.shape[0], bounds, doslice=not(self.use_index))
             # delete old buffers
             variable['sliced_attribute'].delete_buffers()
             # create new buffers
@@ -636,7 +683,7 @@ class GLVisualRenderer(object):
         
     # Binding methods
     # ---------------
-    def bind_attributes(self, slice):
+    def bind_attributes(self, slice=None):
         """Bind all attributes of the visual for the given slice.
         This method is used during rendering."""
         attributes = self.get_variables('attribute')
@@ -644,8 +691,13 @@ class GLVisualRenderer(object):
             Attribute.set_attribute(variable['location'], variable['ndim'])
             variable['sliced_attribute'].bind(slice)
             
-    def bind_textures(self, slice):
-        """Bind all textures of the visual for the given slice.
+    def bind_indices(self):
+        indices = self.get_variables('index')
+        for variable in indices:
+            Attribute.bind(variable['buffer'], index=True)
+            
+    def bind_textures(self):
+        """Bind all textures of the visual.
         This method is used during rendering."""
         textures = self.get_variables('texture')
         for variable in textures:
@@ -665,17 +717,23 @@ class GLVisualRenderer(object):
         self.shader_manager.activate_shaders()
         # update all variables
         self.update_all_variables()
-        # draw all sliced buffers
-        for slice in xrange(len(self.slicer.slices)):
-            # get slice bounds
-            slice_bounds = self.slicer.subdata_bounds[slice]
-            # bind all attributes for that slice
-            self.bind_attributes(slice)
-            # bind all texturex for that slice
-            self.bind_textures(slice)
-            # call the appropriate OpenGL rendering command
-            Painter.draw_arrays(self.primitive_type, slice_bounds[0],  slice_bounds[1] -  slice_bounds[0])
-            # TODO: handle multi arrays or indexed arrays
+        # bind all texturex for that slice
+        self.bind_textures()
+        
+        if self.use_index:
+            self.bind_attributes()
+            self.bind_indices()
+            Painter.draw_indexed_arrays(self.primitive_type, self.slicer.size)
+        else:
+            # draw all sliced buffers
+            for slice in xrange(len(self.slicer.slices)):
+                # get slice bounds
+                slice_bounds = self.slicer.subdata_bounds[slice]
+                # bind all attributes for that slice
+                self.bind_attributes(slice)
+                # call the appropriate OpenGL rendering command
+                Painter.draw_arrays(self.primitive_type, slice_bounds[0],  slice_bounds[1] -  slice_bounds[0])
+                # TODO: handle multi arrays
             
         
 # Scene renderer

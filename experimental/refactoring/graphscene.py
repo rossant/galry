@@ -45,7 +45,8 @@ void main()
 import numpy as np
 import numpy.random as rdn
 position = np.array(.2 * rdn.randn(100, 2), dtype=np.float32)
-tex = np.array(rdn.randn(16, 16, 4), dtype=np.float32)
+tex = np.array(np.random.rand(16, 16, 4) * .5, dtype=np.float32)
+index = np.array(np.arange(len(position)) / 10, dtype=np.int32)
 
 # A Scene is made of multiple visuals, homogeneous sets of primitives rendered
 # in a single call with OpenGL.
@@ -54,7 +55,7 @@ GraphScene = {
     [   
         {
             'name': 'nodes',
-            'size': 100,
+            'size': len(position),
             'primitive_type': 'POINTS',
             'constrain_ratio': False,
             'constrain_navigation': False,
@@ -67,6 +68,12 @@ GraphScene = {
                 'ndim': 2,
                 'shader_type': 'attribute',
                 'data': position,
+                },
+                
+                {
+                'name': 'index',
+                'shader_type': 'index',
+                'data': index,
                 },
                 
                 {
@@ -86,13 +93,20 @@ GraphScene = {
                 'data': tex,
                 },
                 
-                
                 {
                 'name': 'viewport',
                 'vartype': 'float',
                 'ndim': 2,
                 'shader_type': 'uniform',
                 'data': (1., 1.),
+                },
+                
+                {
+                'name': 'window_size',
+                'vartype': 'float',
+                'ndim': 2,
+                'shader_type': 'uniform',
+                'data': (600., 600.),
                 },
             ],
             'vertex_shader': VS,

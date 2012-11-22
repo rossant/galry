@@ -6,13 +6,6 @@ Galry: high-performance interactive 2D visualization in Python
   * javascript standalone version of the renderer and the deserializer
   * python/javascript should be able to accept JSON templates/scenes
   
-  * indexed arrays for graphs...
-  
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IndexBufferId);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Indices), Indices, GL_STATIC_DRAW);
-        glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, (GLvoid*)(sizeof(GLuint) * 36));
-
-  
   * try to reproduce bug with violation memory access when there are several
     widgets within a main window (concurrency issue in pyopengl?)
   * user preferences, with DEBUG option

@@ -16,6 +16,7 @@ is serialized and sent as text to the javascript renderer).
 
 New features:
   * index buffers
+  * change the size of the data dynamically
   * use the same buffer in different templates
   * new abstraction layer (Scene) that can be serialized and that can be used
     in javascript with a WebGL renderer, or any other renderer
@@ -234,8 +235,8 @@ TODO
     to generate the shader codes.
   * Write a new PaintManager class that creates a Scene object dynamically,
     with add_template and set_data methods.
-  * Write the SceneSerializer and SceneDeserializer in Python.
-  
+
+  * Write the SceneSerializer and SceneDeserializer in Python.  
   * Write a WebGLRenderer class in Javascript, as a standalone Javascript 
     object, in a standalone HTML page.
   * Write the SceneDeserializer in Javascript.
