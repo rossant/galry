@@ -135,11 +135,12 @@ class ThreeDimensionsVisual(Visual):
                 size=None, data=np.eye(4))
             
             self.add_vertex_main("""
-    gl_Position = projection * camera * transform * gl_Position;""")
+                gl_Position = projection * camera * transform * gl_Position;""",
+                    'end')
         # static
         else:
             self.add_vertex_main("""
-    gl_Position = projection * camera * gl_Position;""")
+                gl_Position = projection * camera * gl_Position;""")
         
     # def initialize_viewport(self, constrain_ratio=False):
         # """Add viewport-related code."""
@@ -191,7 +192,8 @@ class ThreeDimensionsVisual(Visual):
             camera_zrange = (.5, 5.)
             
         self.size = position.shape[0]
-        self.primitive_type = 'TRIANGLE_STRIP'
+        if self.primitive_type is None:
+            self.primitive_type = 'TRIANGLES'
         
         # attributes
         self.add_attribute("position", vartype="float", ndim=3, data=position)
@@ -203,7 +205,7 @@ class ThreeDimensionsVisual(Visual):
         
         # default matrices
         projection = projection_matrix(camera_angle, camera_ratio, *camera_zrange)
-        camera = camera_matrix(np.array([0., 0., -3.]),  # position
+        camera = camera_matrix(np.array([0., 0., -4.]),  # position
                                np.zeros(3),  # look at
                                np.array([0., 1., 0.]))  # top
         transform = np.eye(4)
@@ -221,22 +223,22 @@ class ThreeDimensionsVisual(Visual):
         
         # vertex shader with transformation matrices and basic lighting
         self.add_vertex_main("""
-    // convert the position from 3D to 4D.
-    gl_Position = vec4(position, 1.0);
-    // compute the amount of light
-    float light = dot(light_direction, normalize(mat3(camera) * mat3(transform) * normal));
-    light = clamp(light, 0, 1);
-    // add the ambient term
-    light = clamp(ambient_light + light, 0, 1);
-    // compute the final color
-    varying_color = color * light;
-    // keep the transparency
-    varying_color.w = color.w;
+            // convert the position from 3D to 4D.
+            gl_Position = vec4(position, 1.0);
+            // compute the amount of light
+            float light = dot(light_direction, normalize(mat3(camera) * mat3(transform) * normal));
+            light = clamp(light, 0, 1);
+            // add the ambient term
+            light = clamp(ambient_light + light, 0, 1);
+            // compute the final color
+            varying_color = color * light;
+            // keep the transparency
+            varying_color.w = color.w;
         """)
         
         # basic fragment shader
         self.add_fragment_main("""
-    out_color = varying_color;
+            out_color = varying_color;
         """)
         
         

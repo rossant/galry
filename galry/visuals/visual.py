@@ -486,7 +486,7 @@ class Visual(object):
         self.bounds = kwargs.pop('bounds', None)
         self.is_static = kwargs.pop('is_static', False)
         self.position_attribute_name = kwargs.pop('position_attribute_name', 'position')
-        self.primitive_type = kwargs.pop('primitive_type', 'LINE_STRIP')
+        self.primitive_type = kwargs.pop('primitive_type', None)
         self.constrain_ratio = kwargs.pop('constrain_ratio', False)
         self.constrain_navigation = kwargs.pop('constrain_navigation', False)
         self.visible = kwargs.pop('visible', True)
@@ -631,6 +631,8 @@ class Visual(object):
         # ensure the type of bounds
         self.bounds = np.array(self.bounds, dtype=np.int32)
     
+        if self.primitive_type is None:
+            self.primitive_type = 'LINE_STRIP'
     
     # Output methods
     # --------------

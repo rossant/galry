@@ -28,6 +28,7 @@ class PaintManager(object):
         self.initialize_default()
         # create the renderer
         self.renderer = GLRenderer(self.scene)
+        # print self.scene['visuals'][0]['vertex_shader']
         
     def reset(self):
         # create an empty scene

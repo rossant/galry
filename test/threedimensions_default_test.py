@@ -15,7 +15,7 @@ class PM(PaintManager):
         color = np.ones((10, 4))
         
         self.add_visual(ThreeDimensionsVisual, position=position,
-            normal=normal, color=color)
+            normal=normal, color=color, primitive_type='TRIANGLE_STRIP')
 
 class ThreeDimensionsDefaultTest(GalryTest):
     def test(self):
@@ -23,3 +23,4 @@ class ThreeDimensionsDefaultTest(GalryTest):
 
 if __name__ == '__main__':
     unittest.main()
+    # show_basic_window(paint_manager=PM)
