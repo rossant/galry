@@ -483,7 +483,7 @@ class Visual(object):
         # default options
         self.size = kwargs.pop('size', 0)
         self.default_color = kwargs.pop('default_color', (1., 1., 0., 1.))
-        self.bounds = kwargs.pop('bounds', [0, 0])
+        self.bounds = kwargs.pop('bounds', None)
         self.is_static = kwargs.pop('is_static', False)
         self.position_attribute_name = kwargs.pop('position_attribute_name', 'position')
         self.primitive_type = kwargs.pop('primitive_type', 'LINE_STRIP')

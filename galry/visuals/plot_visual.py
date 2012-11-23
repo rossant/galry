@@ -1,7 +1,6 @@
 import numpy as np
 from visual import Visual
 
-
 class PlotVisual(Visual):
     def initialize(self, x=None, y=None, color=None, point_size=1.0, position=None):
         # if position is specified, it contains x and y as column vectors
