@@ -2,6 +2,7 @@ from galry import QtGui, QtCore, QtOpenGL
 from galry import log_info, log_debug, log_warn
 from QtOpenGL import QGLWidget
 import OpenGL.GL as gl
+from collections import OrderedDict
 from tools import enforce_dtype
 import numpy as np
 import sys
@@ -985,7 +986,7 @@ class GLRenderer(object):
         # initialize the renderer options using the options set in the Scene
         self.set_renderer_options()
         # create the VisualRenderer objects
-        self.visual_renderers = dict([(visual['name'], GLVisualRenderer(visual)) for visual in self.get_visuals()])
+        self.visual_renderers = OrderedDict([(visual['name'], GLVisualRenderer(visual)) for visual in self.get_visuals()])
         
     def clear(self):
         """Clear the scene."""

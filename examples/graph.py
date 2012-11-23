@@ -43,11 +43,6 @@ class GraphPaintManager(PaintManager):
         
         # random colors for the nodes
         color = np.random.rand(len(positions), 3)
-        
-        # add dataset with the nodes
-        self.add_visual(SpriteVisual, position=positions, color=color,
-            texture=get_tex(16))
-
         # add dataset with the edges
         # coledges = np.hstack((color[edges,:], .5 * np.ones((len(edges), 1))))
         coledges = (1., 1., 1., .1)
@@ -55,6 +50,11 @@ class GraphPaintManager(PaintManager):
             # primitive_type='LINES', color=coledges)
         self.add_visual(PlotVisual, position=positions,
             primitive_type='LINES', color=coledges, index=edges)
+        
+        # add dataset with the nodes
+        self.add_visual(SpriteVisual, position=positions, color=color,
+            texture=get_tex(16))
+
             
 if __name__ == '__main__':
     # create window

@@ -40,12 +40,8 @@ class GraphPaintManager(PaintManager):
         # we define a random graph with networkx
         g = nx.barabasi_albert_graph(100, 3)
         
-        edges = itertools.combinations(g.subgraph(range(20)), 2)
-        g.add_edges_from(edges)
-        
-        
-        
-        
+        # edges = itertools.combinations(g.subgraph(range(20)), 2)
+        # g.add_edges_from(edges)
         
         self.M = adjacency_matrix(g)
         self.Ms = self.M.sum(axis=1)
@@ -61,23 +57,21 @@ class GraphPaintManager(PaintManager):
         color = np.random.rand(len(positions), 4)
         color[:,-1] = 1
         
-        # add dataset with the nodes
-        self.add_visual(SpriteVisual, position=positions,
-            color=color, texture=get_tex(16), name='nodes')
-
-        
         coledges = (1., 1., 1., .1)
         
         self.add_visual(PlotVisual, position=positions,
             primitive_type='LINES', color=coledges, index=edges, name='edges')
         
+        # add dataset with the nodes
+        self.add_visual(SpriteVisual, position=positions,
+            color=color, texture=get_tex(16), name='nodes')
+
         self.edges = edges
         self.nodes_positions = positions
         # self.edges_positions = posedges
         self.velocities = np.zeros((len(positions), 2))
         self.forces = np.zeros((len(positions), 2))
         self.dt = .02
-        
     
     def update_callback(self):
 

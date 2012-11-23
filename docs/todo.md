@@ -8,6 +8,9 @@ Galry: high-performance interactive visualization in Python
   * update index arrays
   * unit test for texture update
   * texture1D
+  * reference arrays
+  
+  * opencl buffers and opencl/gl interop buffers
   
   * javascript standalone version of the renderer and the deserializer
   
