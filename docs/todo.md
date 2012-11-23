@@ -1,10 +1,15 @@
 Galry: high-performance interactive 2D visualization in Python
 ==============================================================
 
-  * REFACTORING: data holder, template.size, allow dynamic change of template
-    size, scenes, etc.
+  * better error messages when template is not correct (eg data is missing,
+    size is missing, etc)
+  * unit tests with updates
+  * fps
+  * gl renderer cleanup
+    
+    
+
   * javascript standalone version of the renderer and the deserializer
-  * python/javascript should be able to accept JSON templates/scenes
   
   * try to reproduce bug with violation memory access when there are several
     widgets within a main window (concurrency issue in pyopengl?)

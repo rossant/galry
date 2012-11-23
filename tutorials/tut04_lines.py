@@ -25,13 +25,13 @@ def create_data(m, n):
     # We shift the Y coordinates in each line.
     Y += .9 * np.linspace(-1., 1., m).reshape((-1, 1))
     
-    data = np.hstack((X.reshape((-1, 1)), Y.reshape(-1, 1)))
+    # data = np.hstack((X.reshape((-1, 1)), Y.reshape(-1, 1)))
     
     # `colors` is an m x 3 matrix, where each line contains the RGB components
     # of the corresponding line. We also could use an alpha channel
     # (transparency) with an m x 4 matrix.
-    colors = rdn.rand(m, 3)
-    return data, colors
+    color = rdn.rand(m, 3)
+    return X, Y, color
 
 class MyPaintManager(PaintManager):
     def initialize(self):
@@ -39,11 +39,8 @@ class MyPaintManager(PaintManager):
         # We generate the colored lines.
         # You can try to increase the values here.
         # If the number of primitives is too high, you may have errors.
-        nprimitives = 20
-        nsamples = 10000
-        position, color = create_data(nprimitives, nsamples)
+        x, y, color = create_data(20, 10000)
         
-        self.create_dataset(PlotTemplate, nprimitives=nprimitives, 
-            nsamples=nsamples, position=position, color=color)
+        self.add_visual(PlotVisual, x, y, color=color)
 
-show_basic_window(paint_manager=MyPaintManager, display_fps=True)
+show_basic_window(paint_manager=MyPaintManager)

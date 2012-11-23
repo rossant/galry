@@ -233,11 +233,11 @@ TODO
   * [DONE] Write a new PaintTemplate class that creates a template dynamically. The
     size should not be a parameter of the template. There should be methods
     to generate the shader codes.
-  * [WIP] Write a new PaintManager class that creates a Scene object dynamically,
+  * [DONE] Write a new PaintManager class that creates a Scene object dynamically,
     with add_template and set_data methods.
 
-  * Update all templates
-  * Integrate the new version in the code
+  * [DONE] Update all templates
+  * [WIP] Integrate the new version in the code
     
   * Write the SceneSerializer and SceneDeserializer in Python.  
   * Write a WebGLRenderer class in Javascript, as a standalone Javascript 

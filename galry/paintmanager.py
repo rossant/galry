@@ -1,6 +1,7 @@
 import numpy as np
 from tools import log_debug, log_info, log_warn
 from glrenderer import GLRenderer
+from visuals import TextVisual, RectanglesVisual
 
 __all__ = ['PaintManager']
 
@@ -23,6 +24,7 @@ class PaintManager(object):
         self.reset()
         self.parent = parent
         # initialize the paint manager (scene and visual creation happens here)
+        self.initialize_default()
         self.initialize()
         # create the renderer
         self.renderer = GLRenderer(self.scene)
@@ -36,6 +38,13 @@ class PaintManager(object):
         
     def initialize(self):
         """Define the scene. To be overriden."""
+        
+    def initialize_default(self):
+        self.add_visual(TextVisual, text='000 FPS', name='fps', visible=False)
+        self.add_visual(RectanglesVisual, coordinates=(0.,) * 4,
+                        color=self.navigation_rectangle_color, 
+                        is_static=True,
+                        name='navigation_rectangle', visible=False)
         
         
     # Visual methods
@@ -56,14 +65,12 @@ class PaintManager(object):
     def show_navigation_rectangle(self, coordinates):
         """Show the navigation rectangle with the specified coordinates 
         (in relative window coordinates)."""
-        # TODO
-        # self.set_data(coordinates=coordinates, visible=True,
-                      # visual='navigation_rectangle')
+        self.set_data(coordinates=coordinates, visible=True,
+                      visual='navigation_rectangle')
             
     def hide_navigation_rectangle(self):
         """Hide the navigation rectangle."""
-        # TODO
-        # self.set_data(visible=False, visual='navigation_rectangle')
+        self.set_data(visible=False, visual='navigation_rectangle')
         
         
     # Data creation methods

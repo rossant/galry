@@ -46,8 +46,8 @@ class MyPaintManager(PaintManager):
         
         # We add a plot with random points.
         data = get_gaussian(self.n)
-        self.dataset = self.create_dataset(PlotTemplate, position=data,
-            primitive_type=PrimitiveType.Points)
+        self.dataset = self.add_visual(PlotVisual, position=data,
+            primitive_type='POINTS')
 
 # We define a new event as part of a new enumeration `MyEvents`.
 MyEvents = enum("ChangeLawEvent")

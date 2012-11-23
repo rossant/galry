@@ -19,8 +19,7 @@ class MyPaintManager(PaintManager):
         x = np.linspace(-1., 1., n)
         y = .2 * rdn.randn(n)
         data = np.hstack((x.reshape((-1, 1)), y.reshape((-1, 1))))
-        self.dataset = self.create_dataset(PlotTemplate, 
-            position=data)
+        self.add_visual(PlotVisual, position=data)
                                     
 # We define two custom interaction events. They occur on the receiver side,
 # when widget B needs to synchronize its navigation according to widget A,

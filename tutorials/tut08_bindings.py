@@ -15,8 +15,8 @@ class MyPaintManager(PaintManager):
     def initialize(self):
         
         # We add a plot with random points.
-        self.create_dataset(PlotTemplate, position=.2 * rdn.randn(10000, 2),
-            primitive_type=PrimitiveType.Points)
+        self.add_visual(PlotVisual, position=.2 * rdn.randn(10000, 2),
+            primitive_type='POINTS')
 
 # We define a customized binding by deriving a class from the base class
 # `BindingSet`. This class links individual user actions to

@@ -86,7 +86,11 @@ class Attribute(object):
         """Update data in the currently bound buffer."""
         data = Attribute.convert_data(data)
         # convert onset into bytes count
-        onset *= data.shape[1] * data.itemsize
+        if data.ndim == 1:
+            ndim = 1
+        elif data.ndim == 2:
+            ndim = data.shape[1]
+        onset *= ndim * data.itemsize
         gl.glBufferSubData(gl.GL_ARRAY_BUFFER, int(onset), data)
     
     @staticmethod
@@ -436,7 +440,7 @@ class SlicedAttribute(object):
         within = False
         # update VBOs
         for buffer, (pos, size) in zip(self.buffers, self.slicer.slices):
-            subdata = data[pos:pos + size,:]
+            subdata = data[pos:pos + size,...]
             submask = mask[pos:pos + size]
             # if there is at least one True in the slice mask (submask)
             if submask.any():
@@ -444,7 +448,7 @@ class SlicedAttribute(object):
                 subonset = submask.argmax()
                 suboffset = len(submask) - 1 - submask[::-1].argmax()
                 Attribute.bind(buffer, self.location)
-                Attribute.update(subdata[subonset:suboffset + 1, :], subonset)
+                Attribute.update(subdata[subonset:suboffset + 1,...], subonset)
 
     
 # Painter class

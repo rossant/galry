@@ -27,7 +27,7 @@ class MyPaintManager(PaintManager):
         # describes how this object is rendered on the screen. The template 
         # can have several slots containing data or parameters, that can be
         # filled here with the `set_data` method.
-        self.create_dataset(TextTemplate, text=text)
+        self.add_visual(TextVisual, text=text)
                 
 # We show a basic QT window with a custom galry widget.
 # This widget has our custom `MyPaintManager` class as a paint manager.
