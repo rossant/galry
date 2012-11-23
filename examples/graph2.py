@@ -2,6 +2,19 @@ from galry import *
 import numpy.random as rdn
 import networkx as nx
 from networkx import adjacency_matrix
+import itertools
+
+# def complete_graph_from_list(L, create_using=None):
+    # G=networkx.empty_graph(len(L), create_using)
+    # if n>1:
+        # if G.is_directed():
+            # edges=itertools.permutations(L,2)
+        # else:
+            # edges=itertools.combinations(L,2)
+        # G.add_edges_from(edges)
+    # return G
+
+
 
 def get_tex(n):
     """Create a texture for the nodes. It may be simpler to just use an image!
@@ -25,26 +38,24 @@ class GraphPaintManager(PaintManager):
     def initialize(self):
         
         # we define a random graph with networkx
-        g = nx.barabasi_albert_graph(100, 5)
+        g = nx.barabasi_albert_graph(100, 3)
+        
+        edges = itertools.combinations(g.subgraph(range(20)), 2)
+        g.add_edges_from(edges)
+        
+        
+        
+        
+        
         self.M = adjacency_matrix(g)
         self.Ms = self.M.sum(axis=1)
-        
-        # we compute the layout, ie the positions of the nodes, with
-        # networkx, on the GPU. This might be a bottleneck when dealing with
-        # large graphs, so one should consider doing that on the GPU is
-        # possible
-        # pos = nx.spring_layout(g)
         
         # get the array with the positions of all nodes
         # positions = np.vstack([pos[i] for i in xrange(len(pos))]) - .5
         positions = rdn.randn(100, 2) * .2
         
         # get the array with the positions of all edges.
-        # NOTE: we're wasting a lot of memory and it should be better to use
-        # indexed arrays. However those are not yet implemented in galry
-        # this is on the TODO list...
         edges = np.vstack(g.edges()).ravel()
-        posedges = positions[edges,:]
         
         # random colors for the nodes
         color = np.random.rand(len(positions), 4)
@@ -54,15 +65,15 @@ class GraphPaintManager(PaintManager):
         self.add_visual(SpriteVisual, position=positions,
             color=color, texture=get_tex(16), name='nodes')
 
-        # add dataset with the edges
-        coledges = color.copy()[edges,:]# np.hstack((color[edges,:], .5 * np.ones((len(edges), 1))))
-        coledges[:,-1] = .25
-        self.add_visual(PlotVisual, position=posedges,
-            primitive_type='LINES', color=coledges, name='edges')
-
+        
+        coledges = (1., 1., 1., .1)
+        
+        self.add_visual(PlotVisual, position=positions,
+            primitive_type='LINES', color=coledges, index=edges, name='edges')
+        
         self.edges = edges
         self.nodes_positions = positions
-        self.edges_positions = posedges
+        # self.edges_positions = posedges
         self.velocities = np.zeros((len(positions), 2))
         self.forces = np.zeros((len(positions), 2))
         self.dt = .02
@@ -80,9 +91,8 @@ class GraphPaintManager(PaintManager):
         v = x[:,1] - x[:,1].reshape((-1, 1))
         r = np.sqrt(u ** 2 + v ** 2) ** 3
         
-        
         # ind = r==0.
-        r[r<.01] = np.inf
+        r[r<.01] = .01
         
         u1 = u / r
         # u[ind] = 0
@@ -92,7 +102,7 @@ class GraphPaintManager(PaintManager):
         # v[ind] = 0
         v1 = v1.sum(axis=1)
         
-        r[r==np.inf] = 0
+        r[r>10] = 10
         
         u *= M
         v *= M
@@ -103,8 +113,12 @@ class GraphPaintManager(PaintManager):
         u2 = u2.sum(axis=1)
         v2 = v2.sum(axis=1)
         
+        # repulsion (coulomb)
         a = -.5
+        
+        # attraction (spring)
         b = .5
+        
         self.forces = np.empty((len(x), 2))
         self.forces[:,0] = a * u1.ravel() + b * u2
         self.forces[:,1] = a * v1.ravel() + b * v2
@@ -123,7 +137,7 @@ class GraphPaintManager(PaintManager):
     def update_pos(self, pos):
         self.nodes_positions = pos
         self.set_data(position=pos, visual='nodes')
-        self.set_data(position=pos[self.edges,:], visual='edges')
+        self.set_data(position=pos, visual='edges')
         
     
 class GraphInteractionManager(InteractionManager):
@@ -153,8 +167,12 @@ class GraphInteractionManager(InteractionManager):
     
 class GraphBinding(DefaultBindingSet):
     def extend(self):
-        self.set(UserActions.MiddleButtonMouseMoveAction,
-            "NodeMoved", param_getter=lambda p: p["mouse_press_position"] + p["mouse_position"])
+        self.set(UserActions.MiddleButtonMouseMoveAction, "NodeMoved",
+            param_getter=lambda p: p["mouse_press_position"] + p["mouse_position"])
+        
+        self.set(UserActions.LeftButtonMouseMoveAction, "NodeMoved",
+            key_modifier=QtCore.Qt.Key_Control,
+            param_getter=lambda p: p["mouse_press_position"] + p["mouse_position"])
         
             
 if __name__ == '__main__':
@@ -165,4 +183,5 @@ if __name__ == '__main__':
         interaction_manager=GraphInteractionManager,
         antialiasing=True, constrain_navigation=False,
         display_fps=True,
-        update_interval=.02)
+        update_interval=.02
+        )

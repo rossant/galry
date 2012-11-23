@@ -381,25 +381,32 @@ class Slicer(object):
                 bounds_sliced = np.hstack((bounds_sliced, slice_size))
         return enforce_dtype(bounds_sliced, np.int32)
         
-    def set_size(self, size, bounds=None, doslice=True):
+    def set_size(self, size, doslice=True):
         """Update the total size of the buffer and/or the bounds, and update
         the slice information accordingly."""
-        if bounds is None:
-            bounds = np.array([0, size], dtype=np.int32)
         # deactivate slicing by using a maxsize number larger than the
         # actual size
-        if doslice:
+        if not doslice:
             maxsize = 2 * size
         else:
             maxsize = None
         self.size = size
-        self.bounds = bounds
+        # if not hasattr(self, 'bounds'):
+            # self.bounds = np.array([0, size], dtype=np.int32)
         # compute the data slicing with respect to bounds (specified in the
         # template) and to the maximum size of a VBO.
         self.slices = self._get_slices(self.size, maxsize)
+        # print self.size, maxsize
+        # print self.slices
         self.slice_count = len(self.slices)
+    
+    def set_bounds(self, bounds):
+        if bounds is None:
+            bounds = np.array([0, self.size], dtype=np.int32)
+        self.bounds = bounds
         self.subdata_bounds = [self._slice_bounds(self.bounds, pos, size) \
             for pos, size in self.slices]
+       
        
        
 class SlicedAttribute(object):
@@ -488,6 +495,8 @@ class GLVisualRenderer(object):
         self.data_updating = {}
         # set the primitive type from its name
         self.set_primitive_type(self.visual['primitive_type'])
+        # indexed mode? set in initialize_variables
+        self.use_index = None
         # set the slicer
         self.slicer = Slicer()
         # used when slicing needs to be deactivated (like for indexed arrays)
@@ -496,8 +505,10 @@ class GLVisualRenderer(object):
         size = self.visual['size']
         bounds = np.array(self.visual.get('bounds', [0, size]), np.int32)
         # self.update_size(size, bounds)
-        self.slicer.set_size(size, bounds)
-        self.noslicer.set_size(size, bounds, doslice=False)
+        self.slicer.set_size(size)
+        self.slicer.set_bounds(bounds)
+        self.noslicer.set_size(size, doslice=False)
+        self.noslicer.set_bounds(bounds)
         # compile and link the shaders
         self.shader_manager = ShaderManager(self.visual['vertex_shader'],
                                             self.visual['fragment_shader'])
@@ -674,19 +685,27 @@ class GLVisualRenderer(object):
         """Update data for an attribute variable."""
         variable = self.get_variable(name)
         variable['data'] = data
+        att = variable['sliced_attribute']
         # handle size changing
         if data.shape[0] != self.previous_size:
+            # update the size only when not using index arrays
+            # TODO: update index
+            if self.use_index:
+                newsize = self.slicer.size
+            else:
+                newsize = data.shape[0]
             # update the slicer size and bounds
-            self.slicer.set_size(data.shape[0], bounds, doslice=not(self.use_index))
+            self.slicer.set_size(newsize, doslice=not(self.use_index))
+            self.slicer.set_bounds(bounds)
             # delete old buffers
-            variable['sliced_attribute'].delete_buffers()
+            att.delete_buffers()
             # create new buffers
-            variable['sliced_attribute'].create()
+            att.create()
             # load data
-            variable['sliced_attribute'].load(data)
+            att.load(data)
         else:
             # update data
-            variable['sliced_attribute'].update(data)
+            att.update(data)
         
     def update_texture(self, name, data):
         """Update data for a texture variable."""
@@ -746,12 +765,16 @@ class GLVisualRenderer(object):
         if visible is not None:
             self.visual['visible'] = visible
         
-        # handle size and bounds keyword
+        # handle size keyword
         size = kwargs.pop('size', None)
-        bounds = kwargs.pop('bounds', None)
-        if size is not None or bounds is not None:
-            self.slicer.set_size(size, bounds)
+        if size is not None:
+            self.slicer.set_size(size)
         
+        # handle bounds keyword
+        bounds = kwargs.pop('bounds', None)
+        if bounds is not None:
+            self.slicer.set_bounds(bounds)
+            
         # handle primitive type special keyword
         primitive_type = kwargs.pop('primitive_type', None)
         if primitive_type is not None:
@@ -835,6 +858,7 @@ class GLVisualRenderer(object):
             for slice in xrange(len(self.slicer.slices)):
                 # get slice bounds
                 slice_bounds = self.slicer.subdata_bounds[slice]
+                # print slice, slice_bounds
                 # bind all attributes for that slice
                 self.bind_attributes(slice)
                 # call the appropriate OpenGL rendering command
@@ -846,7 +870,8 @@ class GLVisualRenderer(object):
                     Painter.draw_multi_arrays(self.primitive_type, slice_bounds)
         # deactivate the shaders
         self.shader_manager.deactivate_shaders()
-            
+
+        
     # Cleanup methods
     # ---------------
     def cleanup(self):

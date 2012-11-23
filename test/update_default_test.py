@@ -20,3 +20,4 @@ class UpdateDefaultTest(GalryTest):
 
 if __name__ == '__main__':
     unittest.main()
+    # show_basic_window(paint_manager=PM)

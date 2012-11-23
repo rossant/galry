@@ -43,11 +43,13 @@ class PaintManager(object):
         
     def initialize_default(self):
         """Default visuals (FPS and navigation rectangle)."""
-        self.add_visual(TextVisual, text='FPS: 0000', name='fps',
-                        fontsize=18,
-                        coordinates=(-.80, .92),
-                        visible=False,
-                        is_static=True)
+        if self.parent.display_fps:
+            self.add_visual(TextVisual, text='FPS: 000', name='fps',
+                            fontsize=18,
+                            coordinates=(-.80, .92),
+                            visible=False,
+                            is_static=True)
+                        
         self.add_visual(RectanglesVisual, coordinates=(0.,) * 4,
                         color=self.navigation_rectangle_color, 
                         is_static=True,

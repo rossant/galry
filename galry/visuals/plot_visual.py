@@ -3,7 +3,7 @@ from visual import Visual
 
 class PlotVisual(Visual):
     def initialize(self, x=None, y=None, color=None, point_size=1.0,
-            position=None, nprimitives=None):
+            position=None, nprimitives=None, index=None):
         # if position is specified, it contains x and y as column vectors
         if position is not None:
             x, y = position.T
@@ -67,6 +67,11 @@ class PlotVisual(Visual):
         
         # set position attribute
         self.add_attribute("position", ndim=2, data=position)
+        
+        if index is not None:
+            index = np.array(index)
+            self.size = len(index)
+            self.add_index("index", data=index)
         
         # single color case: no need for a color buffer, just use default color
         if single_color:

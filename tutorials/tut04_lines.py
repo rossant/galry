@@ -39,9 +39,10 @@ class MyPaintManager(PaintManager):
         # We generate the colored lines.
         # You can try to increase the values here.
         # If the number of primitives is too high, you may have errors.
-        x, y, color = create_data(20, 10000)
+        x, y, color = create_data(100, 10000)
         
         self.add_visual(PlotVisual, x, y, color=color)
 
-show_basic_window(paint_manager=MyPaintManager, constrain_navigation=True,
-                  display_fps=True)
+window = show_basic_window(paint_manager=MyPaintManager,
+                            constrain_navigation=True,
+                            display_fps=True)
