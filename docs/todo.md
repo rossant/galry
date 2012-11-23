@@ -1,13 +1,12 @@
-Galry: high-performance interactive 2D visualization in Python
-==============================================================
+Galry: high-performance interactive visualization in Python
+===========================================================
 
-  * unit tests with updates
-  * fps
   * better error messages when template is not correct (eg data is missing,
     size is missing, etc)
   * gl renderer cleanup
   * test indexed array
   * graph with indexed array  
+  * update text template to allow for several texts at different positions
 
   * javascript standalone version of the renderer and the deserializer
   
@@ -16,9 +15,12 @@ Galry: high-performance interactive 2D visualization in Python
   * user preferences, with DEBUG option
   * high level interface
   * bug: linux pyside segmentation fault
+  
   * rename "bindings" to "mode"
   * process_action(action, parameters) in interaction manager for quick 
     interactivity
+  * more modular interaction system (not having navigation related stuff in
+    core classes)
   
   * automatic benchmark test
   * automatic screenshots of the examples to generate a gallery

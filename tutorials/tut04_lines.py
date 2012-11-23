@@ -43,4 +43,5 @@ class MyPaintManager(PaintManager):
         
         self.add_visual(PlotVisual, x, y, color=color)
 
-show_basic_window(paint_manager=MyPaintManager)
+show_basic_window(paint_manager=MyPaintManager, constrain_navigation=True,
+                  display_fps=True)

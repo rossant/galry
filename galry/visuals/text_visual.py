@@ -43,7 +43,7 @@ class TextVisual(Visual):
         """Initialize the specified font at a given size."""
         self.texture, self.matrix, self.get_map = load_font(font, fontsize)
 
-    def initialize(self, text, pos=(0., 0.), font='segoe', fontsize=24, color=None):
+    def initialize(self, text, coordinates=(0., 0.), font='segoe', fontsize=24, color=None):
         """Initialize the text template."""
         
         if color is None:
@@ -80,7 +80,7 @@ class TextVisual(Visual):
         
         # compound variables
         self.add_compound("text", fun=self.text_compound, data=text)
-        self.add_compound("pos", fun=self.position_compound, data=pos)
+        self.add_compound("coordinates", fun=self.position_compound, data=coordinates)
 
         # vertex shader
         self.add_vertex_main("""

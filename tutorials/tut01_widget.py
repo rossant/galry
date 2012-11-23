@@ -9,4 +9,4 @@ empty window. Nothing exciting here.
 from galry import *
 
 # We show a basic QT window with a default empty galry widget inside.
-show_basic_window(display_fps=True)
+show_basic_window()

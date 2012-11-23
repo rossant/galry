@@ -138,6 +138,7 @@ class FpsCounter(object):
         if maxlen is None:
             maxlen = self.maxlen
         self.times = collections.deque(maxlen=maxlen)
+        self.fps = 0.
         self.delta = 0.
         
     def tick(self):
@@ -152,7 +153,11 @@ class FpsCounter(object):
         """Return the current FPS."""
         if len(self.times) >= 2:
             dif = np.diff(self.times)
-            return 1. / max(.001, dif.min())
+            fps = 1. / dif.min()
+            # if the FPS crosses 500, do not update it
+            if fps <= 500:
+                self.fps = fps
+            return self.fps
         else:
             return 0.
             

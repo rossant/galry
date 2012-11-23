@@ -42,12 +42,16 @@ class PaintManager(object):
         
     def initialize_default(self):
         """Default visuals (FPS and navigation rectangle)."""
-        self.add_visual(TextVisual, text='FPS: 000', name='fps', visible=False,
+        self.add_visual(TextVisual, text='FPS: 0000', name='fps',
+                        fontsize=18,
+                        coordinates=(-.80, .92),
+                        visible=False,
                         is_static=True)
         self.add_visual(RectanglesVisual, coordinates=(0.,) * 4,
                         color=self.navigation_rectangle_color, 
                         is_static=True,
-                        name='navigation_rectangle', visible=False)
+                        name='navigation_rectangle',
+                        visible=False)
         
         
     # Visual methods
@@ -178,7 +182,7 @@ class PaintManager(object):
     
     def update_fps(self, fps):
         """Update the FPS in the corresponding text visual."""
-        self.set_data(visual='fps', text="FPS: %03d" % fps)
+        self.set_data(visual='fps', text="FPS: %03d" % fps, visible=True)
  
  
     # Rendering methods

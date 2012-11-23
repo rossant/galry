@@ -14,8 +14,6 @@ import numpy.random as rdn
 class MyPaintManager(PaintManager):
     def initialize(self):
         # We define some data here.
-        # Try to increase the number of points to see what your GPU is capable
-        # of (be brave, try the million!).
         # The initial coordinate range of the window is [-1, 1]^2.
         data = 0.2 * rdn.randn(10000, 2)
         
