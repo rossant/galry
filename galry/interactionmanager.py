@@ -21,7 +21,8 @@ class InteractionManager(object):
     navigation_rectangle = None
     constrain_navigation = False
     
-    def __init__(self):
+    def __init__(self, parent):
+        self.parent = parent
         # initialize navigation
         self.reset()
         self.set_navigation_constraints()

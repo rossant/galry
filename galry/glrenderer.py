@@ -864,14 +864,7 @@ class GLRenderer(object):
         
         """
         self.scene = scene
-        
-        # import pprint
-        # print(scene['visuals'][0]['fragment_shader'])
-        # print(scene['visuals'][0]['fragment_shader'])
-        # f = open('s.txt', 'w')
-        # pprint.pprint(scene, f)
-        # f.close()
-        
+        self.viewport = (1., 1.)
         self.visual_renderers = {}
     
     def set_renderer_options(self):
@@ -982,26 +975,21 @@ class GLRenderer(object):
         gl.glViewport(0, 0, width, height)
         # compute the constrained viewport
         vx = vy = 1.0
-        if height > 0:
-            a = float(width) / height
-            if a > 1:
-                vx = a
-            else:
-                vy = 1. / a
+        if self.get_renderer_option('constrain_ratio'):
+            if height > 0:
+                a = float(width) / height
+                if a > 1:
+                    vx = a
+                else:
+                    vy = 1. / a
         self.viewport = vx, vy
+        width = float(width)
+        height = float(height)
         # update the viewport and window size for all visuals
         for visual in self.get_visuals():
-            # get the appropriate viewport, depending on ratio constrain
-            # get the global constrain ratio first
-            scene_constrain_ratio = self.get_renderer_option('constrain_ratio')
-            if visual.get('constrain_ratio', scene_constrain_ratio):
-                viewport = vx, vy
-                # update viewport and window_size
-                self.set_data(visual['name'],
-                              viewport=viewport,
-                              window_size=(width, height))
-            # else:
-                # viewport = 1., 1.
+            self.set_data(visual['name'],
+                          viewport=self.viewport,
+                          window_size=(width, height))
     
     
     # Cleanup methods

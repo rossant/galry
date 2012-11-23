@@ -19,8 +19,9 @@ class PaintManager(object):
     
     # Initialization methods
     # ----------------------
-    def __init__(self):
+    def __init__(self, parent):
         self.reset()
+        self.parent = parent
         # initialize the paint manager (scene and visual creation happens here)
         self.initialize()
         # create the renderer
@@ -110,6 +111,9 @@ class PaintManager(object):
         name = kwargs.pop('name', 'visual%d' % (len(self.get_visuals())))
         if self.get_visual(name):
             raise ValueError("Visual name '%s' already exists." % name)
+        # pass constrain_ratio to all visuals
+        if 'constrain_ratio' not in kwargs:
+            kwargs['constrain_ratio'] = self.parent.constrain_ratio
         # create the visual object
         visual = visual_class(*args, **kwargs)
         # get the dictionary version

@@ -507,7 +507,6 @@ class Visual(object):
         self.vertex_shader, self.fragment_shader = \
             self.shader_creator.get_shader_codes()
         
-        
     # Variable methods
     # ----------------
     def add_foo(self, shader_type, name, **kwargs):
@@ -573,15 +572,15 @@ class Visual(object):
     # ----------------------
     def initialize_default(self):
         """Default initialization for all child visuals."""
-        self.initialize_viewport()
         self.initialize_navigation()
+        self.initialize_viewport()
         
     def initialize_viewport(self):
         """Handle window resize in shaders."""
         self.add_uniform('viewport', vartype="float", ndim=2, data=(1., 1.))
         self.add_uniform('window_size', vartype="float", ndim=2, data=(600., 600.))
         if self.constrain_ratio:
-            self.add_vertex_main("gl_Position.xy = gl_Position.xy / viewport;")
+            self.add_vertex_main("gl_Position.xy = gl_Position.xy / viewport;", 'end')
         
     def initialize_navigation(self):
         """Handle interactive navigation in shaders."""

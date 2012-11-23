@@ -176,9 +176,9 @@ class GalryWidget(QGLWidget):
         
         # create the managers
         for key, val in self.companion_classes.iteritems():
-            obj = val()
+            obj = val(self)
             setattr(self, key, obj)
-            obj.parent = self
+            # obj.parent = self
         
         # link all managers
         for key, val in self.companion_classes.iteritems():
@@ -254,6 +254,7 @@ class GalryWidget(QGLWidget):
         self.paint_manager.update_fps(int(self.fps_counter.get_fps()))
         
     def resizeGL(self, width, height):
+        self.width, self.height = width, height
         self.paint_manager.resizeGL(width, height)
         
     def sizeHint(self):

@@ -10,7 +10,8 @@ class BindingManager(object):
     """Manager several sets of bindings (or interaction modes) and allows
     to switch between several modes.
     """
-    def __init__(self):
+    def __init__(self, parent):
+        self.parent = parent
         self.reset()
     
     def reset(self):
