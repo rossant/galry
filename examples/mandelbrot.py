@@ -3,12 +3,12 @@ import numpy as np
 import numpy.random as rdn
 
 
-class MandelbrotTemplate(DefaultTemplate):
+class MandelbrotVisual(Visual):
     
-    def base_mandelbrot(self):
+    def base_mandelbrot(self, iterations=100):
         
         self.size = 4
-        self.primitive_type = PrimitiveType.TriangleStrip
+        self.primitive_type = 'TRIANGLE_STRIP'
         
         points = (-1, -1, 1, 1)
         x0, y0, x1, y1 = points
@@ -27,7 +27,7 @@ class MandelbrotTemplate(DefaultTemplate):
         tex_coords[2,:] = (0, 0)
         tex_coords[3,:] = (1, 0)
         
-        self.add_uniform("iterations", vartype="int", ndim=1, data=100)
+        self.add_uniform("iterations", vartype="int", ndim=1, data=iterations)
         
         self.add_attribute("position", vartype="float", ndim=2,
             data=position)
@@ -81,18 +81,19 @@ int mandelbrot_escape(vec2 pos, int iterations)
     out_color = vec4(c, 0., 0., 1.);
         """)
     
-    def initialize(self, **kwargs):
-        self.base_mandelbrot()
-        self.initialize_default(**kwargs)
+    def initialize(self, iterations=100):
+        self.base_mandelbrot(iterations)
 
 
 class MandelbrotPaintManager(PaintManager):
     def initialize(self):
         # create the textured rectangle and specify the shaders
-        self.create_dataset(MandelbrotTemplate)
+        self.add_visual(MandelbrotVisual)
 
 if __name__ == '__main__':
     print "Zoom in!"
     window = show_basic_window(paint_manager=MandelbrotPaintManager,
-                               constrain_ratio=True)
+                               constrain_ratio=True,
+                               constrain_navigation=True,
+                               )
     

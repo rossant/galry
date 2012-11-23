@@ -9,7 +9,7 @@ class EarthPaintManager(PaintManager):
         # load the texture from an image thanks to matplotlib
         texture = plt.imread(os.path.join(path, "images/earth.png"))
         # add a textured rectangle
-        self.create_dataset(TextureTemplate, texture=texture)       
+        self.add_visual(TextureVisual, texture=texture)       
 
 if __name__ == '__main__':
     # create window

@@ -5,9 +5,9 @@ import numpy.random as rdn
 import os
 import time
 import timeit
-from fountain import ParticleTemplate, ParticlePaintManager
+from fountain import ParticleVisual, ParticlePaintManager
 
-class Particle2Template(ParticleTemplate):
+class Particle2Visual(ParticleVisual):
     def get_position_update_code(self):
         return """
         // update position
@@ -15,10 +15,11 @@ class Particle2Template(ParticleTemplate):
         position.y += (velocities.y + v.y) * tloc - 0.5 * g * tloc * tloc;
         """
         
-    def initialize(self,  **kwargs):
-        self.base_fountain()
-        self.add_uniform("v", vartype="float", ndim=2, data=(0., 0.))
-        self.initialize_default(**kwargs)
+    def initialize(self, v=None, **kwargs):
+        if v is None:
+            v = (0., 0.)
+        self.base_fountain(**kwargs)
+        self.add_uniform("v", vartype="float", ndim=2, data=v)
         
 class Particle2PaintManager(PaintManager):
     def initialize(self):
@@ -43,7 +44,7 @@ class Particle2PaintManager(PaintManager):
         delays = 10 * rdn.rand(n)
         
         # create the dataset
-        self.create_dataset(Particle2Template, 
+        self.add_visual(Particle2Visual, 
             initial_positions=positions,
             velocities=velocities,
             v=self.v,

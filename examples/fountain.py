@@ -6,7 +6,7 @@ import time
 import timeit
 import os
 
-class ParticleTemplate(DefaultTemplate):
+class ParticleVisual(Visual):
     def get_position_update_code(self):
         return """
         // update position
@@ -21,8 +21,11 @@ class ParticleTemplate(DefaultTemplate):
         varying_color.w = alpha;
         """
     
-    def base_fountain(self):
-        self.primitive_type = PrimitiveType.Points
+    def base_fountain(self, initial_positions=None,
+        velocities=None, color=None, alpha=None, delays=None):
+        
+        self.size = initial_positions.shape[0]
+        self.primitive_type = 'POINTS'
         # load texture
         path = os.path.dirname(os.path.realpath(__file__))
         particle = plt.imread(os.path.join(path, "images/particle.png"))
@@ -32,13 +35,13 @@ class ParticleTemplate(DefaultTemplate):
         # create the dataset
         self.add_uniform("point_size", vartype="float", ndim=1, data=size)
         self.add_uniform("t", vartype="float", ndim=1, data=0.)
-        self.add_uniform("color", vartype="float", ndim=4)
+        self.add_uniform("color", vartype="float", ndim=4, data=color)
         
         # add the different data buffers
-        self.add_attribute("initial_positions", vartype="float", ndim=2)
-        self.add_attribute("velocities", vartype="float", ndim=2)
-        self.add_attribute("delays", vartype="float", ndim=1)
-        self.add_attribute("alpha", vartype="float", ndim=1)
+        self.add_attribute("initial_positions", vartype="float", ndim=2, data=initial_positions)
+        self.add_attribute("velocities", vartype="float", ndim=2, data=velocities)
+        self.add_attribute("delays", vartype="float", ndim=1, data=delays)
+        self.add_attribute("alpha", vartype="float", ndim=1, data=alpha)
         
         self.add_varying("varying_color", vartype="float", ndim=4)
         
@@ -47,29 +50,29 @@ class ParticleTemplate(DefaultTemplate):
             ncomponents=particle.shape[2], ndim=2, data=particle)
             
         vs = """
-    // compute local time
-    const float tmax = 5.;
-    const float tlocmax = 2.;
-    const float g = %G_CONSTANT%;
-    
-    // Local time.
-    float tloc = mod(t - delays, tmax);
-    
-    vec2 position = initial_positions;
-    
-    if ((tloc >= 0) && (tloc <= tlocmax))
-    {
-        // position update
-        %POSITION_UPDATE%
+        // compute local time
+        const float tmax = 5.;
+        const float tlocmax = 2.;
+        const float g = %G_CONSTANT%;
         
-        %COLOR_UPDATE%
-    }
-    else
-    {
-        varying_color = vec4(0., 0., 0., 0.);
-    }
-    
-    gl_PointSize = point_size;
+        // Local time.
+        float tloc = mod(t - delays, tmax);
+        
+        vec2 position = initial_positions;
+        
+        if ((tloc >= 0) && (tloc <= tlocmax))
+        {
+            // position update
+            %POSITION_UPDATE%
+            
+            %COLOR_UPDATE%
+        }
+        else
+        {
+            varying_color = vec4(0., 0., 0., 0.);
+        }
+        
+        gl_PointSize = point_size;
         """
             
         vs = vs.replace('%POSITION_UPDATE%', self.get_position_update_code())
@@ -79,18 +82,12 @@ class ParticleTemplate(DefaultTemplate):
         self.add_vertex_main(vs)    
 
         self.add_fragment_main(
-"""
-    out_color = texture(tex_sampler, gl_PointCoord) * varying_color;
-""")
+        """
+            out_color = texture(tex_sampler, gl_PointCoord) * varying_color;
+        """)
 
-    def get_initialize_arguments(self, **data):
-        initial_positions = data.get("initial_positions", None)
-        self.size = initial_positions.shape[0]
-        # return {}
-        
-    def initialize(self,  **kwargs):
-        self.base_fountain()
-        self.initialize_default(**kwargs)
+    def initialize(self, **kwargs):
+        self.base_fountain(**kwargs)
     
         
 class ParticlePaintManager(PaintManager):
@@ -119,7 +116,7 @@ class ParticlePaintManager(PaintManager):
         delays = 10 * rdn.rand(n)
         
         # create the dataset
-        self.create_dataset(ParticleTemplate, 
+        self.add_visual(ParticleVisual, 
             initial_positions=positions,
             velocities=velocities,
             alpha=alpha,

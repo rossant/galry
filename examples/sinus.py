@@ -18,9 +18,8 @@ class SinusPaintManager(PaintManager):
         colors[0,1:3] = 0
         colors[1,2] = 0
         
-        self.create_dataset(PlotTemplate,
+        self.add_visual(PlotVisual,
             nprimitives=2,
-            nsamples=1000,
             position=positions,
             color=colors)
 

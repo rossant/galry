@@ -34,21 +34,22 @@ class ConwayPaintManager(PaintManager):
         self.data = np.zeros((size,size,3), dtype=np.float32)
         self.data[:,:,0] = rdn.rand(size,size)<.2
         # create textured rectangle
-        self.create_dataset(TextureTemplate, texture=self.data)
+        self.add_visual(TextureVisual, texture=self.data)
         # iteration text
         self.iteration = 0
         text = self.get_iteration_text()
-        self.it = self.create_dataset(TextTemplate, fontsize=18, 
-            text=text, pos=(0., .95), is_static=True)
+        self.add_visual(TextVisual, fontsize=18, name='iteration',
+            text=text, coordinates=(0., .95), is_static=True)
         
     def update_callback(self):
         self.data[:,:,0] = iterate(self.data[:,:,0])
         self.set_data(tex_sampler=self.data)
-        self.set_data(text=self.get_iteration_text(), dataset=self.it)
+        self.set_data(text=self.get_iteration_text(), visual='iteration')
         self.iteration += 1
         
 if __name__ == '__main__':
     # create window
     window = show_basic_window(paint_manager=ConwayPaintManager,
                                constrain_ratio=True,
+                               constrain_navigation=True,
                                update_interval=.05)

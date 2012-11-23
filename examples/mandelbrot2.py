@@ -1,7 +1,7 @@
 from galry import *
 import numpy as np
 import numpy.random as rdn
-from mandelbrot import MandelbrotTemplate
+from mandelbrot import MandelbrotVisual
 
 def get_iterations(zoom=1):
     return int(500 * np.log(1 + zoom))
@@ -9,7 +9,7 @@ def get_iterations(zoom=1):
 class MandelbrotPaintManager(PaintManager):
     def initialize(self):
         # create the textured rectangle and specify the shaders
-        self.create_dataset(MandelbrotTemplate, iterations=get_iterations())
+        self.add_visual(MandelbrotVisual, iterations=get_iterations())
 
 class MandelbrotInteractionManager(InteractionManager):
     def process_zoom_event(self, event, parameter):
@@ -21,5 +21,7 @@ if __name__ == '__main__':
     print "Zoom in!"
     window = show_basic_window(paint_manager=MandelbrotPaintManager,
                                interaction_manager=MandelbrotInteractionManager,
-                               constrain_ratio=True)
+                               constrain_ratio=True,
+                               constrain_navigation=True,
+                               )
     

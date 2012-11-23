@@ -21,5 +21,6 @@ if __name__ == '__main__':
     window = show_basic_window(paint_manager=AutoMandelbrotPaintManager,
         interaction_manager=MandelbrotInteractionManager,
         constrain_ratio=True,
-        update_interval=.05)
+        constrain_navigation=True,
+        update_interval=.01)
     

@@ -165,14 +165,14 @@ class MyPaintManager(PaintManager):
         translation = self.interaction_manager.get_translation()
         rotation = self.interaction_manager.get_rotation()
         scale = self.interaction_manager.get_scaling()
-        for dataset in self.datasets:
-            if not dataset["template"].is_static:
-                self.set_data(dataset=dataset, 
-                        transform=get_transform(translation, rotation, scale[0]))
+        for visual in self.get_visuals():
+            if not visual.get('is_static', False):
+                self.set_data(visual=visual['name'], 
+                              transform=get_transform(translation, rotation, scale[0]))
 
     def initialize(self):
         # Important: tells Galry to activate depth buffer
-        self.activate3D = True
+        self.set_rendering_options(activate3D = True)
         
         # face colors
         color = np.ones((6, 4))
@@ -187,8 +187,8 @@ class MyPaintManager(PaintManager):
         position, normal, color = create_cube(color)
         
         # render it as a set of triangles
-        self.create_dataset(ThreeDimensionsTemplate,
-                            primitive_type=PrimitiveType.Triangles,
+        self.add_visual(ThreeDimensionsVisual,
+                            primitive_type='TRIANGLES',
                             position=position, color=color, normal=normal)
                        
         
@@ -261,10 +261,12 @@ class MyBindings(DefaultBindingSet):
         self.set_rotation_mouse()
         self.set_rotation_keyboard()
         
+        
 if __name__ == '__main__':                            
     window = show_basic_window(paint_manager=MyPaintManager,
                                interaction_manager=MyInteractionManager,
                                bindings=MyBindings,
                                antialiasing=True,  # better for 3D rendering
                                constrain_navigation=False,
-                               display_fps=True)
+                               # display_fps=True
+                               )

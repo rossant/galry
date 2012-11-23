@@ -1,6 +1,8 @@
 Galry: high-performance interactive visualization in Python
 ===========================================================
 
+  * make 3D example work
+
   * better error messages when template is not correct (eg data is missing,
     size is missing, etc)
   * gl renderer cleanup
@@ -21,6 +23,8 @@ Galry: high-performance interactive visualization in Python
     interactivity
   * more modular interaction system (not having navigation related stuff in
     core classes)
+    
+  * texture1D
   
   * automatic benchmark test
   * automatic screenshots of the examples to generate a gallery

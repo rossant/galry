@@ -42,7 +42,7 @@ def change_kernel(dir=1):
     kernelname = KERNELS[CURRENT_KERNEL_IDX]
     return kernelname
         
-class FilterTemplate(TextureTemplate):
+class FilterVisual(TextureVisual):
     def initialize_fragment(self):
             
         # default identity kernel
@@ -71,8 +71,8 @@ class FilterTemplate(TextureTemplate):
 class FilterPaintManager(PaintManager):
     def change_kernel(self, name):
         kernel = get_kernel(name)
-        self.set_data(kernel=kernel, dataset=self.image)
-        self.set_data(text="%s filter" % name, dataset=self.legend)
+        self.set_data(kernel=kernel, visual='image')
+        self.set_data(text="%s filter" % name, visual='legend')
     
     def initialize(self):
         # get the absolute path of the file
@@ -80,9 +80,9 @@ class FilterPaintManager(PaintManager):
         # load the texture from an image thanks to matplotlib
         texture = plt.imread(os.path.join(path, "images/lena.png"))
         # add a textured rectangle
-        self.image = self.create_dataset(FilterTemplate, texture=texture)
-        self.legend = self.create_dataset(TextTemplate, text=" " * 32,
-            pos=(0,.95), is_static=True)
+        self.add_visual(FilterVisual, texture=texture, name='image')
+        self.add_visual(TextVisual, text=" " * 32, name='legend',
+            coordinates=(0,.95), is_static=True)
         
 FilterEvents = enum("NextFilter",
                     "PreviousFilter")
@@ -116,4 +116,5 @@ the filters."
         interaction_manager=FilterInteractionManager,
         bindings=FilterBinding,
         constrain_ratio=True,
+        constrain_navigation=True,
         size=(512,512))

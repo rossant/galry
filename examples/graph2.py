@@ -51,14 +51,14 @@ class GraphPaintManager(PaintManager):
         color[:,-1] = 1
         
         # add dataset with the nodes
-        self.ds_nodes = self.create_dataset(SpriteTemplate, position=positions,
-            color=color, texture=get_tex(16))
+        self.add_visual(SpriteVisual, position=positions,
+            color=color, texture=get_tex(16), name='nodes')
 
         # add dataset with the edges
         coledges = color.copy()[edges,:]# np.hstack((color[edges,:], .5 * np.ones((len(edges), 1))))
         coledges[:,-1] = .25
-        self.ds_edges = self.create_dataset(PlotTemplate, position=posedges,
-            primitive_type=PrimitiveType.Lines, color=coledges)
+        self.add_visual(PlotVisual, position=posedges,
+            primitive_type='LINES', color=coledges, name='edges')
 
         self.edges = edges
         self.nodes_positions = positions
@@ -122,8 +122,8 @@ class GraphPaintManager(PaintManager):
     
     def update_pos(self, pos):
         self.nodes_positions = pos
-        self.set_data(dataset=self.ds_nodes, position=pos)
-        self.set_data(dataset=self.ds_edges, position=pos[self.edges,:])
+        self.set_data(position=pos, visual='nodes')
+        self.set_data(position=pos[self.edges,:], visual='edges')
         
     
 class GraphInteractionManager(InteractionManager):

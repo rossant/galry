@@ -10,8 +10,7 @@ class PointsPaintManager(PaintManager):
         colors = rdn.rand(nprimitives, 4)
         
         # add plot
-        self.create_dataset(RectanglesTemplate, nprimitives=nprimitives,
-            coordinates=coordinates, color=colors)
+        self.add_visual(RectanglesVisual, coordinates=coordinates, color=colors)
 
 if __name__ == '__main__':
     show_basic_window(paint_manager=PointsPaintManager)
