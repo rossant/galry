@@ -216,6 +216,7 @@ class MyInteractionManager(InteractionManager):
     def get_translation(self):
         return self.tx, self.ty, self.tz
         
+        
 class MyBindings(DefaultBindingSet):
     def set_panning_mouse(self):
         # Panning: CTRL + left button mouse

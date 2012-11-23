@@ -21,6 +21,10 @@ class GalryTest(unittest.TestCase):
     The window will be open for a short time and the image will be recorded
     for automatic comparison with the ground truth."""
         
+    # maximum accepted difference between the sums of the test and 
+    # reference images
+    tolerance = 10
+        
     def classname(self):
         """Return the class name."""
         return self.__class__.__name__
@@ -48,7 +52,13 @@ class GalryTest(unittest.TestCase):
         self._show(**kwargs)
         # make sure the output image is the same as the reference image
         img = imread(self.filename())
-        self.assertTrue(np.abs(img.sum() - self.reference_image().sum()) <= 4)
+        n1, n2 = img.sum(), self.reference_image().sum()
+        d = np.abs(n1 - n2)
+        boo = d <= self.tolerance
+        if not boo:
+            log_warn(("Images sums differ by %.0f whereas the tolerance is " \
+                + "%d") % (d, self.tolerance))
+        self.assertTrue(boo)
             
 def all_tests(folder=None):
     if folder is None:

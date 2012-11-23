@@ -2,7 +2,8 @@ import numpy as np
 from visual import Visual
 
 class PlotVisual(Visual):
-    def initialize(self, x=None, y=None, color=None, point_size=1.0, position=None):
+    def initialize(self, x=None, y=None, color=None, point_size=1.0,
+            position=None, nprimitives=None):
         # if position is specified, it contains x and y as column vectors
         if position is not None:
             x, y = position.T
@@ -23,8 +24,11 @@ class PlotVisual(Visual):
         self.size = x.size
         
         # there is one plot per row
-        nprimitives = x.shape[0]
-        nsamples = x.shape[1]
+        if nprimitives is None:
+            nprimitives = x.shape[0]
+            nsamples = x.shape[1]
+        else:
+            nsamples = x.size // nprimitives
         
         # register the bounds
         self.bounds = np.arange(0, self.size + 1, nsamples)

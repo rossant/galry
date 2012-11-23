@@ -143,7 +143,10 @@ class Uniform(object):
         is_float = (data.dtype == np.float32)
         n, m = data.shape
         # TODO: arrays of matrices?
-        funname = 'glUniformMatrix%dx%d%sv' % (n, m, Uniform.float_suffix[is_float])
+        if n == m:
+            funname = 'glUniformMatrix%d%sv' % (n, Uniform.float_suffix[is_float])
+        else:
+            funname = 'glUniformMatrix%dx%d%sv' % (n, m, Uniform.float_suffix[is_float])
         getattr(gl, funname)(location, 1, False, data)
         
 
@@ -500,7 +503,7 @@ class GLVisualRenderer(object):
         
     def set_primitive_type(self, primtype):
         # set the primitive type from its name
-        self.primitive_type = getattr(gl, "GL_%s" % primtype)
+        self.primitive_type = getattr(gl, "GL_%s" % primtype.upper())
     
     def getarg(self, name):
         return self.visual.get(name, None)
@@ -729,7 +732,7 @@ class GLVisualRenderer(object):
         kwargs2 = kwargs.copy()
         for name, data in kwargs2.iteritems():
             variable = self.get_variable(name)
-            if variable['shader_type'] == 'compound':
+            if variable is not None and variable['shader_type'] == 'compound':
                 fun = variable['fun']
                 kwargs.pop(name)
                 kwargs.update(**fun(data))

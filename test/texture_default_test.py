@@ -17,6 +17,4 @@ class TextureDefaultTest(GalryTest):
         self.show(paint_manager=PM)
 
 if __name__ == '__main__':
-    unittest.main()
-    
-    
+    unittest.main()    
