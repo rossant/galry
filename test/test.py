@@ -43,25 +43,13 @@ class GalryTest(unittest.TestCase):
         return show_basic_window(autosave=self.filename(),
                 autodestruct=100., **kwargs)
 
-    kwargs = {}
     def show(self, **kwargs):
         """Create a window with the given parameters."""
-        self.kwargs = kwargs
-        
-    def test(self):
-        """Launch the specified window and check that the output image is the
-        same as the reference image."""
-        if self.classname() != 'GalryTest':
-            self.start()
-            self._show(**self.kwargs)
-            # make sure the output image is the same as the reference image
-            img = imread(self.filename())
-            self.assertTrue(np.allclose(img, self.reference_image()))
-        
-    def start(self):
-        """To be overriden. Make a call to self.show."""
-        
-                
+        self._show(**kwargs)
+        # make sure the output image is the same as the reference image
+        img = imread(self.filename())
+        self.assertTrue(np.abs(img.sum() - self.reference_image().sum()) <= 4)
+            
 def all_tests(folder=None):
     if folder is None:
         folder = os.path.dirname(os.path.realpath(__file__))

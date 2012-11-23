@@ -498,13 +498,12 @@ class Painter(object):
 class GLVisualRenderer(object):
     """Handle rendering of one visual"""
     
-    # hold all data changes until the next rendering pass happens
-    data_updating = {}
-    
     def __init__(self, visual):
         """Initialize the visual renderer, create the slicer, initialize
         all variables and the shaders."""
         self.visual = visual
+    # hold all data changes until the next rendering pass happens
+        self.data_updating = {}
         # set the primitive type from its name
         self.set_primitive_type(self.visual['primitive_type'])
         # set the slicer
@@ -676,6 +675,7 @@ class GLVisualRenderer(object):
         """Update data of a variable."""
         variable = self.get_variable(name)
         if variable is None:
+            raise ValueError("")
             log_info("Variable '%s' was not found, unable to update it." % name)
         else:
             shader_type = variable['shader_type']
@@ -1064,10 +1064,11 @@ def show_scene(scene):
             self.show()
 
     show_window(TestWindow)
+    return r
                           
 if __name__ == '__main__':
     
-    from graphscene2 import GraphScene
-    show_scene(GraphScene)
+    from scene import GraphScene
+    r = show_scene(GraphScene)
     
     

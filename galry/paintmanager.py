@@ -107,7 +107,7 @@ class PaintManager(object):
         
         """
         # get the name of the visual from kwargs
-        name = kwargs.pop('name', 'visual')
+        name = kwargs.pop('name', 'visual%d' % (len(self.get_visuals())))
         if self.get_visual(name):
             raise ValueError("Visual name '%s' already exists." % name)
         # create the visual object
@@ -133,7 +133,7 @@ class PaintManager(object):
         """
         # default name
         if visual is None:
-            visual = 'visual'
+            visual = 'visual0'
         self.renderer.set_data(visual, **kwargs)
             
             

@@ -3,7 +3,7 @@ from galry import *
 from test import GalryTest
 
 class EmptyTest(GalryTest):
-    def start(self):
+    def test(self):
         self.show()
     
 if __name__ == '__main__':

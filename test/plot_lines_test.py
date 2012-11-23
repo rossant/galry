@@ -10,7 +10,7 @@ class PM(PaintManager):
             primitive_type='LINES')
 
 class PlotLinesTest(GalryTest):
-    def start(self):
+    def test(self):
         self.show(paint_manager=PM)
 
 if __name__ == '__main__':

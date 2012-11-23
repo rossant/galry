@@ -31,7 +31,7 @@ class GLVersion(object):
     
     @staticmethod
     def version_header():
-        return '#version 120'
+        return '#version 120\n'
         
     @staticmethod
     def precision_header():
@@ -472,13 +472,13 @@ class Painter(object):
 class GLVisualRenderer(object):
     """Handle rendering of one visual"""
     
-    # hold all data changes until the next rendering pass happens
-    data_updating = {}
-    
     def __init__(self, visual):
         """Initialize the visual renderer, create the slicer, initialize
         all variables and the shaders."""
+        # register the visual dictionary
         self.visual = visual
+        # hold all data changes until the next rendering pass happens
+        self.data_updating = {}
         # set the primitive type from its name
         self.set_primitive_type(self.visual['primitive_type'])
         # set the slicer
@@ -865,8 +865,12 @@ class GLRenderer(object):
         """
         self.scene = scene
         
-        import pprint
-        pprint.pprint(scene)
+        # import pprint
+        # print(scene['visuals'][0]['fragment_shader'])
+        # print(scene['visuals'][0]['fragment_shader'])
+        # f = open('s.txt', 'w')
+        # pprint.pprint(scene, f)
+        # f.close()
         
         self.visual_renderers = {}
     

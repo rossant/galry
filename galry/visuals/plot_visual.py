@@ -76,14 +76,14 @@ class PlotVisual(Visual):
                 self.add_fragment_main("""
             out_color = color;
                 """)
-            
+        
         # multiple colors case: color attribute
         elif not use_color_array:
             self.add_attribute("color", ndim=colors_ndim, data=color)
             self.add_varying("varying_color", vartype="float", ndim=colors_ndim)
             
             self.add_vertex_main("""
-        varying_color = color;
+            varying_color = color;
             """)
             
             if colors_ndim == 3:
@@ -94,7 +94,7 @@ class PlotVisual(Visual):
                 self.add_fragment_main("""
             out_color = varying_color;
                 """)
-                
+        
         # multiple colors, but with a color array to save memory
         elif use_color_array:
             color_array_index = np.repeat(np.arange(nprimitives), nsamples)
@@ -109,7 +109,7 @@ class PlotVisual(Visual):
             self.add_varying("varying_color", vartype="float", ndim=colors_ndim)
             
             self.add_vertex_main("""
-        varying_color = color[int(color_array_index)];
+            varying_color = color[int(color_array_index)];
             """)
             
             if colors_ndim == 3:
@@ -120,30 +120,9 @@ class PlotVisual(Visual):
                 self.add_fragment_main("""
             out_color = varying_color;
                 """)
-
+        
         # add point size uniform (when it's not specified, there might be some
         # bugs where its value is obtained from other datasets...)
         self.add_uniform("point_size", data=point_size)
         self.add_vertex_main("""gl_PointSize = point_size;""")
-                
         
-if __name__ == '__main__':
-    x = .2 * np.random.randn(10, 10000)
-    y = .2 * np.random.randn(10, 10000)
-    color = np.random.rand(10, 4)
-    color[:,:2] += .2
-    color[:, -1] = .1
-    v = PlotVisual(x, y, color=color)
-    d = v.get_dic()
-
-    # print d['vertex_shader']
-    # print d['fragment_shader']
-    # import pprint
-    # pprint.pprint(d)
-
-    from glrenderer import show_scene, show_visual
-    show_visual(d)
-
-
-
-    

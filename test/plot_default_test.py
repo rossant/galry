@@ -8,7 +8,7 @@ class PM(PaintManager):
                 y=[-.5, -.5, .5, .5, -.5], color=(1., 1., 1., 1.))
 
 class PlotDefaultTest(GalryTest):
-    def start(self):
+    def test(self):
         self.show(paint_manager=PM)
 
 if __name__ == '__main__':
