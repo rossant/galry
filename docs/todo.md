@@ -1,10 +1,10 @@
 Galry: high-performance interactive 2D visualization in Python
 ==============================================================
 
-  * better error messages when template is not correct (eg data is missing,
-    size is missing, etc)
   * unit tests with updates
   * fps
+  * better error messages when template is not correct (eg data is missing,
+    size is missing, etc)
   * gl renderer cleanup
   * test indexed array
   * graph with indexed array  

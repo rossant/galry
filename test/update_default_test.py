@@ -13,7 +13,7 @@ class PM(PaintManager):
         y = np.array([-.5, -.5, .5, .5, -.5])
         position = np.hstack((x.reshape((-1, 1)), y.reshape((-1, 1))))
         self.set_data(position=position)
-                
+        
 class UpdateDefaultTest(GalryTest):
     def test(self):
         window = self.show(paint_manager=PM)

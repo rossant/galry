@@ -675,7 +675,7 @@ class GLVisualRenderer(object):
         variable = self.get_variable(name)
         variable['data'] = data
         # handle size changing
-        if data.shape[0] != self.slicer.size:
+        if data.shape[0] != self.previous_size:
             # update the slicer size and bounds
             self.slicer.set_size(data.shape[0], bounds, doslice=not(self.use_index))
             # delete old buffers
@@ -773,6 +773,8 @@ class GLVisualRenderer(object):
         
     def update_all_variables(self):
         """Upload all new data that needs to be updated."""
+        # current size, that may change following variable updating
+        self.previous_size = self.slicer.size
         # go through all data changes
         for name, data in self.data_updating.iteritems():
             # log_info("Updating variable '%s'" % name)
