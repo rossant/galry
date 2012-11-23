@@ -637,9 +637,10 @@ class Visual(object):
     def get_dic(self):
         """Return the dict representation of the visual."""
         dic = {
-            'visible': self.visible,
             'size': self.size,
             'bounds': self.bounds,
+            'visible': self.visible,
+            'is_static': self.is_static,
             'primitive_type': self.primitive_type,
             'constrain_ratio': self.constrain_ratio,
             'constrain_navigation': self.constrain_navigation,

@@ -24,14 +24,15 @@ class PaintManager(object):
         self.reset()
         self.parent = parent
         # initialize the paint manager (scene and visual creation happens here)
-        self.initialize_default()
         self.initialize()
+        self.initialize_default()
         # create the renderer
         self.renderer = GLRenderer(self.scene)
         
     def reset(self):
         # create an empty scene
         self.scene = {'visuals': [], 'renderer_options': {}}
+        self.data_updating = {}
         
     def set_rendering_options(self, **kwargs):
         self.scene['renderer_options'].update(**kwargs)
@@ -40,7 +41,9 @@ class PaintManager(object):
         """Define the scene. To be overriden."""
         
     def initialize_default(self):
-        self.add_visual(TextVisual, text='000 FPS', name='fps', visible=False)
+        """Default visuals (FPS and navigation rectangle)."""
+        self.add_visual(TextVisual, text='000 FPS', name='fps', visible=False,
+                        is_static=True)
         self.add_visual(RectanglesVisual, coordinates=(0.,) * 4,
                         color=self.navigation_rectangle_color, 
                         is_static=True,
@@ -145,7 +148,15 @@ class PaintManager(object):
         # default name
         if visual is None:
             visual = 'visual0'
-        self.renderer.set_data(visual, **kwargs)
+        # if this method is called in initialize (the renderer is then not
+        # defined) we save the data to be updated later
+        if not hasattr(self, 'renderer'):
+            self.data_updating[visual] = kwargs
+        else:
+            self.renderer.set_data(visual, **kwargs)
+            # empty data_updating
+            if visual in self.data_updating:
+                self.data_updating[visual] = {}
             
             
     # Methods related to visuals
@@ -174,6 +185,10 @@ class PaintManager(object):
     # -----------------
     def initializeGL(self):
         self.renderer.initialize()
+        # update the variables (with set_data in paint_manager.initialize())
+        # after initialization
+        for visual, kwargs in self.data_updating.iteritems():
+            self.set_data(visual=visual, **kwargs)
  
     def paintGL(self):
         self.transform_view()

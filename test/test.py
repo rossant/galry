@@ -21,9 +21,22 @@ class GalryTest(unittest.TestCase):
     The window will be open for a short time and the image will be recorded
     for automatic comparison with the ground truth."""
         
+    # in milliseconds
+    autodestruct = 100
+        
     # maximum accepted difference between the sums of the test and 
     # reference images
     tolerance = 10
+    
+    def log_header(self, s):
+        s += '\n' + ('-' * (len(s) + 10))
+        log_info(s)
+        
+    def setUp(self):
+        self.log_header("Running test %s..." % self.classname())
+        
+    def tearDown(self):
+        self.log_header("Test %s finished!" % self.classname())
         
     def classname(self):
         """Return the class name."""
@@ -45,11 +58,11 @@ class GalryTest(unittest.TestCase):
         """Show the window during a short period of time, and save the output
         image."""
         return show_basic_window(autosave=self.filename(),
-                autodestruct=100., **kwargs)
+                autodestruct=self.autodestruct, **kwargs)
 
     def show(self, **kwargs):
         """Create a window with the given parameters."""
-        self._show(**kwargs)
+        window = self._show(**kwargs)
         # make sure the output image is the same as the reference image
         img = imread(self.filename())
         n1, n2 = img.sum(), self.reference_image().sum()
@@ -59,6 +72,7 @@ class GalryTest(unittest.TestCase):
             log_warn(("Images sums differ by %.0f whereas the tolerance is " \
                 + "%d") % (d, self.tolerance))
         self.assertTrue(boo)
+        return window
             
 def all_tests(folder=None):
     if folder is None:

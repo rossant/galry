@@ -6,8 +6,8 @@ Galry: high-performance interactive 2D visualization in Python
   * unit tests with updates
   * fps
   * gl renderer cleanup
-    
-    
+  * test indexed array
+  * graph with indexed array  
 
   * javascript standalone version of the renderer and the deserializer
   
