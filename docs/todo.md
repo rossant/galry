@@ -4,8 +4,6 @@ Galry: high-performance interactive visualization in Python
   * better error messages when template is not correct (eg data is missing,
     size is missing, etc)
   * update text template to allow for several texts at different positions
-  * update index arrays
-  * unit test for texture update
   * texture1D
   
   * get rid of all enum and replace with strings
