@@ -37,8 +37,9 @@ def get_tex(n):
 class GraphPaintManager(PaintManager):
     def initialize(self):
         
+        n = 200
         # we define a random graph with networkx
-        g = nx.barabasi_albert_graph(100, 3)
+        g = nx.barabasi_albert_graph(n, 3)
         
         # edges = itertools.combinations(g.subgraph(range(20)), 2)
         # g.add_edges_from(edges)
@@ -48,7 +49,7 @@ class GraphPaintManager(PaintManager):
         
         # get the array with the positions of all nodes
         # positions = np.vstack([pos[i] for i in xrange(len(pos))]) - .5
-        positions = rdn.randn(100, 2) * .2
+        positions = rdn.randn(n, 2) * .2
         
         # get the array with the positions of all edges.
         edges = np.vstack(g.edges()).ravel()
@@ -63,7 +64,7 @@ class GraphPaintManager(PaintManager):
             primitive_type='LINES', color=coledges, index=edges, name='edges')
         
         # add dataset with the nodes
-        self.add_visual(SpriteVisual, position=positions,
+        self.add_visual(SpriteVisual, position=RefVar('edges', 'position'),
             color=color, texture=get_tex(16), name='nodes')
 
         self.edges = edges
@@ -130,7 +131,7 @@ class GraphPaintManager(PaintManager):
     
     def update_pos(self, pos):
         self.nodes_positions = pos
-        self.set_data(position=pos, visual='nodes')
+        # self.set_data(position=pos, visual='nodes')
         self.set_data(position=pos, visual='edges')
         
     

@@ -8,7 +8,6 @@ Galry: high-performance interactive visualization in Python
   * update index arrays
   * unit test for texture update
   * texture1D
-  * reference arrays
   
   * get rid of all enum and replace with strings
   * refactoring of interaction system, with EventProcessor objects which
