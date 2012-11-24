@@ -237,9 +237,9 @@ TODO
     with add_template and set_data methods.
 
   * [DONE] Update all templates
-  * [WIP] Integrate the new version in the code
+  * [DONE] Integrate the new version in the code
     
-  * Write the SceneSerializer and SceneDeserializer in Python.  
+  * [DONE] Write the SceneSerializer and SceneDeserializer in Python.  
   * Write a WebGLRenderer class in Javascript, as a standalone Javascript 
     object, in a standalone HTML page.
   * Write the SceneDeserializer in Javascript.

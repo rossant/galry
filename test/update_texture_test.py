@@ -12,7 +12,7 @@ class PM(PaintManager):
         self.add_visual(TextureVisual, texture=texture0)
         self.set_data(texture=texture1)
         
-class UpdateTextTest(GalryTest):
+class UpdateTextureTest(GalryTest):
     def test(self):
         window = self.show(paint_manager=PM)
 

@@ -12,9 +12,7 @@ from useractions import *
 from interactionevents import *
 from interactionmanager import *
 from bindingmanager import *
-# from primitives import *
-# from templates import *
-# from dataloader import *
+from scene import *
 from visuals import *
 from glrenderer import *
 from paintmanager import *

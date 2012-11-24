@@ -478,7 +478,7 @@ class GalryWidget(QGLWidget):
         self.user_action_generator.clean_action()
         
         # update the OpenGL view
-        if event is not None or self.prev_event is not None:
+        if not isinstance(self, GalryTimerWidget) and (event is not None or self.prev_event is not None):
             self.updateGL()
             
         # keep track of the previous event

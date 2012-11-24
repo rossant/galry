@@ -2,6 +2,7 @@ import numpy as np
 from tools import log_debug, log_info, log_warn
 from glrenderer import GLRenderer
 from visuals import TextVisual, RectanglesVisual
+from scene import SceneCreator, serialize
 
 __all__ = ['PaintManager']
 
@@ -21,22 +22,25 @@ class PaintManager(object):
     # Initialization methods
     # ----------------------
     def __init__(self, parent):
-        self.reset()
         self.parent = parent
+        self.reset()
         # initialize the paint manager (scene and visual creation happens here)
         self.initialize()
         self.initialize_default()
-        # create the renderer
-        self.renderer = GLRenderer(self.scene)
-        # print self.scene['visuals'][0]['vertex_shader']
+        self.initialize_renderer()
         
     def reset(self):
-        # create an empty scene
-        self.scene = {'visuals': [], 'renderer_options': {}}
+        # create the scene creator
+        self.scene_creator = SceneCreator(
+                    constrain_ratio=self.parent.constrain_ratio)
         self.data_updating = {}
         
+    def initialize_renderer(self):
+        # create the renderer
+        self.renderer = GLRenderer(self.scene_creator.get_scene())
+        
     def set_rendering_options(self, **kwargs):
-        self.scene['renderer_options'].update(**kwargs)
+        self.scene_creator.get_scene()['renderer_options'].update(**kwargs)
         
     def initialize(self):
         """Define the scene. To be overriden."""
@@ -61,13 +65,10 @@ class PaintManager(object):
     # --------------
     def get_visuals(self):
         """Return all visuals defined in the scene."""
-        return self.scene['visuals']
+        return self.scene_creator.get_visuals()
         
     def get_visual(self, name):
-        visuals = [v for v in self.get_visuals() if v.get('name', '') == name]
-        if not visuals:
-            return None
-        return visuals[0]
+        return self.scene_creator.get_visual(name)
         
     
     # Navigation rectangle methods
@@ -83,8 +84,8 @@ class PaintManager(object):
         self.set_data(visible=False, visual='navigation_rectangle')
         
         
-    # Data creation methods
-    # ---------------------
+    # Visual creation methods
+    # -----------------------
     def add_visual(self, visual_class, *args, **kwargs):
         """Add a visual. This method should be called in `self.initialize`.
         
@@ -124,21 +125,22 @@ class PaintManager(object):
             the visual, and that can be used in `set_data`.
         
         """
-        # get the name of the visual from kwargs
-        name = kwargs.pop('name', 'visual%d' % (len(self.get_visuals())))
-        if self.get_visual(name):
-            raise ValueError("Visual name '%s' already exists." % name)
-        # pass constrain_ratio to all visuals
-        if 'constrain_ratio' not in kwargs:
-            kwargs['constrain_ratio'] = self.parent.constrain_ratio
-        # create the visual object
-        visual = visual_class(self.scene, *args, **kwargs)
-        # get the dictionary version
-        dic = visual.get_dic()
-        dic['name'] = name
-        # append the dic to the visuals list of the scene
-        self.get_visuals().append(dic)
-        return visual
+        # # get the name of the visual from kwargs
+        # name = kwargs.pop('name', 'visual%d' % (len(self.get_visuals())))
+        # if self.get_visual(name):
+            # raise ValueError("Visual name '%s' already exists." % name)
+        # # pass constrain_ratio to all visuals
+        # if 'constrain_ratio' not in kwargs:
+            # kwargs['constrain_ratio'] = self.parent.constrain_ratio
+        # # create the visual object
+        # visual = visual_class(self.scene, *args, **kwargs)
+        # # get the dictionary version
+        # dic = visual.get_dic()
+        # dic['name'] = name
+        # # append the dic to the visuals list of the scene
+        # self.get_visuals().append(dic)
+        # return visual
+        self.scene_creator.add_visual(visual_class, *args, **kwargs)
         
     def set_data(self, visual=None, **kwargs):
         """Specify or change the data associated to particular visual
@@ -226,3 +228,12 @@ class PaintManager(object):
         
         """
         pass
+
+        
+    # Serialization methods
+    # ---------------------
+    def serialize(self):
+        return self.scene_creator.serialize()
+        
+        
+        

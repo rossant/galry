@@ -178,5 +178,5 @@ if __name__ == '__main__':
         interaction_manager=GraphInteractionManager,
         antialiasing=True, constrain_navigation=False,
         display_fps=True,
-        update_interval=.02
+        update_interval=.01
         )
