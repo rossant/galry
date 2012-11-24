@@ -48,14 +48,18 @@ class Attribute(object):
     def create():
         """Create a new buffer and return a `buffer` index."""
         return gl.glGenBuffers(1)
+    
+    @staticmethod
+    def get_gltype(index=False):
+        if not index:
+            return gl.GL_ARRAY_BUFFER
+        else:
+            return gl.GL_ELEMENT_ARRAY_BUFFER
         
     @staticmethod
     def bind(buffer, location=None, index=False):
         """Bind a buffer and associate a given location."""
-        if not index:
-            gltype = gl.GL_ARRAY_BUFFER
-        else:
-            gltype = gl.GL_ELEMENT_ARRAY_BUFFER
+        gltype = Attribute.get_gltype(index)
         gl.glBindBuffer(gltype, buffer)
         if location >= 0:
             gl.glEnableVertexAttribArray(location)
@@ -66,32 +70,34 @@ class Attribute(object):
         gl.glVertexAttribPointer(location, ndim, gl.GL_FLOAT, gl.GL_FALSE, 0, None)
     
     @staticmethod
-    def convert_data(data):
+    def convert_data(data, index=False):
         """Force 32-bit floating point numbers for data."""
-        return enforce_dtype(data, np.float32)
+        if not index:
+            return enforce_dtype(data, np.float32)
+        else:
+            return np.array(data, np.int32)
+        
     
     @staticmethod
     def load(data, index=False):
         """Load data in the buffer for the first time. The buffer must
         have been bound before."""
-        if not index:
-            gltype = gl.GL_ARRAY_BUFFER
-            data = Attribute.convert_data(data)
-        else:
-            gltype = gl.GL_ELEMENT_ARRAY_BUFFER
+        data = Attribute.convert_data(data, index=index)
+        gltype = Attribute.get_gltype(index)
         gl.glBufferData(gltype, data, gl.GL_DYNAMIC_DRAW)
         
     @staticmethod
-    def update(data, onset=0):
+    def update(data, onset=0, index=False):
         """Update data in the currently bound buffer."""
-        data = Attribute.convert_data(data)
+        gltype = Attribute.get_gltype(index)
+        data = Attribute.convert_data(data, index=index)
         # convert onset into bytes count
         if data.ndim == 1:
             ndim = 1
         elif data.ndim == 2:
             ndim = data.shape[1]
         onset *= ndim * data.itemsize
-        gl.glBufferSubData(gl.GL_ARRAY_BUFFER, int(onset), data)
+        gl.glBufferSubData(gltype, int(onset), data)
     
     @staticmethod
     def delete(*buffers):
@@ -700,6 +706,7 @@ class GLVisualRenderer(object):
         if data is None:
             data = variable.get('data', None)
         if data is not None:
+            self.indexsize = len(data)
             Attribute.bind(variable['buffer'], index=True)
             Attribute.load(data, index=True)
         
@@ -770,7 +777,6 @@ class GLVisualRenderer(object):
         # handle size changing
         if data.shape[0] != self.previous_size:
             # update the size only when not using index arrays
-            # TODO: update index
             if self.use_index:
                 newsize = self.slicer.size
             else:
@@ -787,6 +793,29 @@ class GLVisualRenderer(object):
         else:
             # update data
             att.update(data)
+        
+    def update_index(self, name, data):
+        """Update data for a index variable."""
+        variable = self.get_variable(name)
+        prevsize = len(variable['data'])
+        variable['data'] = data
+        newsize = len(data)
+        # handle size changing
+        if newsize != prevsize:
+            # update the total size (in slicer)
+            # self.slicer.set_size(newsize, doslice=False)
+            self.indexsize = newsize
+            # delete old buffers
+            Attribute.delete(variable['buffer'])
+            # create new buffer
+            variable['buffer'] = Attribute.create()
+            # load data
+            Attribute.bind(variable['buffer'], variable['ndim'], index=True)
+            Attribute.load(data, index=True)
+        else:
+            # update data
+            Attribute.bind(variable['buffer'], variable['ndim'], index=True)
+            Attribute.update(data, index=True)
         
     def update_texture(self, name, data):
         """Update data for a texture variable."""
@@ -935,7 +964,7 @@ class GLVisualRenderer(object):
         if self.use_index:
             self.bind_attributes()
             self.bind_indices()
-            Painter.draw_indexed_arrays(self.primitive_type, self.slicer.size)
+            Painter.draw_indexed_arrays(self.primitive_type, self.indexsize)
         # or paint without
         else:
             # draw all sliced buffers

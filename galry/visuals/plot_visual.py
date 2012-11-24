@@ -70,7 +70,7 @@ class PlotVisual(Visual):
         
         if index is not None:
             index = np.array(index)
-            self.size = len(index)
+            # self.size = len(index)
             self.add_index("index", data=index)
         
         # single color case: no need for a color buffer, just use default color
