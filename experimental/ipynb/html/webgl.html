@@ -5,76 +5,9 @@
 
 <!-- JAVASCRIPT UTILS -->
 <script language="javascript" type="text/javascript" src="jquery-1.7.1.js"></script>
-<script language="javascript" type="text/javascript" src="jquery.mousewheel.js"></script>
-<script language="javascript" type="text/javascript" src="utils.js"></script>
-<script language="javascript" type="text/javascript" src="useractions.js"></script>
-<script language="javascript" type="text/javascript" src="navigation.js"></script>
-<script language="javascript" type="text/javascript" src="gl.js"></script>
-<script language="javascript" type="text/javascript" src="core.js"></script>
-
+<script language="javascript" type="text/javascript" src="ipynbgalry.js"></script>
+<script language="javascript" type="text/javascript" src="scene.js"></script>
 <script type="text/javascript">
-// Shaders
-var VS = "vec2 transform_position(vec2 position, vec2 scale, vec2 translation)" +
-    "{return scale * (position + translation);}" +
-    "attribute vec2 position; attribute vec3 color;" +
-    "uniform vec2 scale; uniform vec2 translation;" +
-    "varying vec3 out_color;" +    
-    "void main(void) {" +
-    "gl_Position = vec4(transform_position(position, scale, translation), 0., 1.);" +
-    "out_color = color;}";
-
-var FS = "precision mediump float;"+
-"varying vec3 out_color;"+
-"void main(void) { gl_FragColor = vec4(out_color,1); }";
-    
-    
-// Size of the canvas.
-var width = 600.;
-var height = 400.;
-var antialias = false;
-
-// TEMPLATE VARIABLES
-var template = {
-    primitive_type: "LINE_STRIP",
-    
-    vertex_shader: VS,
-    fragment_shader: FS,
-
-    attributes: {
-        position: {
-            ndim: 2,
-        },
-        
-        color: {
-            ndim: 3,
-        },
-    },
-
-    uniforms: {
-        translation: {
-            ndim: 2,
-            size: false,
-            vartype: 'float',
-        },
-        
-        scale: {
-            ndim: 2,
-            size: false,
-            vartype: 'float',
-        },
-    },
-
-    varyings: {
-        out_color: {
-            ndim: 2,
-            vartype: 'float',
-        },
-    },
-}
-
-// DATA HOLDER
-var dataholder = {
-}
 
 // DEBUG
 var debugObj;
@@ -82,65 +15,16 @@ var debug = function(text) {
     debugObj.html(text.toString());
 }
 
-</script>
-
-<script type="text/javascript">
-
-function validate() {
-    var text = $('#textarea').val();
-    
-    text = encodeURIComponent(text);
-    
-    var url = "http://webgalry.appspot.com/?statement=";
-    url = url + text;
-    
-    $.get(url, function(data) {
-        var r = jQuery.parseJSON(data);
-        dataholder.size = r.size;
-        pos = r.position;
-        color = r.color;
-        dataholder.position = get_array(pos);
-        dataholder.color = get_array(color);
-        initVariables();
-        drawScene();
-    });
-}
+// get scene
+scene = deserializeScene(scene_json);
 
 </script>
-
 </head>
-<body onload="webGLStart(); validate();">
+<body onload="webGLStart('canvas');">
     <!-- WebGalry GL canvas -->
-    <canvas id="canvas"
-        tabindex="1"></canvas>
-
-    <div><textarea id="textarea" style="width: 600px; height: 200px;">
-# np is available
-# position must be a Nx2 array with X and Y coordinates in [-1,1]
-N = 10000
-position = np.empty((N, 2))
-position[:,0] = np.linspace(-1., 1., N)
-position[:,1] = .2 * np.random.randn(N)
-
-# color must be a Nx3 array with RGB components in [0,1]
-color = np.random.rand(N,3)
-    </textarea></div>
-    <div><input type="button" value="OK" onclick="validate();" /></div>
-
-    
+    <canvas id="canvas" tabindex="1" width="600" height="400"></canvas>
     
     <!-- used to display debug information in real time -->
-    <div id="debug">
-    </div>
-    
-    <p>Highly experimental WebGL version of Galry (only a very small fraction of it for now!).
-    Everything runs client-side (tested on Chrome/Firefox) except for the Python compilation part
-    which is executed on a Google App Engine application.
-    The core functionality of the
-    <a href="http://rossant.github.com/galry/">Python version</a> has been
-    re-implemented in Javascript.</p>
-    <p>In this demo: left click + move for panning, right-click + move for zooming.</p>
-    
-    <p></p>
+    <div id="debug"></div>
 </body>
 </html>

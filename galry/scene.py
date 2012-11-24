@@ -120,55 +120,44 @@ class ArrayEncoder(json.JSONEncoder):
             return encode_data(obj)
         return json.JSONEncoder.default(self, obj)
         
+def is_str(obj):
+    tp = type(obj)
+    return tp == str or tp == unicode
+        
 def serialize(scene):
     """Serialize a scene."""
-    return json.dumps(scene, cls=ArrayEncoder)
+    
+    # HACK: force all attributes to float32
+    # for visual in scene.get('visuals', []):
+        # if isinstance(visual.get('bounds', None), np.ndarray):
+            # visual['bounds'] = encode_data(visual['bounds'])
+        # for variable in visual.get('variables', []):
+            # if isinstance(variable.get('data', None), np.ndarray):
+                # # vartype = variable.get('vartype', 'float')
+                # # if vartype == 'int':
+                    # # dtype = np.int32
+                # # elif vartype == 'float':
+                    # # dtype = np.float32
+                # variable['data'] = encode_data(np.array(variable['data'], dtype=np.float32))
+    
+    scene_json = json.dumps(scene, cls=ArrayEncoder, ensure_ascii=True)
+    scene_json = scene_json.replace('\\n', '\\\\n')
+    return scene_json
 
 def deserialize(scene_json):
     """Deserialize a scene."""
     scene = json.loads(scene_json)
     for visual in scene.get('visuals', []):
+        if is_str(visual.get('bounds', None)):
+            visual['bounds'] = decode_data(visual['bounds'], np.int32)
         for variable in visual.get('variables', []):
-            tp = type(variable.get('data', None))
-            if tp == str or tp == unicode:
+            if is_str(variable.get('data', None)):
                 vartype = variable.get('vartype', 'float')
                 if vartype == 'int':
                     dtype = np.int32
                 elif vartype == 'float':
                     dtype = np.float32
                 variable['data'] = decode_data(variable['data'], dtype)
-            
     return scene
 
-
-if __name__ == '__main__':
     
-    data = np.array([0., 10.], dtype=np.int32)
-    
-    scene = {'visuals':
-    [
-        {'name': 'position',
-        'variables':
-            [
-            {
-                'data': data,
-                'vartype': 'int',
-            }
-            ],
-        'vertex_shader':"""void main(){}""",
-        }
-    ],
-    'renderer_options':{}
-    }
-    
-    scene_json = serialize(scene)
-    
-    scene2 = deserialize(scene_json)
-    
-    from pprint import pprint
-    pprint(scene)
-    print
-    pprint(scene2)
-    
-        
-        

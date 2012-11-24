@@ -14,8 +14,7 @@ Galry: high-performance interactive visualization in Python
   * automatic benchmark of cpu/gpu throughput and latency
   
   * opencl buffers and opencl/gl interop buffers
-  
-  * javascript standalone version of the renderer and the deserializer
+
   
   * try to reproduce bug with violation memory access when there are several
     widgets within a main window (concurrency issue in pyopengl?)
@@ -31,6 +30,9 @@ Galry: high-performance interactive visualization in Python
     
   * automatic benchmark test
   * automatic screenshots of the examples to generate a gallery
+
+
+  * handle more complete data type (int 8/16/32 bits, floats, etc)
   
 Doc
 ---
