@@ -238,6 +238,9 @@ class Texture(object):
 # --------------
 class ShaderManager(object):
     """Handle vertex and fragment shaders."""
+    
+    # Initialization methods
+    # ----------------------
     def __init__(self, vertex_shader, fragment_shader):
         """Compile shaders and create a program."""
         # add headers
@@ -308,6 +311,9 @@ class ShaderManager(object):
         """Return the location of a uniform after the shaders have compiled."""
         return gl.glGetUniformLocation(self.program, name)
   
+  
+    # Activation methods
+    # ------------------
     def activate_shaders(self):
         """Activate shaders for the rest of the rendering call."""
         gl.glUseProgram(self.program)
@@ -316,7 +322,33 @@ class ShaderManager(object):
         """Deactivate shaders for the rest of the rendering call."""
         gl.glUseProgram(0)
         
+        
+    # Cleanup methods
+    # ---------------
+    def detach_shaders(self):
+        """Detach shaders from the program."""
+        if gl.glIsProgram(self.program):
+            gl.glDetachShader(self.program, self.vs)
+            gl.glDetachShader(self.program, self.fs)
+            
+    def delete_shaders(self):
+        """Delete the vertex and fragment shaders."""
+        if gl.glIsProgram(self.program):
+            gl.glDeleteShader(self.vs)
+            gl.glDeleteShader(self.fs)
 
+    def delete_program(self):
+        """Delete the shader program."""
+        if gl.glIsProgram(self.program):
+            gl.glDeleteProgram(self.program)
+        
+    def cleanup(self):
+        """Clean up all shaders."""
+        self.detach_shaders()
+        self.delete_shaders()
+        self.delete_program()
+        
+        
 # Slicing classes
 # ---------------
 MAX_VBO_SIZE = 65000
@@ -536,14 +568,6 @@ class GLVisualRenderer(object):
     
     # Variable methods
     # ----------------
-    # def get_variable(self, name):
-        # """Return a variable by its name."""
-        # variables = [v for v in self.get_variables() if v.get('name', '') == name]
-        # if not variables:
-            # return None
-            # # raise ValueError("The variable %s has not been found" % name)
-        # return variables[0]
-        
     def get_visuals(self):
         """Return all visuals defined in the scene."""
         return self.scene['visuals']
@@ -934,8 +958,25 @@ class GLVisualRenderer(object):
         
     # Cleanup methods
     # ---------------
+    def cleanup_attribute(self, name):
+        """Cleanup a sliced attribute (all sub-buffers)."""
+        variable = self.get_variable(name)
+        variable['sliced_attribute'].delete_buffers()
+    
+    def cleanup_texture(self, name):
+        """Cleanup a texture."""
+        variable = self.get_variable(name)
+        Texture.delete(variable['buffer'])
+        
     def cleanup(self):
-        pass
+        """Clean up all variables."""
+        log_info("Cleaning up all variables.")
+        for variable in self.get_variables():
+            shader_type = variable['shader_type']
+            if shader_type in ('attribute', 'texture'):
+                getattr(self, 'cleanup_%s' % shader_type)(variable['name'])
+        # clean up shaders
+        self.shader_manager.cleanup()
         
         
 # Scene renderer
@@ -1092,30 +1133,7 @@ class GLRenderer(object):
     # Cleanup methods
     # ---------------
     def cleanup(self):
-        pass# TODO
+        """Clean up all allocated OpenGL objects."""
+        for name, renderer in self.visual_renderers.iteritems():
+            renderer.cleanup()
         
-    # def cleanup_buffer(self, buffer):
-        # """Clean up a buffer.
-        
-        # Arguments:
-          # * buffer: a buffer object.
-          
-        # """
-        # if "vbos" in buffer:
-            # bfs = [b[0] for b in buffer["vbos"]]
-            # gl.glDeleteBuffers(len(bfs), bfs)
-    
-    # def cleanup_visual(self, visual):
-        # """Cleanup the visual by deleting the associated shader program.
-        
-        # Arguments:
-          # * visual: the visual to clean up.
-        
-        # """
-        # program = visual["loader"].shaders_program
-        # try:
-            # gl.glDeleteProgram(program)
-        # except Exception as e:
-            # log_info("error when deleting shader program")
-        # for buffer in visual["loader"].attributes.itervalues():
-            # self.cleanup_buffer(buffer)
