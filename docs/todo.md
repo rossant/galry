@@ -10,6 +10,13 @@ Galry: high-performance interactive visualization in Python
   * texture1D
   * reference arrays
   
+  * get rid of all enum and replace with strings
+  * refactoring of interaction system, with EventProcessor objects which
+    process events.
+
+  * profiling
+  * automatic benchmark of cpu/gpu throughput and latency
+  
   * opencl buffers and opencl/gl interop buffers
   
   * javascript standalone version of the renderer and the deserializer

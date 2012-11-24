@@ -1,6 +1,8 @@
 import numpy as np
 import collections
 
+__all__ = ['OLDGLSL', 'RefVar', 'Visual']
+
 # HACK: if True, activate the OpenGL ES syntax, which is deprecated in the
 # desktop version. However with the appropriate #version command in the shader
 # most drivers should accept this syntax in the compatibility profile.
@@ -471,12 +473,28 @@ class ShaderCreator(object):
         return vs, fs
     
     
+    
+# Reference variable
+# ------------------
+class RefVar(object):
+    """Defines a reference variable to an attribute of any visual.
+    This allows one attribute value to refer to the same memory buffer
+    in both system and graphics memory."""
+    def __init__(self, visual, variable):
+        self.visual = visual
+        self.variable = variable
+        
+    def __repr__(self):
+        return '%s.%s' % (self.visual, self.variable)
+        
+    
 # Visual creator
 # --------------
 class Visual(object):
     """This class defines a visual to be displayed in the scene. It should
     be overriden."""
-    def __init__(self, *args, **kwargs):
+    def __init__(self, scene, *args, **kwargs):
+        self.scene = scene
         self.variables = collections.OrderedDict()
         # initialize the shader creator
         self.shader_creator = ShaderCreator()
@@ -490,6 +508,17 @@ class Visual(object):
         self.constrain_ratio = kwargs.pop('constrain_ratio', False)
         self.constrain_navigation = kwargs.pop('constrain_navigation', False)
         self.visible = kwargs.pop('visible', True)
+        # deal with reference variables
+        self.references = {}
+        # record all reference variables in the references dictionary
+        for name, value in kwargs.iteritems():
+            if isinstance(value, RefVar):
+                self.references[name] = value
+                # then, resolve the reference value on the CPU only, so that
+                # it can be used in initialize(). The reference variable will
+                # still be registered in the visual dictionary, for later use
+                # by the GL renderer.
+                kwargs[name] = self.resolve_reference(value)['data']
         # initialize the visual
         self.initialize_default()
         self.initialize(*args, **kwargs)
@@ -506,6 +535,40 @@ class Visual(object):
         # create the shader source codes
         self.vertex_shader, self.fragment_shader = \
             self.shader_creator.get_shader_codes()
+        
+    
+    # Reference variables methods
+    # ---------------------------
+    def get_visuals(self):
+        """Return all visuals defined in the scene."""
+        return self.scene['visuals']
+        
+    def get_visual(self, name):
+        """Return a visual dictionary from its name."""
+        visuals = [v for v in self.get_visuals() if v.get('name', '') == name]
+        if not visuals:
+            return None
+        return visuals[0]
+        
+    def get_variable(self, name, visual=None):
+        """Return a variable by its name, and for any given visual which 
+        is specified by its name."""
+        # get the variables list
+        if visual is None:
+            variables = self.variables.values()
+        else:
+            variables = self.get_visual(visual)['variables']
+        variables = [v for v in variables if v.get('name', '') == name]
+        if not variables:
+            return None
+        return variables[0]
+        
+    def resolve_reference(self, refvar):
+        """Resolve a reference variable: return its true value (a Numpy array).
+        """
+        return self.get_variable(refvar.variable, visual=refvar.visual)
+        
+        
         
     # Variable methods
     # ----------------
@@ -612,7 +675,7 @@ class Visual(object):
     # Initialization methods
     # ----------------------
     def initialize(self, *args, **kwargs):
-        """The visual should be defined dynamically here."""
+        """The visual should be defined here."""
     
     def finalize(self):
         """Finalize the template to make sure that shaders are compilable.
@@ -636,6 +699,17 @@ class Visual(object):
     
     # Output methods
     # --------------
+    def get_variables_list(self):
+        """Return the list of variables, to be used in the output dictionary
+        containing all the visual information."""
+        variables = self.variables.values()
+        # handle reference variables
+        for variable in variables:
+            name = variable['name']
+            if name in self.references:
+                variable['data'] = self.references[name]
+        return variables
+    
     def get_dic(self):
         """Return the dict representation of the visual."""
         dic = {
@@ -646,7 +720,7 @@ class Visual(object):
             'primitive_type': self.primitive_type,
             'constrain_ratio': self.constrain_ratio,
             'constrain_navigation': self.constrain_navigation,
-            'variables': self.variables.values(),
+            'variables': self.get_variables_list(),
             'vertex_shader': self.vertex_shader,
             'fragment_shader': self.fragment_shader,
         }

@@ -132,12 +132,13 @@ class PaintManager(object):
         if 'constrain_ratio' not in kwargs:
             kwargs['constrain_ratio'] = self.parent.constrain_ratio
         # create the visual object
-        visual = visual_class(*args, **kwargs)
+        visual = visual_class(self.scene, *args, **kwargs)
         # get the dictionary version
         dic = visual.get_dic()
         dic['name'] = name
         # append the dic to the visuals list of the scene
         self.get_visuals().append(dic)
+        return visual
         
     def set_data(self, visual=None, **kwargs):
         """Specify or change the data associated to particular visual

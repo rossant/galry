@@ -1,11 +1,10 @@
-from galry import QtGui, QtCore, QtOpenGL
-from galry import log_info, log_debug, log_warn
-from QtOpenGL import QGLWidget
 import OpenGL.GL as gl
 from collections import OrderedDict
-from tools import enforce_dtype
 import numpy as np
 import sys
+from tools import enforce_dtype
+from debugtools import log_info, log_debug, log_warn
+from visuals import RefVar
 
     
 # GLVersion class
@@ -409,18 +408,27 @@ class Slicer(object):
             for pos, size in self.slices]
        
        
-       
 class SlicedAttribute(object):
-    def __init__(self, slicer, location):
+    def __init__(self, slicer, location, buffers=None):
         # self.set_slicer(slicer)
         self.slicer = slicer
         self.location = location
-        # create the sliced buffers
-        self.create()
+        if buffers is None:
+            # create the sliced buffers
+            self.create()
+        else:
+            log_info("Creating sliced attribute with existing buffers " +
+                str(buffers))
+            # or use existing buffers
+            self.load_buffers(buffers)
         
     def create(self):
         """Create the sliced buffers."""
         self.buffers = [Attribute.create() for _ in self.slicer.slices]
+    
+    def load_buffers(self, buffers):
+        """Load existing buffers instead of creating new ones."""
+        self.buffers = buffers
     
     def delete_buffers(self):
         """Delete all sub-buffers."""
@@ -487,9 +495,10 @@ class Painter(object):
 class GLVisualRenderer(object):
     """Handle rendering of one visual"""
     
-    def __init__(self, visual):
+    def __init__(self, scene, visual):
         """Initialize the visual renderer, create the slicer, initialize
         all variables and the shaders."""
+        self.scene = scene
         # register the visual dictionary
         self.visual = visual
         # hold all data changes until the next rendering pass happens
@@ -527,6 +536,25 @@ class GLVisualRenderer(object):
     
     # Variable methods
     # ----------------
+    # def get_variable(self, name):
+        # """Return a variable by its name."""
+        # variables = [v for v in self.get_variables() if v.get('name', '') == name]
+        # if not variables:
+            # return None
+            # # raise ValueError("The variable %s has not been found" % name)
+        # return variables[0]
+        
+    def get_visuals(self):
+        """Return all visuals defined in the scene."""
+        return self.scene['visuals']
+        
+    def get_visual(self, name):
+        """Return a visual dictionary from its name."""
+        visuals = [v for v in self.get_visuals() if v.get('name', '') == name]
+        if not visuals:
+            return None
+        return visuals[0]
+        
     def get_variables(self, shader_type=None):
         """Return all variables defined in the visual."""
         if not shader_type:
@@ -535,13 +563,23 @@ class GLVisualRenderer(object):
             return [var for var in self.get_variables() \
                             if var['shader_type'] == shader_type]
         
-    def get_variable(self, name):
-        """Return a variable by its name."""
-        variables = [v for v in self.get_variables() if v.get('name', '') == name]
+    def get_variable(self, name, visual=None):
+        """Return a variable by its name, and for any given visual which 
+        is specified by its name."""
+        # get the variables list
+        if visual is None:
+            variables = self.get_variables()
+        else:
+            variables = self.get_visual(visual)['variables']
+        variables = [v for v in variables if v.get('name', '') == name]
         if not variables:
             return None
-            # raise ValueError("The variable %s has not been found" % name)
         return variables[0]
+        
+    def resolve_reference(self, refvar):
+        """Resolve a reference variable: return its true value (a Numpy array).
+        """
+        return self.get_variable(refvar.variable, visual=refvar.visual)
         
         
     # Initialization methods
@@ -577,8 +615,16 @@ class GLVisualRenderer(object):
         location = self.shader_manager.get_attribute_location(name)
         variable = self.get_variable(name)
         variable['location'] = location
-        # initialize the sliced buffers
-        variable['sliced_attribute'] = SlicedAttribute(self.slicer, location)
+        # deal with reference attributes: share the same buffers between 
+        # several different visuals
+        if isinstance(variable['data'], RefVar):
+            # use the existing buffers from the target variable
+            buffers = self.resolve_reference(variable['data'])
+            variable['sliced_attribute'] = SlicedAttribute(self.slicer, location,
+                buffers=buffers['sliced_attribute'].buffers)
+        else:
+            # initialize the sliced buffers
+            variable['sliced_attribute'] = SlicedAttribute(self.slicer, location)
         
     def initialize_index(self, name):
         variable = self.get_variable(name)
@@ -614,8 +660,13 @@ class GLVisualRenderer(object):
     def load_attribute(self, name, data=None):
         """Load data for an attribute variable."""
         variable = self.get_variable(name)
+        olddata = variable.get('data', None)
+        if isinstance(olddata, RefVar):
+            log_info("Skipping loading data for attribute '%s' since it "
+                "references a target variable." % name)
+            return
         if data is None:
-            data = variable.get('data', None)
+            data = olddata
         if data is not None:
             variable['sliced_attribute'].load(data)
         
@@ -685,6 +736,11 @@ class GLVisualRenderer(object):
     def update_attribute(self, name, data, bounds=None):
         """Update data for an attribute variable."""
         variable = self.get_variable(name)
+        # handle reference variable
+        olddata = variable.get('data', None)
+        if isinstance(olddata, RefVar):
+            raise ValueError("Unable to load data for a reference " +
+                "attribute. Use the target variable directly.""")
         variable['data'] = data
         att = variable['sliced_attribute']
         # handle size changing
@@ -812,7 +868,10 @@ class GLVisualRenderer(object):
     def bind_attributes(self, slice=None):
         """Bind all attributes of the visual for the given slice.
         This method is used during rendering."""
+        # find all visual variables with shader type 'attribute'
         attributes = self.get_variables('attribute')
+        # for each attribute, bind the sub buffer corresponding to the given
+        # slice
         for variable in attributes:
             variable['sliced_attribute'].bind(slice)
             Attribute.set_attribute(variable['location'], variable['ndim'])
@@ -986,7 +1045,10 @@ class GLRenderer(object):
         # initialize the renderer options using the options set in the Scene
         self.set_renderer_options()
         # create the VisualRenderer objects
-        self.visual_renderers = OrderedDict([(visual['name'], GLVisualRenderer(visual)) for visual in self.get_visuals()])
+        self.visual_renderers = OrderedDict()
+        for visual in self.get_visuals():
+            name = visual['name']
+            self.visual_renderers[name] = GLVisualRenderer(self.scene, visual)
         
     def clear(self):
         """Clear the scene."""
