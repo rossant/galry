@@ -94,7 +94,8 @@ class SceneCreator(object):
     def get_scene(self):
         return self.scene
 
-    def serialize(self):
+    def serialize(self, **kwargs):
+        self.scene.update(**kwargs)
         return serialize(self.scene)
         
     def from_json(self, scene_json):
@@ -141,7 +142,7 @@ def serialize(scene):
                 # variable['data'] = encode_data(np.array(variable['data'], dtype=np.float32))
     
     scene_json = json.dumps(scene, cls=ArrayEncoder, ensure_ascii=True)
-    scene_json = scene_json.replace('\\n', '\\\\n')
+    # scene_json = scene_json.replace('\\n', '\\\\n')
     return scene_json
 
 def deserialize(scene_json):

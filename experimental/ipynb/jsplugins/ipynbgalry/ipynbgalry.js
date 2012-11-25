@@ -112,7 +112,7 @@ var Base64Binary = {
 		//get last chars to see if are valid
 		var lkey1 = this._keyStr.indexOf(input.charAt(input.length-1));		 
 		var lkey2 = this._keyStr.indexOf(input.charAt(input.length-2));		 
-
+        
 		var bytes = (input.length/4) * 3;
 		if (lkey1 == 64) bytes--; //padding chars, so skip
 		if (lkey2 == 64) bytes--; //padding chars, so skip
@@ -131,7 +131,7 @@ var Base64Binary = {
 		input = input.replace(/[^A-Za-z0-9\+\/\=]/g, "");
 
 		for (i=0; i<bytes; i+=3) {	
-			//get the 3 octects in 4 ascii chars
+			//get the 3 octets in 4 ascii chars
 			enc1 = this._keyStr.indexOf(input.charAt(j++));
 			enc2 = this._keyStr.indexOf(input.charAt(j++));
 			enc3 = this._keyStr.indexOf(input.charAt(j++));
@@ -151,8 +151,17 @@ var Base64Binary = {
 }
 
 // Convert a Base64-encoded array into a Javascript Array Buffer.
-function get_array(s) {
-    return Base64Binary.decodeArrayBuffer(s);
+function get_array(s, vartype) {
+    data = Base64Binary.decodeArrayBuffer(s);
+    size = Math.floor(data.byteLength / 4);
+    // 32 bits floats
+    if (vartype == 'float')
+        data = new Float32Array(data, 0, size);
+    // 32 bits int
+    else if (vartype == 'int')
+        // HACK: we force int32 to be float32 for OpenGL ES
+        data = new Float32Array(new Int32Array(data, 0, size));
+    return data;
 }
 
 
@@ -175,7 +184,8 @@ function get_pos(e) {
 
 // Return the inf norm between two points.
 function get_maximum_norm(p1, p2) {
-    return Math.max(Math.abs(p1[0]-p2[0]), Math.abs(p1[1]-p2[1]));
+    var m = Math.max(Math.abs(p1[0]-p2[0]), Math.abs(p1[1]-p2[1]));
+    return m;
 }
 
 
@@ -266,7 +276,6 @@ var gen = {
         gen.mouse_position_diff = [pos[0] - gen.mouse_position[0],
                             pos[1] - gen.mouse_position[1]];
         gen.mouse_position = pos;
-        
         if (get_maximum_norm(gen.mouse_position,
                     gen.mouse_press_position) >= .01) {
             if (gen.mouse_button == 1)
@@ -279,8 +288,6 @@ var gen = {
                 gen.action = actions.MouseMoveAction;
         }
         process_event();
-        
-        //debug(gen.action + " " + gen.key + " " + gen.key_modifier);
         return false;
     },
     
@@ -372,21 +379,28 @@ nav = {
 function process_event() {
     if (gen.action == actions.LeftButtonMouseMoveAction) {
         nav.pan(gen.mouse_position_diff[0], gen.mouse_position_diff[1]);
-        drawScene();
+        renderer.draw();
     }
     if (gen.action == actions.RightButtonMouseMoveAction) {
         nav.zoom(gen.mouse_position_diff[0] * 2.5,
                  gen.mouse_press_position[0],
                  gen.mouse_position_diff[1] * 2.5,
                  gen.mouse_press_position[1]);
-        drawScene();
+        renderer.draw();
     }
     if (gen.action == actions.WheelAction) {
         nav.zoom(gen.wheel * .2, 
                  gen.mouse_position[0],
                  gen.wheel * .2, 
                  gen.mouse_position[1]);
-        drawScene();
+        renderer.draw();
+    }
+    if (gen.action == actions.KeyPressAction) {
+        // R
+        if (gen.key == 82) {
+            nav.reset();
+            renderer.draw();
+        }
     }
 }
 
@@ -396,102 +410,62 @@ function process_event() {
 // GL
 
 // WebGL context
-var gl;
+var gl = null;
+var id = 'canvas';
+var scene = null;
 
-// Shader program
-var shaderProgram;
 
+// GENERIC OPENGL FUNCTIONS
+// ------------------------
 // Initialize the OpenGL context within the canvas
 function initGL(canvas) {
-    try
-    {
+    // try
+    // {
+        antialias = scene.renderer_options.antialias;
         gl = canvas.getContext("webgl", { antialias: antialias }) || canvas.getContext("experimental-webgl", { antialias: antialias });
         gl.viewportWidth = canvas.width;
         gl.viewportHeight = canvas.height;
-    }
-    catch (e)
-    {
-    }
-    if (!gl)
-    {
-        alert("Could not initialise WebGL, sorry :-(");
-    }
+        
+        // global variables
+        width = canvas.width;
+        height = canvas.height;
+        
+        gl.clearColor(0.0, 0.0, 0.0, 1.0);
+        
+        setRenderingOptions();
+    // }
+    // catch (e)
+    // {
+    // }
+    // if (!gl)
+    // {
+        // alert("Could not initialise WebGL, sorry :-(");
+    // }
 }
 
-// DATA LOADER
-var dataloader = {
-    init_attribute: function(name) {
-        template.attributes[name].location = gl.getAttribLocation(shaderProgram, name);
-        gl.enableVertexAttribArray(template.attributes[name].location);
-    },
-
-    init_uniform: function(name) {
-        template.uniforms[name].location = gl.getUniformLocation(shaderProgram, name);
-    },
+// Rendering options
+function setRenderingOptions() {
+    if (scene.renderer_options.transparency != false) {
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    }
+    // if (scene.rendering_options.transparency != false) {
+        // gl.enable(gl.BLEND);
+        // gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    // }
     
-    // upload upload_attribute data
-    upload_attribute: function(name, data, size) {
-        if (data == undefined)
-            data = dataholder[name];
-        if (size == undefined)
-            size = dataholder.size;
-        template.attributes[name].buffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, template.attributes[name].buffer);
-        gl.bufferData(gl.ARRAY_BUFFER, get_array(data), gl.STATIC_DRAW);
-        template.attributes[name].size = size;
-    },
-    
-    // upload uniform data
-    upload_uniform: function(name, data) {
-        if (data == undefined)
-            data = dataholder[name];
-        
-        var ndim = template.uniforms[name].ndim;
-        var size = template.uniforms[name].size;
-        var vartype = template.uniforms[name].vartype;
-        
-        var float_suffix = {true: 'f', false: 'i'};
-        var array_suffix = {true: 'v', false: ''};
-            
-        loc = template.uniforms[name].location;
-        
-        // scalar or vector uniform
-        if (!(ndim instanceof Array)) {
-            var funname = "uniform" + ndim + float_suffix[vartype == 'float'] + 
-                array_suffix[size > 0];
-            if (size > 0) {
-                gl[funname](loc, size, data);
-            }
-            else if (ndim == 1) {
-                gl[funname](loc, data);
-            }
-            else if (ndim == 2) {
-                gl[funname](loc, data[0], data[1]);
-            }
-            else if (ndim == 3) {
-                gl[funname](loc, data[0], data[1], data[2]);
-            }
-            else if (ndim == 4) {
-                gl[funname](loc, data[0], data[1], data[2], data[3]);
-            }
-        }
-        // matrix uniform
-        else {
-            var funname = "uniformmatrix" + ndim[0] + "fv";
-            gl[funname](loc, 1, false, data);
-        }
-    },
-    
-    bind_buffer: function(name) {
-        gl.bindBuffer(gl.ARRAY_BUFFER, template.attributes[name].buffer);
-        gl.vertexAttribPointer(template.attributes[name].location,
-                template.attributes[name].ndim, gl.FLOAT, false, 0, 0);
-    },
-};
+}
 
 // Compile a shader
-// type is VERTEX_SHADER or FRAGMENT_SHADER
 function compileShader(source, type) {
+
+    source = "precision mediump float;\n" + source;
+    
+    source = source.replace(/\\n/g, "\n")
+    
+    // console.log(source);
+    
+    // type is VERTEX_SHADER or FRAGMENT_SHADER
     var shader;
     shader = gl.createShader(gl[type]);
 
@@ -508,119 +482,355 @@ function compileShader(source, type) {
 }
 
 // Initialize the shaders
-function initShaders() {
+function initShaders(vertex_shader_source, fragment_shader_source) {
+    vertexShader = compileShader(vertex_shader_source, "VERTEX_SHADER");
+    fragmentShader = compileShader(fragment_shader_source, "FRAGMENT_SHADER");
 
-    vertexSource = template.vertex_shader;
-    fragmentSource = template.fragment_shader;
+    var program = gl.createProgram();
+    gl.attachShader(program, vertexShader);
+    gl.attachShader(program, fragmentShader);
+    gl.linkProgram(program);
 
-    vertexShader = compileShader(vertexSource, "VERTEX_SHADER");
-    fragmentShader = compileShader(fragmentSource, "FRAGMENT_SHADER");
-
-    shaderProgram = gl.createProgram();
-    gl.attachShader(shaderProgram, vertexShader);
-    gl.attachShader(shaderProgram, fragmentShader);
-    gl.linkProgram(shaderProgram);
-
-    if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS))
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS))
     {
         window.alert("Could not initialise shaders");
     }
 
-    gl.useProgram(shaderProgram);
+    gl.useProgram(program);
+  
+    return program;
 }
 
-// Initialize the shader variables
-function initVariables() {
-    // initialize and load attributes
-    for (name in template.attributes) {
-        dataloader.init_attribute(name);
-        dataloader.upload_attribute(name);
+// Deserializer
+function deserializeScene(scene) {
+    if (typeof scene == 'string')
+        var scene = jQuery.parseJSON(scene);
+    for (i in scene.visuals) {
+        v = scene.visuals[i];
+        if (typeof(v.bounds) == 'string')
+            v.bounds = get_array(v.bounds, 'int');
+        for (j in v.variables) {
+            variable = v.variables[j];
+            type = variable.shader_type;
+            if (type == 'attribute' || type == 'uniform') {
+                vartype = variable.vartype;
+                // attribute: we force float
+                // if (type == 'attribute')
+                    // vartype = 'float';
+                if (typeof(variable.data) == 'string') {
+                    variable.data = get_array(variable.data, vartype);
+                }
+            }
+        }
+    }
+    return scene;
+}
+
+
+
+
+
+// VISUAL RENDERER
+// ---------------
+var visualRenderer = function() { }
+
+
+// Main methods
+// ------------
+visualRenderer.prototype.init = function(visual) {
+    this.visual = visual;
+    
+    this.data_updating = [];
+
+    this.program = initShaders(visual.vertex_shader, visual.fragment_shader);
+    
+    // initialize variables
+    for (i in visual.variables) {
+        variable = visual.variables[i];
+        if (variable.shader_type == 'attribute' || variable.shader_type == 'uniform') {
+            init_funname = 'init_' + variable.shader_type;
+            this[init_funname](variable.name);
+        }
     }
     
-    // initialize uniforms
-    for (name in template.uniforms) {
-        dataloader.init_uniform(name);
+    // load variables
+    for (i in visual.variables) {
+        variable = visual.variables[i];
+        if (variable.shader_type == 'attribute' || variable.shader_type == 'uniform') {
+            load_funname = 'load_' + variable.shader_type;
+            this[load_funname](variable.name);
+        }
     }
 }
 
-// Render the scene
-function drawScene() {
+// Variable methods
+// ----------------
+// get variables
+visualRenderer.prototype.get_variables = function(shader_type) {
+    variables = [];
+    for (i in this.visual.variables) {
+        variable = this.visual.variables[i];
+        if (shader_type != null && variable.shader_type == shader_type)
+            variables = variables.concat(variable);
+    }
+    return variables;
+}
+
+// get variable
+visualRenderer.prototype.get_variable = function(name) {
+    for (i in this.visual.variables) {
+        variable = this.visual.variables[i];
+        if (variable.name == name)
+            return variable;
+    }
+}
+
+
+// Initialization functions
+// ------------------------
+visualRenderer.prototype.init_attribute = function(name) {
+    variable = this.get_variable(name);
+    variable.location = gl.getAttribLocation(this.program, name);
+    gl.enableVertexAttribArray(variable.location);
+}
+
+visualRenderer.prototype.init_uniform = function(name) {
+    variable = this.get_variable(name);
+    variable.location = gl.getUniformLocation(this.program, name);
+}
+
+
+// Load functions
+// --------------
+visualRenderer.prototype.load_attribute = function(name) {
+    variable = this.get_variable(name);
+    variable.buffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, variable.buffer);
+    gl.bufferData(gl.ARRAY_BUFFER, variable.data, gl.STATIC_DRAW);
+}
+
+visualRenderer.prototype.load_uniform = function(name) {
+    variable = this.get_variable(name);
+    var ndim = variable.ndim;
+    var size = variable.size;
+    var vartype = variable.vartype;
+    var data = variable.data;
+    
+    var float_suffix = {true: 'f', false: 'i'};
+    var array_suffix = {true: 'v', false: ''};
+        
+    loc = variable.location;
+    // scalar or vector uniform
+    if (!(ndim instanceof Array)) {
+        var funname = "uniform" + ndim + float_suffix[vartype == 'float'] + 
+            array_suffix[size > 0];
+        if (size > 0) {
+            gl[funname](loc, data);
+            // console.log(data);
+        }
+        else if (ndim == 1) {
+            gl[funname](loc, data);
+        }
+        else if (ndim == 2) {
+            gl[funname](loc, data[0], data[1]);
+        }
+        else if (ndim == 3) {
+            gl[funname](loc, data[0], data[1], data[2]);
+        }
+        else if (ndim == 4) {
+            
+            gl[funname](loc, data[0], data[1], data[2], data[3]);
+        }
+    }
+    // matrix uniform
+    else {
+        var funname = "uniformmatrix" + ndim[0] + "fv";
+        gl[funname](loc, 1, false, data);
+    }
+}
+
+
+// Update functions
+// ----------------
+visualRenderer.prototype.set_data = function(name, data) {
+    variable = this.get_variable(name);
+    variable.data = data;
+    this.data_updating = this.data_updating.concat(name);
+}
+
+visualRenderer.prototype.update_attribute = function(name) {
+    console.log("WARNING: updating attribute not implemented yet");
+}
+
+visualRenderer.prototype.update_uniform = function(name) {
+    this.load_uniform(name);
+}
+
+visualRenderer.prototype.update_all_variables = function() {
+    for (i in this.data_updating) {
+        name = this.data_updating[i];
+        variable = this.get_variable(name);
+        data = variable.data;
+        
+        // console.log("updating variable " + name);
+        // console.log(data);
+        
+        update_funname = 'update_' + variable.shader_type;
+        this[update_funname](name);      
+    }
+    this.data_updating = [];
+}
+
+
+
+
+// Buffer functions
+// ----------------
+visualRenderer.prototype.bind_buffer = function(name, offset) {
+    variable = this.get_variable(name);
+    // console.log(variable)
+    // console.log(offset)
+    gl.bindBuffer(gl.ARRAY_BUFFER, variable.buffer);
+    gl.vertexAttribPointer(variable.location,
+            variable.ndim, gl.FLOAT, false, 0, offset);
+}
+
+visualRenderer.prototype.bind_buffers = function(offset) {
+    variables = this.get_variables('attribute');
+    if (offset == null)
+        offset = 0;
+    for (i in variables) {
+        name = variables[i].name;
+        offset2 = offset * variables[i].ndim * 4
+        this.bind_buffer(name, offset2);
+    }
+}
+
+
+
+
+visualRenderer.prototype.draw = function() {
     gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
     gl.clear(gl.COLOR_BUFFER_BIT);
 
     // bind all attribute buffers
-    for (name in template.attributes)
-        dataloader.bind_buffer(name);
+    this.bind_buffers();
     
     // navigation
-    dataloader.upload_uniform("translation", [nav.tx, nav.ty]);
-    dataloader.upload_uniform("scale", [nav.sx, nav.sy]);
+    this.set_data("translation", [nav.tx, nav.ty]);
+    this.set_data("scale", [nav.sx, nav.sy]);
+
+    // update all variables
+    this.update_all_variables();
+
+    
     
     // render stuff
-    gl.drawArrays(gl[template.primitive_type], 0, dataholder.size);
+    var bounds = this.visual.bounds;
+    if (bounds.length <= 2) {
+        // console.log(visual);
+        gl.drawArrays(gl[this.visual.primitive_type], bounds[0], bounds[1] - bounds[0]);
+        // gl.drawArrays(gl[this.visual.primitive_type], 0, 0);
+    }
+    else {
+        // console.log(bounds);
+        // multiDrawArrays not available
+        for (var i = 0; i < bounds.length - 1; i++) {
+            
+            this.bind_buffers(bounds[i]);
+    
+            gl.drawArrays(gl[this.visual.primitive_type], 0, bounds[i + 1] - bounds[i]);
+        }
+    }
 }
 
+
+
+
+
+
+
+
+// Renderer
+// --------
+var renderer = {
+    
+    visuals: [],
+    renderers: [],
+
+    // Initialization
+    init: function(scene) {
+        this.scene = scene;
+        // go through all visuals in the scene
+        for (i in scene.visuals) {
+            visual = scene.visuals[i];
+            this.visuals = this.visuals.concat(visual);
+            // create and initialize a new visual renderer
+            vr = new visualRenderer();
+            vr.init(visual);
+            this.renderers = this.renderers.concat(vr);
+        }
+        gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
+    },
+    
+    // Draw
+    draw: function() {
+        // reset
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        
+        for (i in this.renderers) {
+            this.renderers[i].draw();
+        }
+        
+    },
+    
+};
 
 
 
 
 //////////////////////////////////////
 // CORE
-
 // Main function
-function webGLStart(id) {
-    var canvas = document.getElementById(id);
+function webGLStart(mid) {
+    id = mid;
+    canvas = document.getElementById(id);
     // Disable right click context menu on the canvas.
-    canvas.oncontextmenu = function() {return false;};
+    // $(document).oncontextmenu = function() {return false;};
     
+    $(document).ready(function(){ 
+            document.oncontextmenu = function() {return false;};
+    });
     
-    // make bindings
+    // mouse bindings bindings
     $('canvas').mousedown(gen.mousedown);
     $('canvas').dblclick(gen.dblclick);
     $('canvas').mouseup(gen.mouseup);
     $('canvas').mousemove(gen.mousemove);
     $('canvas').mousewheel(gen.mousewheel);
-    $('canvas').keydown(gen.keydown);
-    $('canvas').keyup(gen.keyup);
+    
+    // others
     $('canvas').focusout(gen.focusout);        
-        
+    
+    // keyboard bindings
+    $(document).keydown(gen.keydown);
+    $(document).keyup(gen.keyup);
+    
     // allow to move the mouse outside the canvas
     $(document).mousemove(gen.mousemove);
     $(document).mouseup(gen.mouseup);
         
     // Initialize everything
     initGL(canvas);
-    initShaders();
-    initVariables();
-
-    // Background color
-    gl.clearColor(0.0, 0.0, 0.0, 1.0);
     
-    // Render everything
-    drawScene();
+    // call renderer(scene).init/draw
+    renderer.init(scene);
+    renderer.draw();
 }
 
 
 
 
-
-//////////////////////////////////
-// PLOT SPECIFIC
-
-// id of the canvas
-var id;
-
-// Size of the canvas.
-var width = 400.;
-var height = 300.;
-var antialias = false;
-
-
-var template;
-var dataholder;
-var json;
-
-/////////////////////////////////////////////////
 
 // Javascript handler.
 // This function takes the json object and the cell DOM element as inputs.
@@ -629,27 +839,26 @@ var json;
 var galry_handler = function (json, element)
 {
     // DOM id
-    id = 'Galry-' + IPython.utils.uuid();
+    // id = 'Galry-' + IPython.utils.uuid();
+    id = 'galry-canvas';
+    
+    // console.log(id);
     
     // Create a DIV HTML object to insert in the cell.
     var toinsert = $("<canvas/>").attr('id',id).attr('tabindex',1)
-        .attr('width', width)
-        .attr('height', height)
+        .attr('width', 600)
+        .attr('height', 400)
         .attr('style', "border: 1px solid black;");
         
     element.append(toinsert);
     
-    json = json;
-    template = json['template'];
-    dataholder = json['dataholder'];
-    /*
-    for (name in dataholder) {
-        if (window.dataholder[name] instanceof Array) {
-            window.dataholder[name] = get_array(window.dataholder[name][1]);
-        }
-    }*/
     
+    // json = json;
     //element.append("<div/>").attr('id','debug').html('hey');
+    
+    // console.log(json);
+    scene = deserializeScene(json);
+    // scene = json;
     
     webGLStart(id);
     
@@ -657,4 +866,5 @@ var galry_handler = function (json, element)
 
 // Link the handler name to the javascript function which performs
 // some actions to display the object.
-IPython.json_handlers.register_handler('GalryPlotHandler', galry_handler);
+if (typeof IPython !== 'undefined')
+    IPython.json_handlers.register_handler('GalryPlotHandler', galry_handler);

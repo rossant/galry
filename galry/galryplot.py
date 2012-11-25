@@ -15,8 +15,8 @@ class GalryPlot(object):
         self.scene_creator = SceneCreator()
         self.scene_creator.add_visual(PlotVisual, x=x, y=y)
         
-    def serialize(self):
-        return self.scene_creator.serialize()
+    def serialize(self, **kwargs):
+        return self.scene_creator.serialize(**kwargs)
         
 if __name__ == '__main__':
     pl = GalryPlot()

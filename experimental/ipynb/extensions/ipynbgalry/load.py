@@ -1,9 +1,6 @@
-from zmq.utils import jsonapi
 import numpy as np
-import base64
 from galry import *
 from galry.galryplot import GalryPlot
-from galry.primitives import PrimitiveType, GL_PRIMITIVE_TYPE_CONVERTER
 
 """
 %load_ext ipynbgalry
@@ -13,14 +10,11 @@ a = GalryPlot()
 display(a)
 """
 
-    
-     
 # Python handler
 def get_json(plot=None):
     """This function takes the displayed object and returns a JSON string
     which will be loaded by the Javascript handler."""
-
-    return plot.serialize()
+    return plot.serialize(handler='GalryPlotHandler')
     
 _loaded = False
 
