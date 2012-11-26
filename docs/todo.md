@@ -53,7 +53,6 @@ Code quality
 ------------
   * identifier strings with '' instead of ""
   * PEP8
-  * unit testing
   * test coverage
   * lint
   * prepare for Python 3

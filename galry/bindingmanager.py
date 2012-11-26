@@ -1,18 +1,19 @@
 from python_qt_binding.QtCore import Qt 
 import cursors
+from manager import Manager
 import numpy as np
 from interactionevents import InteractionEvents as events
 from useractions import UserActions as actions
 
 __all__ = ['BindingManager', 'BindingSet', 'DefaultBindingSet']
 
-class BindingManager(object):
+class BindingManager(Manager):
     """Manager several sets of bindings (or interaction modes) and allows
     to switch between several modes.
     """
-    def __init__(self, parent):
-        self.parent = parent
-        self.reset()
+    # def __init__(self, parent):
+        # self.parent = parent
+        # self.reset()
     
     def reset(self):
         """Reset the modes."""

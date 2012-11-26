@@ -87,7 +87,7 @@ class TextVisual(Visual):
     gl_Position.x += (offset - text_width / 2) * letter_spacing / window_size.x;
     gl_PointSize = point_size;
     flat_text_map = text_map;
-        """, 'end')
+        """, after='navigation')
 
         # fragment shader
         fragment = """

@@ -289,6 +289,7 @@ class ShaderManager(object):
         
     def compile(self):
         """Compile the shaders."""
+        # print self.vertex_shader
         self.vs = self.compile_shader(self.vertex_shader, gl.GL_VERTEX_SHADER)
         self.fs = self.compile_shader(self.fragment_shader, gl.GL_FRAGMENT_SHADER)
         
@@ -636,7 +637,7 @@ class GLVisualRenderer(object):
             getattr(self, 'initialize_%s' % shader_type)(name)
         # special case for uniforms: need to load them the first time
         uniforms = self.get_variables('uniform')
-        self.set_data(**dict([(v['name'], v['data']) for v in uniforms]))
+        self.set_data(**dict([(v['name'], v.get('data', None)) for v in uniforms]))
     
     def initialize_attribute(self, name):
         """Initialize an attribute: get the shader location, create the
@@ -647,7 +648,7 @@ class GLVisualRenderer(object):
         variable['location'] = location
         # deal with reference attributes: share the same buffers between 
         # several different visuals
-        if isinstance(variable['data'], RefVar):
+        if isinstance(variable.get('data', None), RefVar):
             # use the existing buffers from the target variable
             buffers = self.resolve_reference(variable['data'])
             variable['sliced_attribute'] = SlicedAttribute(self.slicer, location,
@@ -910,8 +911,11 @@ class GLVisualRenderer(object):
         self.previous_size = self.slicer.size
         # go through all data changes
         for name, data in self.data_updating.iteritems():
-            # log_info("Updating variable '%s'" % name)
-            self.update_variable(name, data)
+            if data is not None:
+                # log_info("Updating variable '%s'" % name)
+                self.update_variable(name, data)
+            else:
+                log_info("Data for variable '%s' is None" % name)
         # reset the data updating dictionary
         self.data_updating.clear()
         

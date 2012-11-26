@@ -5,6 +5,7 @@ from debugtools import *
 # import PyQT or Pyside
 from python_qt_binding import QtCore, QtDeclarative, QtGui, QtOpenGL
     
+from manager import *
 from cursors import *
 from tools import *
 from galrywidget import *

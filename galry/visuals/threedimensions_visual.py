@@ -136,7 +136,7 @@ class ThreeDimensionsVisual(Visual):
             
             self.add_vertex_main("""
                 gl_Position = projection * camera * transform * gl_Position;""",
-                    'end')
+                    position='last')
         # static
         else:
             self.add_vertex_main("""

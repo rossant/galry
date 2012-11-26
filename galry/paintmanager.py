@@ -1,6 +1,7 @@
 import numpy as np
 from tools import log_debug, log_info, log_warn
 from glrenderer import GLRenderer
+from manager import Manager
 from visuals import TextVisual, RectanglesVisual
 from scene import SceneCreator, serialize
 
@@ -9,7 +10,7 @@ __all__ = ['PaintManager']
 
 # PaintManager class
 # ------------------                   
-class PaintManager(object):
+class PaintManager(Manager):
     """Defines what to render in the widget."""
     
     # Background color.
@@ -21,23 +22,19 @@ class PaintManager(object):
     
     # Initialization methods
     # ----------------------
-    def __init__(self, parent):
-        self.parent = parent
-        self.reset()
+    # def __init__(self, parent):
+        # self.parent = parent
+        # self.reset()
         # initialize the paint manager (scene and visual creation happens here)
-        self.initialize()
-        self.initialize_default()
-        self.initialize_renderer()
+        # self.initialize()
+        # self.initialize_default()
+        # self.initialize_renderer()
         
     def reset(self):
         # create the scene creator
         self.scene_creator = SceneCreator(
                     constrain_ratio=self.parent.constrain_ratio)
         self.data_updating = {}
-        
-    def initialize_renderer(self):
-        # create the renderer
-        self.renderer = GLRenderer(self.scene_creator.get_scene())
         
     def set_rendering_options(self, **kwargs):
         self.scene_creator.get_scene()['renderer_options'].update(**kwargs)
@@ -59,6 +56,10 @@ class PaintManager(object):
                         is_static=True,
                         name='navigation_rectangle',
                         visible=False)
+        
+    # def initialize_renderer(self):
+        # # create the renderer
+        # self.renderer = GLRenderer(self.scene_creator.get_scene())
         
         
     # Visual methods
@@ -194,6 +195,11 @@ class PaintManager(object):
     # Rendering methods
     # -----------------
     def initializeGL(self):
+        # initialize the scene
+        self.initialize()
+        self.initialize_default()
+        # initialize the renderer
+        self.renderer = GLRenderer(self.scene_creator.get_scene())
         self.renderer.initialize()
         # update the variables (with set_data in paint_manager.initialize())
         # after initialization

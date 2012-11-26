@@ -1,5 +1,6 @@
 import numpy as np
 import cursors
+from manager import Manager
 from interactionevents import InteractionEvents as events
 
 __all__ = ['InteractionManager']
@@ -7,7 +8,7 @@ __all__ = ['InteractionManager']
 # Maximum viewbox allowed when constraining navigation.
 MAX_VIEWBOX = (-1., -1., 1., 1.)
 
-class InteractionManager(object):
+class InteractionManager(Manager):
     """This class implements the processing of the raised interaction events.
     
     To be overriden.
@@ -22,9 +23,10 @@ class InteractionManager(object):
     constrain_navigation = False
     
     def __init__(self, parent):
-        self.parent = parent
+        # self.parent = parent
         # initialize navigation
-        self.reset()
+        # self.reset()
+        super(InteractionManager, self).__init__(parent)
         self.set_navigation_constraints()
         self.activate_navigation_constrain()
         self.initialize()

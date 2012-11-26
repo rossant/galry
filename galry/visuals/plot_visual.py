@@ -3,7 +3,7 @@ from visual import Visual
 
 class PlotVisual(Visual):
     def initialize(self, x=None, y=None, color=None, point_size=1.0,
-            position=None, nprimitives=None, index=None):
+            position=None, nprimitives=None, index=None, color_array_index=None):
         # if position is specified, it contains x and y as column vectors
         if position is not None:
             x, y = position.T
@@ -105,7 +105,8 @@ class PlotVisual(Visual):
         
         # multiple colors, but with a color array to save memory
         elif use_color_array:
-            color_array_index = np.repeat(np.arange(nprimitives), nsamples)
+            if color_array_index is None:
+                color_array_index = np.repeat(np.arange(nprimitives), nsamples)
             
             self.add_attribute("color_array_index", vartype="int", ndim=1,
                 data=color_array_index)

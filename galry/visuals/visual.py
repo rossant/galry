@@ -333,34 +333,68 @@ def get_varying_declarations(varying):
 # Shader creator
 # --------------
 class ShaderCreator(object):
+    
+    # TODO: add_main(..., shader='vertex', after='navigation', name='navigation')
+    
     """Create the shader codes using the defined variables in the visual."""
     def __init__(self):
         self.version_header = '#version 120'
         self.precision_header = 'precision mediump float;'
         
         # list of headers and main code portions of the vertex shader
-        self.vs_headers = []
-        self.vs_mains = []
+        # self.vs_headers = []
+        # self.vs_mains = []
+        self.headers = {'vertex': [], 'fragment': []}
+        self.mains = {'vertex': [], 'fragment': []}
         
         # list of headers and main code portions of the fragment shader
-        self.fs_headers = []
-        self.fs_mains = []
+        # self.fs_headers = []
+        # self.fs_mains = []
         
         # number of shader snippets to insert at the end
-        self.vs_main_end = 0
-        self.fs_main_end = 0
+        # self.vs_main_end = 0
+        # self.fs_main_end = 0
         
     def set_variables(self, **kwargs):
         # record all visual variables in the shader creator
         for key, value in kwargs.iteritems():
             setattr(self, key, value)
         
+        
+    # Header-related methods
+    # ----------------------
+    def add_header(self, code, shader=None):
+        self.headers[shader].append(code)
+        
     def add_vertex_header(self, code):
         """Add code in the header of the vertex shader. Generally used to
         define custom functions, to be used in the main shader code."""
-        self.vs_headers.append(code)
+        self.add_header(code, 'vertex')
         
-    def add_vertex_main(self, code, index=None):
+    def add_fragment_header(self, code):
+        """Add code in the header of the fragment shader. Generally used to
+        define custom functions, to be used in the main shader code."""
+        self.add_header(code, 'fragment')
+        
+    def get_header(self, shader=None):
+        header = "".join(self.headers[shader])
+        if shader == 'vertex':
+            header += "".join([get_uniform_declaration(uniform) for uniform in self.uniforms])
+            header += "".join([get_attribute_declaration(attribute) for attribute in self.attributes])
+        elif shader == 'fragment':
+            header += "".join([get_uniform_declaration(uniform) for uniform in self.uniforms])
+            header += "".join([get_texture_declaration(texture) for texture in self.textures])
+        return header
+        
+        
+    # Main-related methods
+    # --------------------
+    def add_main(self, code, shader=None, name=None, after=None, position=None):
+        if name is None:
+            name = '%s_main_%d' % (shader, len(self.mains[shader]))
+        self.mains[shader].append(dict(name=name, code=code, after=after, position=position))
+    
+    def add_vertex_main(self, *args, **kwargs):
         """Add code in the main function of the vertex shader.
         At the end of the code, the vec2 variable `position` must have been
         defined, either as an attribute or uniform, or declared in the main
@@ -377,19 +411,10 @@ class ShaderCreator(object):
             calls to `add_vertex_main`. Or it can be 'end'.
         
         """
-        if index == 'end':
-            self.vs_main_end += 1
-            index = len(self.vs_mains)
-        elif index is None:
-            index = len(self.vs_mains) - self.vs_main_end
-        self.vs_mains.insert(index, code)
+        kwargs['shader'] = 'vertex'
+        self.add_main(*args, **kwargs)
         
-    def add_fragment_header(self, code):
-        """Add code in the header of the fragment shader. Generally used to
-        define custom functions, to be used in the main shader code."""
-        self.fs_headers.append(code)
-        
-    def add_fragment_main(self, code, index=None):
+    def add_fragment_main(self, *args, **kwargs):
         """Add code in the main function of the fragment shader.
         At the end of the code, the vec4 variable `out_color` must have been
         defined. It contains the color of the current pixel.
@@ -403,28 +428,39 @@ class ShaderCreator(object):
             calls to `add_fragment_main`.
         
         """
-        if index == 'end':
-            self.fs_main_end += 1
-            index = len(self.fs_mains)
-        elif index is None:
-            index = len(self.fs_mains) - self.fs_main_end
-        self.fs_mains.insert(index, code)
+        kwargs['shader'] = 'fragment'
+        self.add_main(*args, **kwargs)
     
+    def get_main(self, shader=None):
+        mains = self.mains[shader]
+        # first, all snippet names which do not have 'after' keyword, and which are not last
+        order = [m['name'] for m in mains if m['after'] is None and m['position'] is None]
+        # then, those which do not have 'after' keyword, but are last
+        order += [m['name'] for m in mains if m['after'] is None and m['position'] == 'last']
+        # then, get the final order with the "after" snippets
+        for m in mains:
+            if m['after']:
+                # which index for "after"?
+                index = order.index(m['after'])
+                order.insert(index + 1, m['name'])
+        # finally, get the final code
+        main = ""
+        for name in order:
+            main += [m['code'] for m in mains if m['name'] == name][0]
+        return main
+    
+    
+    # Shader creation
+    # ---------------
     def get_shader_codes(self):
         """Build the vertex and fragment final codes, using the declarations
         of all template variables."""
         vs = VS_TEMPLATE
         fs = FS_TEMPLATE
         
-        # Vertex header
-        vs_header = ""
-        vs_header += "".join([get_uniform_declaration(uniform) for uniform in self.uniforms])
-        vs_header += "".join([get_attribute_declaration(attribute) for attribute in self.attributes])
-        
-        # Fragment header
-        fs_header = ""
-        fs_header += "".join([get_uniform_declaration(uniform) for uniform in self.uniforms])
-        fs_header += "".join([get_texture_declaration(texture) for texture in self.textures])
+        # Shader headers
+        vs_header = self.get_header('vertex')
+        fs_header = self.get_header('fragment')
         
         # Varyings
         for varying in self.varyings:
@@ -432,19 +468,16 @@ class ShaderCreator(object):
             vs_header += s1
             fs_header += s2
         
-        vs_header += "".join(self.vs_headers)
-        fs_header += "".join(self.fs_headers)
+        # vs_header += "".join(self.vs_headers)
+        # fs_header += "".join(self.fs_headers)
         
         # Integrate shader headers
         vs = vs.replace("%VERTEX_HEADER%", vs_header)
         fs = fs.replace("%FRAGMENT_HEADER%", fs_header)
         
         # Vertex and fragment main code
-        vs_main = ""
-        vs_main += "".join(self.vs_mains)
-        
-        fs_main = ""
-        fs_main += "".join(self.fs_mains)
+        vs_main = self.get_main('vertex')
+        fs_main = self.get_main('fragment')
         
         # Integrate shader headers
         vs = vs.replace("%VERTEX_MAIN%", vs_main)
@@ -520,8 +553,8 @@ class Visual(object):
                 # by the GL renderer.
                 kwargs[name] = self.resolve_reference(value)['data']
         # initialize the visual
-        self.initialize_default()
         self.initialize(*args, **kwargs)
+        self.initialize_default()
         # initialize the shader creator
         self.shader_creator.set_variables(
             attributes=self.get_variables('attribute'),
@@ -643,7 +676,8 @@ class Visual(object):
         self.add_uniform('viewport', vartype="float", ndim=2, data=(1., 1.))
         self.add_uniform('window_size', vartype="float", ndim=2, data=(600., 600.))
         if self.constrain_ratio:
-            self.add_vertex_main("gl_Position.xy = gl_Position.xy / viewport;", 'end')
+            self.add_vertex_main("gl_Position.xy = gl_Position.xy / viewport;",
+                position='last', name='viewport')
         
     def initialize_navigation(self):
         """Handle interactive navigation in shaders."""
@@ -653,23 +687,26 @@ class Visual(object):
             self.add_uniform("translation", vartype="float", ndim=2, data=(0., 0.))
             
             self.add_vertex_header("""
-        // Transform a position according to a given scaling and translation.
-        vec2 transform_position(vec2 position, vec2 scale, vec2 translation)
-        {
-        return scale * (position + translation);
-        }
+                // Transform a position according to a given scaling and translation.
+                vec2 transform_position(vec2 position, vec2 scale, vec2 translation)
+                {
+                return scale * (position + translation);
+                }
             """)
             
         # add transformation only if there is something to display
         # if self.get_variables('attribute'):
+        
         if not self.is_static:
             self.add_vertex_main("""
                 gl_Position = vec4(transform_position(%s, scale, translation), 
-                               0., 1.);""" % self.position_attribute_name, 'end')
+                               0., 1.);""" % self.position_attribute_name,
+                               position='last', name='navigation')
         # static
         else:
             self.add_vertex_main("""
-                gl_Position = vec4(%s, 0., 1.);""" % self.position_attribute_name, 'end')
+                gl_Position = vec4(%s, 0., 1.);""" % self.position_attribute_name,
+                                position='last', name='navigation')
         
         
     # Initialization methods
