@@ -30,9 +30,39 @@ Fixes
 -----
 
   * bug: linux pyside segmentation fault
+      * some update (2012/11/27): I could reproduce this issue on RedHat 5
+        with a Nvidia cards (nvidia drivers, OpenGL 4.3) and pyside (EPD), 
+        a PyQt4 package appearing not to be available on redhat. I could find
+        two issues:
+          * segmentation fault with pyside due to cursors, deactivating cursors
+            does the trick but this should be investigated properly
+          * another segmentation fault with OpenGL when a textured 
+            primitive is drawn *after* a non-textured one. This happens with
+            FPS for instance. Reversing the order of the visuals (texture first,
+            non-texture then) does also the trick, but the precise reason is
+            still unknown. It might due to the fact that the linux nvidia
+            OpenGL driver does not like when a texture is bound (which
+            happens upon visual creation) and a non-textured primitive is
+            drawn right afterwards (there are no such bugs on windows). 
+            Unbounding the texture does not appear to solve the problem. To be
+            continued...
+        Appart from that, everything appears to work correctly (tutorials
+        and examples).
+  
   * try to reproduce bug with violation memory access when there are several
     widgets within a main window (concurrency issue in pyopengl?)
   
+  
+Tested
+------
+
+  * Windows 8 64 bits, AMD GPU                  OK w PyQt4
+  * Windows 7 64 bits, nvidia GPU               OK with #version0
+  * Windows 7 64 bits, Intel HD 4000            OK    
+  * Ubuntu 12.04 in VM, AMD GPU                 OK
+  * Linux with nvidia                           seg fault w PySide
+  * MacOSX with nvidia                          OK
+
   
 Later
 -----

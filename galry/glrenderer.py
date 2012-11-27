@@ -440,12 +440,13 @@ class Slicer(object):
         # print self.slices
         self.slice_count = len(self.slices)
     
-    def set_bounds(self, bounds):
+    def set_bounds(self, bounds=None):
         if bounds is None:
             bounds = np.array([0, self.size], dtype=np.int32)
         self.bounds = bounds
         self.subdata_bounds = [self._slice_bounds(self.bounds, pos, size) \
             for pos, size in self.slices]
+        # print "changing sub data bounds", self.subdata_bounds
        
        
 class SlicedAttribute(object):
@@ -547,6 +548,7 @@ class GLVisualRenderer(object):
         self.set_primitive_type(self.visual['primitive_type'])
         # indexed mode? set in initialize_variables
         self.use_index = None
+        # self.previous_size = None
         # set the slicer
         self.slicer = Slicer()
         # used when slicing needs to be deactivated (like for indexed arrays)
@@ -766,18 +768,20 @@ class GLVisualRenderer(object):
             else:
                 getattr(self, 'update_%s' % shader_type)(name, data, **kwargs)
     
-    def update_attribute(self, name, data, bounds=None):
+    def update_attribute(self, name, data):#, bounds=None):
         """Update data for an attribute variable."""
         variable = self.get_variable(name)
         # handle reference variable
-        olddata = variable.get('data', None)
+        olddata = variable.get('data', np.array([]))
         if isinstance(olddata, RefVar):
             raise ValueError("Unable to load data for a reference " +
                 "attribute. Use the target variable directly.""")
         variable['data'] = data
         att = variable['sliced_attribute']
         # handle size changing
-        if data.shape[0] != self.previous_size:
+        if data.shape[0] != olddata.shape[0]:
+            # log_info(("Creating new buffers for variable %s, old size=%s,"
+                # "new size=%d") % (name, olddata.shape[0], data.shape[0]))
             # update the size only when not using index arrays
             if self.use_index:
                 newsize = self.slicer.size
@@ -785,13 +789,23 @@ class GLVisualRenderer(object):
                 newsize = data.shape[0]
             # update the slicer size and bounds
             self.slicer.set_size(newsize, doslice=not(self.use_index))
-            self.slicer.set_bounds(bounds)
+            
+            # HACK: update the bounds only if there are no bounds basically
+            # (ie. 2 bounds only), otherwise we assume the bounds have been
+            # changed explicitely
+            if len(self.slicer.bounds) == 2:
+                self.slicer.set_bounds()
+                
+                
             # delete old buffers
             att.delete_buffers()
             # create new buffers
             att.create()
             # load data
             att.load(data)
+            # forget previous size
+            # self.previous_size = None
+            
         else:
             # update data
             att.update(data)
@@ -860,9 +874,6 @@ class GLVisualRenderer(object):
               * constrain_navigation: whether to constrain the navigation,
         
         """
-        # we register the data changes here so that they can be actually be
-        # done later, in update_all_variables
-        
         # handle compound variables
         kwargs2 = kwargs.copy()
         for name, data in kwargs2.iteritems():
@@ -885,6 +896,7 @@ class GLVisualRenderer(object):
         # handle bounds keyword
         bounds = kwargs.pop('bounds', None)
         if bounds is not None:
+            # print "changing bounds to", bounds
             self.slicer.set_bounds(bounds)
             
         # handle primitive type special keyword
@@ -908,8 +920,9 @@ class GLVisualRenderer(object):
         
     def update_all_variables(self):
         """Upload all new data that needs to be updated."""
-        # current size, that may change following variable updating
-        self.previous_size = self.slicer.size
+        # # current size, that may change following variable updating
+        # if not self.previous_size:
+            # self.previous_size = self.slicer.size
         # go through all data changes
         for name, data in self.data_updating.iteritems():
             if data is not None:
@@ -981,6 +994,7 @@ class GLVisualRenderer(object):
                 self.bind_attributes(slice)
                 # call the appropriate OpenGL rendering command
                 # if len(self.slicer.bounds) <= 2:
+                # print "slice bounds", slice_bounds
                 if len(slice_bounds) <= 2:
                     Painter.draw_arrays(self.primitive_type, slice_bounds[0], 
                         slice_bounds[1] -  slice_bounds[0])
