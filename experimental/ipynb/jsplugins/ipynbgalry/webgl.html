@@ -17,12 +17,17 @@ var debug = function(text) {
 
 // get scene
 scene = deserializeScene(scene_json);
+//scene2 = deserializeScene(scene_json);
 
 </script>
 </head>
-<body onload="webGLStart('galry-canvas');">
+<body onload="initGalry('galry-canvas', scene);//initGalry('galry-canvas2', scene2);">
     <!-- WebGalry GL canvas -->
-    <canvas id="galry-canvas" tabindex="1" width="600" height="400"></canvas>
+    <canvas id="galry-canvas" tabindex="1" width="640" height="480"></canvas>
+    
+    <!--<div></div>
+    
+    <canvas id="galry-canvas2" tabindex="1" width="300" height="200"></canvas>-->
     
     <!-- used to display debug information in real time -->
     <div id="debug"></div>

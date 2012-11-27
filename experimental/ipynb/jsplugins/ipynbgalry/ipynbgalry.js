@@ -1,10 +1,6 @@
-// TODO: support for multiple JS files
-
-
-
 //////////////////////////////////////
 // JQUERY WHEEL
-
+//////////////////////////////////////
 /*! Copyright (c) 2011 Brandon Aaron (http://brandonaaron.net)
  * Licensed under the MIT License (LICENSE.txt).
  *
@@ -91,10 +87,9 @@ function handler(event) {
 })(jQuery);
 
 
-
 //////////////////////////////////////
 // DATA
-
+//////////////////////////////////////
 // Base64 decoder
 var Base64Binary = {
 	_keyStr : "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
@@ -165,29 +160,15 @@ function get_array(s, vartype) {
 }
 
 
-
 //////////////////////////////////////
 // USER ACTIONS
-
-function get_pos(e) {
-    var offset = $("#" + id).offset();
-    if (offset == undefined) {
-        // console.log("id is undefined" + id);
-        return [0, 0];
-    }
-    var x = e.pageX - offset.left;
-    var y = e.pageY - offset.top;
-    x = 2 * x / width - 1;
-    y = -(2 * y / height - 1);
-    return [x, y];
-}
+//////////////////////////////////////
 
 // Return the inf norm between two points.
 function get_maximum_norm(p1, p2) {
     var m = Math.max(Math.abs(p1[0]-p2[0]), Math.abs(p1[1]-p2[1]));
     return m;
 }
-
 
 // ctrl, shift, alt
 var key_modifiers = {
@@ -208,298 +189,10 @@ var actions = {
     KeyPressAction: 9,
 };
 
-var gen = {
-    // fields
-    action: false,
-    key: false,
-    key_modifier: false,
-    mouse_button: 0,
-    mouse_position: [0, 0],
-    mouse_position_diff: [0, 0],
-    mouse_press_position: [0, 0],
-    wheel: 0,
-    
-    clean_action: function() {
-        gen.action = false;
-    },
-    
-    reset: function() {
-        gen.action = false;
-        gen.key = false;
-        gen.key_modifier = false;
-        gen.mouse_button = 0;
-        gen.mouse_position = [0, 0];
-        gen.mouse_position_diff = [0, 0];
-        gen.mouse_press_position = [0, 0];
-        gen.wheel = 0;
-    },
-    
-    // callback functions
-    mousedown: function(e) {
-        gen.mouse_button = e.which;
-        gen.mouse_press_position = get_pos(e);
-        gen.mouse_position = get_pos(e);
-        process_event();
-        return false;
-    },
-    
-    dblclick: function(e) {
-        gen.action = actions.DoubleClickAction;
-        process_event();
-    },
-    
-    mouseup: function(e) {
-        if (get_maximum_norm(gen.mouse_position,
-                    gen.mouse_press_position) < .01) {
-            switch(e.which) {
-                case 1:
-                    gen.action = actions.LeftButtonClickAction;
-                    break;
-                case 2:
-                    gen.action = actions.MiddleButtonClickAction;
-                    break;
-                case 3:
-                    gen.action = actions.RightButtonClickAction;
-                    break;
-            }
-        }
-        else {
-            gen.action = false;
-        }
-        gen.mouse_button = 0;
-        process_event();
-        return false;
-    },
-    
-    mousemove: function(e) {
-        var pos = get_pos(e);
-        gen.mouse_position_diff = [pos[0] - gen.mouse_position[0],
-                            pos[1] - gen.mouse_position[1]];
-        gen.mouse_position = pos;
-        if (get_maximum_norm(gen.mouse_position,
-                    gen.mouse_press_position) >= .01) {
-            if (gen.mouse_button == 1)
-                gen.action = actions.LeftButtonMouseMoveAction;
-            else if (gen.mouse_button == 2)
-                gen.action = actions.MiddleButtonMouseMoveAction;
-            else if (gen.mouse_button == 3)
-                gen.action = actions.RightButtonMouseMoveAction;
-            else
-                gen.action = actions.MouseMoveAction;
-        }
-        process_event();
-        return false;
-    },
-    
-    mousewheel: function(e, delta) {
-        gen.wheel = delta;
-        gen.action = actions.WheelAction;
-        process_event();
-        return false;
-    },
-    
-    keydown: function(e) {
-        var key = e.which;
-        if (key == 16 || key == 17 || key == 18) 
-            gen.key_modifier = key;
-        else {
-            gen.action = actions.KeyPressAction;
-            gen.key = key;
-        }
-        process_event();
-    },
-    
-    keyup: function(e) {
-        var key = e.which;
-        if (key == 16 || key == 17 || key == 18) 
-            gen.key_modifier = false;
-        else
-            gen.key = false;
-        process_event();
-    },
-    
-    focusout: function(e) {
-        gen.reset();
-    },
-};
-
-
-
-
 
 //////////////////////////////////////
-// NAV
-
-nav = {
-
-    tx: 0,
-    ty: 0,
-    tz: 0,
-    sx: 1,
-    sy: 1,
-    sxl: 1,
-    syl: 1,
-    rx: 0,
-    ry: 0,
-
-    reset: function() {
-        nav.tx = 0;
-        nav.ty = 0;
-        nav.tz = 0;
-        nav.sx = 1;
-        nav.sy = 1;
-        nav.sxl = 1;
-        nav.syl = 1;
-        nav.rx = 0;
-        nav.ry = 0;
-    },
-
-    pan: function(dx, dy) {
-        nav.tx += dx / nav.sx;
-        nav.ty += dy / nav.sy;
-    },
-
-    rotate: function(dx, dy) {
-        nav.rx += dx;
-        nav.ry += dy;
-    },
-
-    zoom: function(dx, px, dy, py) {
-        nav.sx *= Math.exp(dx);
-        nav.sy *= Math.exp(dy);
-        nav.tx += -px * (1./nav.sxl - 1./nav.sx);
-        nav.ty += -py * (1./nav.syl - 1./nav.sy);
-        nav.sxl = nav.sx;
-        nav.syl = nav.sy;
-    },
-}
-
-
-// Process an interaction event and call the associated navigation methods
-function process_event() {
-    if (gen.action == actions.LeftButtonMouseMoveAction) {
-        nav.pan(gen.mouse_position_diff[0], gen.mouse_position_diff[1]);
-        renderer.draw();
-    }
-    if (gen.action == actions.RightButtonMouseMoveAction) {
-        nav.zoom(gen.mouse_position_diff[0] * 2.5,
-                 gen.mouse_press_position[0],
-                 gen.mouse_position_diff[1] * 2.5,
-                 gen.mouse_press_position[1]);
-        renderer.draw();
-    }
-    if (gen.action == actions.WheelAction) {
-        nav.zoom(gen.wheel * .2, 
-                 gen.mouse_position[0],
-                 gen.wheel * .2, 
-                 gen.mouse_position[1]);
-        renderer.draw();
-    }
-    if (gen.action == actions.KeyPressAction) {
-        // R
-        if (gen.key == 82) {
-            nav.reset();
-            renderer.draw();
-        }
-    }
-}
-
-
-
-//////////////////////////////////////
-// GL
-
-// WebGL context
-var gl = null;
-var id = 'canvas';
-var scene = null;
-
-
 // GENERIC OPENGL FUNCTIONS
-// ------------------------
-// Initialize the OpenGL context within the canvas
-function initGL(canvas) {
-    // try
-    // {
-        antialias = scene.renderer_options.antialias;
-        gl = canvas.getContext("webgl", { antialias: antialias }) || canvas.getContext("experimental-webgl", { antialias: antialias });
-        gl.viewportWidth = canvas.width;
-        gl.viewportHeight = canvas.height;
-        
-        // global variables
-        width = canvas.width;
-        height = canvas.height;
-        
-        gl.clearColor(0.0, 0.0, 0.0, 1.0);
-        
-        setRenderingOptions();
-    // }
-    // catch (e)
-    // {
-    // }
-    // if (!gl)
-    // {
-        // alert("Could not initialise WebGL, sorry :-(");
-    // }
-}
-
-// Rendering options
-function setRenderingOptions() {
-    if (scene.renderer_options.transparency != false) {
-        gl.enable(gl.BLEND);
-        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-    }
-    // if (scene.rendering_options.transparency != false) {
-        // gl.enable(gl.BLEND);
-        // gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-    // }
-    
-}
-
-// Compile a shader
-function compileShader(source, type) {
-
-    source = "precision mediump float;\n" + source;
-    
-    source = source.replace(/\\n/g, "\n")
-    
-    // console.log(source);
-    
-    // type is VERTEX_SHADER or FRAGMENT_SHADER
-    var shader;
-    shader = gl.createShader(gl[type]);
-
-    gl.shaderSource(shader, source);
-    gl.compileShader(shader);
-
-    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS))
-    {
-        window.alert(gl.getShaderInfoLog(shader));
-        return null;
-    }
-
-    return shader;
-}
-
-// Initialize the shaders
-function initShaders(vertex_shader_source, fragment_shader_source) {
-    vertexShader = compileShader(vertex_shader_source, "VERTEX_SHADER");
-    fragmentShader = compileShader(fragment_shader_source, "FRAGMENT_SHADER");
-
-    var program = gl.createProgram();
-    gl.attachShader(program, vertexShader);
-    gl.attachShader(program, fragmentShader);
-    gl.linkProgram(program);
-
-    if (!gl.getProgramParameter(program, gl.LINK_STATUS))
-    {
-        window.alert("Could not initialise shaders");
-    }
-
-    gl.useProgram(program);
-  
-    return program;
-}
+//////////////////////////////////////
 
 // Deserializer
 function deserializeScene(scene) {
@@ -530,9 +223,390 @@ function deserializeScene(scene) {
 
 
 
+// ACTION GENERATOR
+
+var actionGenerator = function(myCanvas){//process_event, get_pos) {
+    
+    this.myCanvas = myCanvas;
+    
+    // this.process_event = process_event;
+    // this.get_pos = get_pos;
+    
+    // console.log(this);
+    // this.myCanvas = myCanvas;
+    // this.process_event = myCanvas.process_event;
+    // this.get_pos = myCanvas.get_pos;
+    // console.log(this.get_pos);
+    this.reset();
+}
+
+
+
+actionGenerator.prototype.clean_action = function() {
+    this.action = false;
+}
+
+actionGenerator.prototype.reset = function() {
+    this.action = false;
+    this.key = false;
+    this.key_modifier = false;
+    this.mouse_button = 0;
+    this.mouse_position = [0, 0];
+    this.mouse_position_diff = [0, 0];
+    this.mouse_press_position = [0, 0];
+    this.wheel = 0;
+    
+    // console.log(this);
+}
+
+// callback functions
+actionGenerator.prototype.mousedown = function(e) {
+    this.mouse_button = e.which;
+    this.mouse_press_position = this.myCanvas.get_pos(e);
+    this.mouse_position = this.myCanvas.get_pos(e);
+    this.myCanvas.process_event();
+    return false;
+}
+
+actionGenerator.prototype.dblclick = function(e) {
+    this.action = actions.DoubleClickAction;
+    this.myCanvas.process_event();
+}
+
+actionGenerator.prototype.mouseup = function(e) {
+    if (get_maximum_norm(this.mouse_position,
+                this.mouse_press_position) < .01) {
+        switch(e.which) {
+            case 1:
+                this.action = actions.LeftButtonClickAction;
+                break;
+            case 2:
+                this.action = actions.MiddleButtonClickAction;
+                break;
+            case 3:
+                this.action = actions.RightButtonClickAction;
+                break;
+        }
+    }
+    else {
+        this.action = false;
+    }
+    this.mouse_button = 0;
+    this.myCanvas.process_event();
+    return false;
+}
+
+actionGenerator.prototype.mousemove = function(e) {
+    var pos = this.myCanvas.get_pos(e);
+    this.mouse_position_diff = [pos[0] - this.mouse_position[0],
+                        pos[1] - this.mouse_position[1]];
+    this.mouse_position = pos;
+    if (get_maximum_norm(this.mouse_position,
+                this.mouse_press_position) >= .01) {
+        if (this.mouse_button == 1)
+            this.action = actions.LeftButtonMouseMoveAction;
+        else if (this.mouse_button == 2)
+            this.action = actions.MiddleButtonMouseMoveAction;
+        else if (this.mouse_button == 3)
+            this.action = actions.RightButtonMouseMoveAction;
+        else
+            this.action = actions.MouseMoveAction;
+    }
+    this.myCanvas.process_event();
+    return false;
+}
+
+actionGenerator.prototype.mousewheel = function(e, delta) {
+    this.wheel = delta;
+    this.action = actions.WheelAction;
+    this.myCanvas.process_event();
+    return false;
+}
+
+actionGenerator.prototype.keydown = function(e) {
+    var key = e.which;
+    if (key == 16 || key == 17 || key == 18) 
+        this.key_modifier = key;
+    else {
+        this.action = actions.KeyPressAction;
+        this.key = key;
+    }
+    this.myCanvas.process_event();
+}
+
+actionGenerator.prototype.keyup = function(e) {
+    var key = e.which;
+    if (key == 16 || key == 17 || key == 18) 
+        this.key_modifier = false;
+    else
+        this.key = false;
+    this.myCanvas.process_event();
+}
+
+actionGenerator.prototype.focusout = function(e) {
+    this.reset();
+}
+
+
+
+
+
+
+
+var navigation = function() {
+    this.tx = 0;
+    this.ty = 0;
+    this.tz = 0;
+    this.sx = 1;
+    this.sy = 1;
+    this.sxl = 1;
+    this.syl = 1;
+    this.rx = 0;
+    this.ry = 0;
+}
+
+navigation.prototype.reset = function() {
+    // console.log(this);
+    this.tx = 0;
+    this.ty = 0;
+    this.tz = 0;
+    this.sx = 1;
+    this.sy = 1;
+    this.sxl = 1;
+    this.syl = 1;
+    this.rx = 0;
+    this.ry = 0;
+};
+
+navigation.prototype.pan = function(dx, dy) {
+    this.tx += dx / this.sx;
+    this.ty += dy / this.sy;
+}
+
+navigation.prototype.rotate = function(dx, dy) {
+    this.rx += dx;
+    this.ry += dy;
+}
+
+navigation.prototype.zoom = function(dx, px, dy, py) {
+    this.sx *= Math.exp(dx);
+    this.sy *= Math.exp(dy);
+    this.tx += -px * (1./this.sxl - 1./this.sx);
+    this.ty += -py * (1./this.syl - 1./this.sy);
+    this.sxl = this.sx;
+    this.syl = this.sy;
+}
+
+
+
+
+//////////////////////////////////////
+// GALRY CANVAS
+//////////////////////////////////////
+var galryCanvas = function(id, canvas, scene) {
+    this.id = id;
+    this.canvas = canvas;
+    this.scene = scene;
+}
+
+
+galryCanvas.prototype.get_pos = function(e) {
+    var offset = $('#' + this.id).offset();
+    if (offset == undefined) {
+        // console.log("id is undefined" + id);
+        return [0, 0];
+    }
+    var x = e.pageX - offset.left;
+    var y = e.pageY - offset.top;
+    x = 2 * x / width - 1;
+    y = -(2 * y / height - 1);
+    return [x, y];
+}
+
+
+
+
+// Initialize the shaders
+galryCanvas.prototype.initShaders = function(vertex_shader_source, fragment_shader_source) {
+    vertexShader = this.compileShader(vertex_shader_source, "VERTEX_SHADER");
+    fragmentShader = this.compileShader(fragment_shader_source, "FRAGMENT_SHADER");
+
+    var program = this.gl.createProgram();
+    this.gl.attachShader(program, vertexShader);
+    this.gl.attachShader(program, fragmentShader);
+    this.gl.linkProgram(program);
+
+    if (!this.gl.getProgramParameter(program, this.gl.LINK_STATUS))
+    {
+        window.alert("Could not initialise shaders");
+    }
+
+    this.gl.useProgram(program);
+  
+    return program;
+}
+
+
+
+// Process an interaction event and call the associated navigation methods
+galryCanvas.prototype.process_event = function() {
+    if (this.gen.action == actions.LeftButtonMouseMoveAction) {
+        this.nav.pan(this.gen.mouse_position_diff[0], this.gen.mouse_position_diff[1]);
+        this.draw();
+    }
+    if (this.gen.action == actions.RightButtonMouseMoveAction) {
+        this.nav.zoom(this.gen.mouse_position_diff[0] * 2.5,
+                 this.gen.mouse_press_position[0],
+                 this.gen.mouse_position_diff[1] * 2.5,
+                 this.gen.mouse_press_position[1]);
+        this.draw();
+    }
+    if (this.gen.action == actions.WheelAction) {
+        this.nav.zoom(this.gen.wheel * .2, 
+                 this.gen.mouse_position[0],
+                 this.gen.wheel * .2, 
+                 this.gen.mouse_position[1]);
+        this.draw();
+    }
+    if (this.gen.action == actions.KeyPressAction) {
+        // R
+        if (this.gen.key == 82) {
+            this.nav.reset();
+            this.draw();
+        }
+    }
+}
+
+
+
+
+// Initialize the OpenGL context within the canvas
+galryCanvas.prototype.initGL = function() {
+    // try
+    // {
+    var canvas = this.canvas;
+
+    antialias = this.scene.renderer_options.antialias;
+    this.gl = canvas.getContext("webgl", { antialias: antialias }) || canvas.getContext("experimental-webgl", { antialias: antialias });
+    this.gl.viewportWidth = canvas.width;
+    this.gl.viewportHeight = canvas.height;
+    
+    // global variables
+    width = canvas.width;
+    height = canvas.height;
+    
+    this.gl.clearColor(0.0, 0.0, 0.0, 1.0);
+    
+    this.setRenderingOptions();
+    // }
+    // catch (e)
+    // {
+    // }
+    // if (!gl)
+    // {
+        // alert("Could not initialise WebGL, sorry :-(");
+    // }
+}
+
+// Rendering options
+galryCanvas.prototype.setRenderingOptions = function() {
+    if (this.scene.renderer_options.transparency != false) {
+        this.gl.enable(this.gl.BLEND);
+        this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
+    }
+    // if (scene.rendering_options.transparency != false) {
+        // gl.enable(gl.BLEND);
+        // gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    // }
+    
+}
+
+// Compile a shader
+galryCanvas.prototype.compileShader = function(source, type) {
+
+    source = "precision mediump float;\n" + source;
+    
+    source = source.replace(/\\n/g, "\n")
+    
+    // console.log(source);
+    
+    // type is VERTEX_SHADER or FRAGMENT_SHADER
+    var shader;
+    shader = this.gl.createShader(this.gl[type]);
+
+    this.gl.shaderSource(shader, source);
+    this.gl.compileShader(shader);
+
+    if (!this.gl.getShaderParameter(shader, this.gl.COMPILE_STATUS))
+    {
+        window.alert(this.gl.getShaderInfoLog(shader));
+        return null;
+    }
+
+    return shader;
+}
+
+
+
+
+
+// CORE
+galryCanvas.prototype.initAction = function() {
+
+    // USER ACTION GENERATOR
+    this.gen = new actionGenerator(this);
+    
+    // NAVIGATION MANAGER
+    this.nav = new navigation(this);
+
+}
+
+
+
+galryCanvas.prototype.init = function() {
+
+    
+    // Visuals and renderers
+    this.visuals = [];
+    this.renderers = [];
+
+    // this.scene = scene;
+    var scene = this.scene;
+    
+    // go through all visuals in the scene
+    for (i in scene.visuals) {
+        visual = scene.visuals[i];
+        this.visuals = this.visuals.concat(visual);
+        // create and initialize a new visual renderer
+        vr = new visualRenderer(this);
+        // vr.myCanvas = this;
+        vr.nav = this.nav;
+        vr.gl = this.gl;
+        vr.init(visual);
+        this.renderers = this.renderers.concat(vr);
+    }
+    
+    this.gl.viewport(0, 0, this.gl.viewportWidth, this.gl.viewportHeight);
+}
+    
+galryCanvas.prototype.draw = function() {
+    // reset
+    this.gl.clear(this.gl.COLOR_BUFFER_BIT);
+    
+    for (i in this.renderers) {
+        this.renderers[i].draw();
+    }
+    
+}
+
+
+
+
 // VISUAL RENDERER
 // ---------------
-var visualRenderer = function() { }
+var visualRenderer = function(myCanvas) {
+    this.myCanvas = myCanvas;
+}
 
 
 // Main methods
@@ -542,7 +616,7 @@ visualRenderer.prototype.init = function(visual) {
     
     this.data_updating = [];
 
-    this.program = initShaders(visual.vertex_shader, visual.fragment_shader);
+    this.program = this.myCanvas.initShaders(visual.vertex_shader, visual.fragment_shader);
     
     // initialize variables
     for (i in visual.variables) {
@@ -563,9 +637,9 @@ visualRenderer.prototype.init = function(visual) {
     }
 }
 
+
 // Variable methods
 // ----------------
-// get variables
 visualRenderer.prototype.get_variables = function(shader_type) {
     variables = [];
     for (i in this.visual.variables) {
@@ -576,7 +650,6 @@ visualRenderer.prototype.get_variables = function(shader_type) {
     return variables;
 }
 
-// get variable
 visualRenderer.prototype.get_variable = function(name) {
     for (i in this.visual.variables) {
         variable = this.visual.variables[i];
@@ -590,13 +663,15 @@ visualRenderer.prototype.get_variable = function(name) {
 // ------------------------
 visualRenderer.prototype.init_attribute = function(name) {
     variable = this.get_variable(name);
-    variable.location = gl.getAttribLocation(this.program, name);
-    gl.enableVertexAttribArray(variable.location);
+    variable.location = this.gl.getAttribLocation(this.program, name);
+    this.gl.enableVertexAttribArray(variable.location);
 }
 
 visualRenderer.prototype.init_uniform = function(name) {
     variable = this.get_variable(name);
-    variable.location = gl.getUniformLocation(this.program, name);
+    
+    
+    variable.location = this.gl.getUniformLocation(this.program, name);
 }
 
 
@@ -604,9 +679,12 @@ visualRenderer.prototype.init_uniform = function(name) {
 // --------------
 visualRenderer.prototype.load_attribute = function(name) {
     variable = this.get_variable(name);
-    variable.buffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, variable.buffer);
-    gl.bufferData(gl.ARRAY_BUFFER, variable.data, gl.STATIC_DRAW);
+    variable.buffer = this.gl.createBuffer();
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, variable.buffer);
+    this.gl.bufferData(this.gl.ARRAY_BUFFER, variable.data, this.gl.STATIC_DRAW);
+    // console.log("bind");
+    // console.log(variable.buffer);
+    // console.log(this.gl);
 }
 
 visualRenderer.prototype.load_uniform = function(name) {
@@ -625,27 +703,27 @@ visualRenderer.prototype.load_uniform = function(name) {
         var funname = "uniform" + ndim + float_suffix[vartype == 'float'] + 
             array_suffix[size > 0];
         if (size > 0) {
-            gl[funname](loc, data);
+            this.gl[funname](loc, data);
             // console.log(data);
         }
         else if (ndim == 1) {
-            gl[funname](loc, data);
+            this.gl[funname](loc, data);
         }
         else if (ndim == 2) {
-            gl[funname](loc, data[0], data[1]);
+            this.gl[funname](loc, data[0], data[1]);
         }
         else if (ndim == 3) {
-            gl[funname](loc, data[0], data[1], data[2]);
+            this.gl[funname](loc, data[0], data[1], data[2]);
         }
         else if (ndim == 4) {
             
-            gl[funname](loc, data[0], data[1], data[2], data[3]);
+            this.gl[funname](loc, data[0], data[1], data[2], data[3]);
         }
     }
     // matrix uniform
     else {
         var funname = "uniformmatrix" + ndim[0] + "fv";
-        gl[funname](loc, 1, false, data);
+        this.gl[funname](loc, 1, false, data);
     }
 }
 
@@ -682,17 +760,15 @@ visualRenderer.prototype.update_all_variables = function() {
 }
 
 
-
-
 // Buffer functions
 // ----------------
 visualRenderer.prototype.bind_buffer = function(name, offset) {
     variable = this.get_variable(name);
     // console.log(variable)
     // console.log(offset)
-    gl.bindBuffer(gl.ARRAY_BUFFER, variable.buffer);
-    gl.vertexAttribPointer(variable.location,
-            variable.ndim, gl.FLOAT, false, 0, offset);
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, variable.buffer);
+    this.gl.vertexAttribPointer(variable.location,
+            variable.ndim, this.gl.FLOAT, false, 0, offset);
 }
 
 visualRenderer.prototype.bind_buffers = function(offset) {
@@ -707,18 +783,18 @@ visualRenderer.prototype.bind_buffers = function(offset) {
 }
 
 
-
-
+// Draw function
+// -------------
 visualRenderer.prototype.draw = function() {
-    gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
-    gl.clear(gl.COLOR_BUFFER_BIT);
+    this.gl.viewport(0, 0, this.gl.viewportWidth, this.gl.viewportHeight);
+    this.gl.clear(this.gl.COLOR_BUFFER_BIT);
 
     // bind all attribute buffers
     this.bind_buffers();
     
     // navigation
-    this.set_data("translation", [nav.tx, nav.ty]);
-    this.set_data("scale", [nav.sx, nav.sy]);
+    this.set_data("translation", [this.nav.tx, this.nav.ty]);
+    this.set_data("scale", [this.nav.sx, this.nav.sy]);
 
     // update all variables
     this.update_all_variables();
@@ -729,8 +805,8 @@ visualRenderer.prototype.draw = function() {
     var bounds = this.visual.bounds;
     if (bounds.length <= 2) {
         // console.log(visual);
-        gl.drawArrays(gl[this.visual.primitive_type], bounds[0], bounds[1] - bounds[0]);
-        // gl.drawArrays(gl[this.visual.primitive_type], 0, 0);
+        this.gl.drawArrays(this.gl[this.visual.primitive_type], bounds[0], bounds[1] - bounds[0]);
+        // this.gl.drawArrays(gl[this.visual.primitive_type], 0, 0);
     }
     else {
         // console.log(bounds);
@@ -739,7 +815,7 @@ visualRenderer.prototype.draw = function() {
             
             this.bind_buffers(bounds[i]);
     
-            gl.drawArrays(gl[this.visual.primitive_type], 0, bounds[i + 1] - bounds[i]);
+            this.gl.drawArrays(this.gl[this.visual.primitive_type], 0, bounds[i + 1] - bounds[i]);
         }
     }
 }
@@ -748,90 +824,63 @@ visualRenderer.prototype.draw = function() {
 
 
 
+var canvasList = [];
 
-
-
-// Renderer
-// --------
-var renderer = {
-    
-    visuals: [],
-    renderers: [],
-
-    // Initialization
-    init: function(scene) {
-        this.scene = scene;
-        // go through all visuals in the scene
-        for (i in scene.visuals) {
-            visual = scene.visuals[i];
-            this.visuals = this.visuals.concat(visual);
-            // create and initialize a new visual renderer
-            vr = new visualRenderer();
-            vr.init(visual);
-            this.renderers = this.renderers.concat(vr);
-        }
-        gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
-    },
-    
-    // Draw
-    draw: function() {
-        // reset
-        gl.clear(gl.COLOR_BUFFER_BIT);
-        
-        for (i in this.renderers) {
-            this.renderers[i].draw();
-        }
-        
-    },
-    
-};
-
-
-
-
-//////////////////////////////////////
-// CORE
 // Main function
-function webGLStart(mid) {
-    id = mid;
+var initGalry = function(id, scene) {
+    // id = mid;
+    // this.id = id;
+    sid = '#' + id;
     canvas = document.getElementById(id);
     // Disable right click context menu on the canvas.
-    // $(document).oncontextmenu = function() {return false;};
+    $(document).oncontextmenu = function() {return false;};
     
     $(document).ready(function(){ 
             document.oncontextmenu = function() {return false;};
     });
     
+    var myCanvas = new galryCanvas(id, canvas, scene);
+    
+    
+    myCanvas.initAction();
+    
     // mouse bindings bindings
-    $('canvas').mousedown(gen.mousedown);
-    $('canvas').dblclick(gen.dblclick);
-    $('canvas').mouseup(gen.mouseup);
-    $('canvas').mousemove(gen.mousemove);
-    $('canvas').mousewheel(gen.mousewheel);
+    $(sid).mousedown(function (e) {myCanvas.gen.mousedown(e);});
+    $(sid).dblclick(function (e) {myCanvas.gen.dblclick(e);});
+    // $('canvas').mouseup(myCanvas.gen.mouseup);
+    // $('canvas').mousemove(myCanvas.gen.mousemove);
+    $(sid).mousewheel(function (e) {myCanvas.gen.mousewheel(e);});
     
     // others
-    $('canvas').focusout(gen.focusout);        
+    $(sid).focusout(function (e) {myCanvas.gen.focusout(e);});        
     
     // keyboard bindings
-    $(document).keydown(gen.keydown);
-    $(document).keyup(gen.keyup);
+    $(sid).keydown(function (e) {myCanvas.gen.keydown(e);});
+    $(sid).keyup(function (e) {myCanvas.gen.keyup(e);});
     
     // allow to move the mouse outside the canvas
-    $(document).mousemove(gen.mousemove);
-    $(document).mouseup(gen.mouseup);
+    $(document).mousemove(function (e) {myCanvas.gen.mousemove(e);});
+    // $(document).mousemove(function (e) { console.log(this); });
+    $(document).mouseup(function (e) {myCanvas.gen.mouseup(e); return false;});
         
-    // Initialize everything
-    initGL(canvas);
     
-    // call renderer(scene).init/draw
-    renderer.init(scene);
-    renderer.draw();
+    
+    
+    
+    
+    myCanvas.initGL();
+    myCanvas.init();
+    myCanvas.draw();
+    
+    canvasList = canvasList.concat(myCanvas);
 }
 
 
 
 
-
+//////////////////////////////////////
+// IPYTHON NOTEBOOK
+//////////////////////////////////////
 // Javascript handler.
 // This function takes the json object and the cell DOM element as inputs.
 // It can perform modifications to the DOM element in order to display
@@ -839,8 +888,8 @@ function webGLStart(mid) {
 var galry_handler = function (json, element)
 {
     // DOM id
-    // id = 'Galry-' + IPython.utils.uuid();
-    id = 'galry-canvas';
+    id = 'Galry-' + IPython.utils.uuid();
+    // id = 'galry-canvas';
     
     // console.log(id);
     
@@ -859,8 +908,10 @@ var galry_handler = function (json, element)
     // console.log(json);
     scene = deserializeScene(json);
     // scene = json;
+
+    // console.log(scene);
     
-    webGLStart(id);
+    initGalry(id, scene);
     
 };
 
