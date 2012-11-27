@@ -24,14 +24,17 @@ class PlotVisual(Visual):
         self.size = x.size
         
         # there is one plot per row
-        if nprimitives is None:
+        if not nprimitives:
             nprimitives = x.shape[0]
             nsamples = x.shape[1]
         else:
             nsamples = x.size // nprimitives
         
         # register the bounds
-        self.bounds = np.arange(0, self.size + 1, nsamples)
+        if nsamples == 0:
+            self.bounds = [0, 0]
+        else:
+            self.bounds = np.arange(0, self.size + 1, nsamples)
         
         # create the position matrix
         position = np.empty((self.size, 2), dtype=np.float32)

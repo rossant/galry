@@ -22,14 +22,6 @@ class PaintManager(Manager):
     
     # Initialization methods
     # ----------------------
-    # def __init__(self, parent):
-        # self.parent = parent
-        # self.reset()
-        # initialize the paint manager (scene and visual creation happens here)
-        # self.initialize()
-        # self.initialize_default()
-        # self.initialize_renderer()
-        
     def reset(self):
         # create the scene creator
         self.scene_creator = SceneCreator(
@@ -56,10 +48,6 @@ class PaintManager(Manager):
                         is_static=True,
                         name='navigation_rectangle',
                         visible=False)
-        
-    # def initialize_renderer(self):
-        # # create the renderer
-        # self.renderer = GLRenderer(self.scene_creator.get_scene())
         
         
     # Visual methods

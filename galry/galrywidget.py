@@ -88,6 +88,8 @@ class GalryWidget(QGLWidget):
         as well."""
         super(GalryWidget, self).__init__(format)
         
+        self.initialized = False
+        
         # Load the QT curors here, after QT has been initialized.
         cursors.load()
         
@@ -111,8 +113,8 @@ class GalryWidget(QGLWidget):
         
         # update rendering options
         self.paint_manager.set_rendering_options(
-            constrain_ratio=self.constrain_ratio,
-            )
+                        constrain_ratio=self.constrain_ratio,
+                        )
         self.interaction_manager.constrain_navigation = self.constrain_navigation
         
         self.autosave = autosave
@@ -203,10 +205,6 @@ class GalryWidget(QGLWidget):
         """
         pass
         
-    # def initialized(self):
-        # """This method is called at the end of `initializeGL`."""
-        # pass
-        
     def clear(self):
         """Clear the view."""
         self.paint_manager.reset()
@@ -227,6 +225,7 @@ class GalryWidget(QGLWidget):
     def initializeGL(self):
         """Initialize OpenGL parameters."""
         self.paint_manager.initializeGL()
+        self.initialized = True
         
     def paintGL(self):
         """Paint the scene.

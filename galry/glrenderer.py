@@ -133,11 +133,12 @@ class Uniform(object):
 
     @staticmethod
     def load_vector(location, data):
-        data = Uniform.convert_data(data)
-        is_float = (type(data[0]) == float) or (type(data[0]) == np.float32)
-        ndim = len(data)
-        funname = 'glUniform%d%s' % (ndim, Uniform.float_suffix[is_float])
-        getattr(gl, funname)(location, *data)
+        if len(data) > 0:
+            data = Uniform.convert_data(data)
+            is_float = (type(data[0]) == float) or (type(data[0]) == np.float32)
+            ndim = len(data)
+            funname = 'glUniform%d%s' % (ndim, Uniform.float_suffix[is_float])
+            getattr(gl, funname)(location, *data)
     
     @staticmethod
     def load_array(location, data):
