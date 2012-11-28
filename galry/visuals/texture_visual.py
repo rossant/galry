@@ -22,26 +22,29 @@ class TextureVisual(Visual):
         
     def texture_compound(self, texture):
         """Compound variable for the texture data."""
-        if texture.shape[0] != texture.shape[1]:
-            raise ValueError("Non-square textures are not supported.")
         return dict(tex_sampler=texture)
     
     def initialize_fragment(self):
         """Set the fragment shader code."""
+        if self.ndim == 1:
+            shader_pointcoord = ".x"
+        else:
+            shader_pointcoord = ""
         fragment = """
-        out_color = texture(tex_sampler, varying_tex_coords);
-        """
-            
+        out_color = texture%dD(tex_sampler, varying_tex_coords%s);
+        """ % (self.ndim, shader_pointcoord)
+        # print fragment
         self.add_fragment_main(fragment)
     
-    def initialize(self, texture=None, **kwargs):
+    def initialize(self, texture=None, points=None):
         
         shape = texture.shape[:2]
-        ndim = 2
         ncomponents = texture.shape[2]
-        
-        if shape[0] != shape[1]:
-            raise ValueError("Non-square textures are not supported.")
+        if shape[0] == 1:
+            ndim = 1
+        elif shape[0] > 1:
+            ndim = 2
+        self.ndim = ndim
         
         # four points for a rectangle containing the texture
         # the rectangle is made up by 2 triangles
@@ -49,27 +52,29 @@ class TextureVisual(Visual):
         self.texsize = shape
         self.primitive_type = 'TRIANGLE_STRIP'
         
+        if points is None:
+            points = (-1., -1., 1., 1.)
+        
         # texture coordinates, interpolated in the fragment shader within the
         # rectangle primitive
-        tex_coords = np.zeros((4,2))
-        tex_coords[0,:] = (0, 1)
-        tex_coords[1,:] = (1, 1)
-        tex_coords[2,:] = (0, 0)
-        tex_coords[3,:] = (1, 0)
+        if self.ndim == 1:
+            tex_coords = np.array([0, 1, 0, 1])
+        elif self.ndim == 2:
+            tex_coords = np.zeros((4,2))
+            tex_coords[0,:] = (0, 1)
+            tex_coords[1,:] = (1, 1)
+            tex_coords[2,:] = (0, 0)
+            tex_coords[3,:] = (1, 0)
         
         # contains the position of the points
         self.add_attribute("position", vartype="float", ndim=2)
         self.add_compound("points", fun=self.points_compound,
-            data=(-1., -1., 1., 1.))
+            data=points)
         
         # texture coordinates
-        self.add_attribute("tex_coords", vartype="float", ndim=2,
+        self.add_attribute("tex_coords", vartype="float", ndim=ndim,
             data=tex_coords)
-        self.add_varying("varying_tex_coords", vartype="float", ndim=2)
-        
-        if "texture" in kwargs:
-            shape = texture.shape[:2]
-            ncomponents = texture.shape[2]
+        self.add_varying("varying_tex_coords", vartype="float", ndim=ndim)
         
         self.add_texture("tex_sampler", size=shape, ndim=ndim,
             ncomponents=ncomponents)
@@ -80,7 +85,7 @@ class TextureVisual(Visual):
 
         # pass the texture coordinates to the varying variable
         self.add_vertex_main("""
-    varying_tex_coords = tex_coords;
+            varying_tex_coords = tex_coords;
         """)
         
         # initialize the fragment code

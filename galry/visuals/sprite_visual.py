@@ -7,9 +7,16 @@ class SpriteVisual(Visual):
     
     def initialize(self, texture=None, position=None, color=None):
         texsize = float(max(texture.shape[:2]))
-        shape = (texsize, texsize)        
+        shape = texture.shape
         ncomponents = texture.shape[2]
         self.size = position.shape[0]
+        # texsize = shape[:2]
+        
+        if shape[0] == 1:
+            self.ndim = 1
+        elif shape[0] > 1:
+            self.ndim = 2
+        
         self.primitive_type = 'POINTS'
         
         # default color
@@ -30,38 +37,45 @@ class SpriteVisual(Visual):
         elif type(color) is tuple:
             single_color = True
             colors_ndim = len(color)
+            
+            
+        texture_shader = """
+        out_color = texture%NDIM%(tex_sampler, gl_PointCoord%POINTCOORD%) * %COLOR%;
+        """
+            
+        
+        shader_ndim = "%dD" % self.ndim
+        if self.ndim == 1:
+            shader_pointcoord = ".x"
+        else:
+            shader_pointcoord = ""
+            
         # single color case: no need for a color buffer, just use default color
         if single_color:
-            self.add_uniform("color", ndim=colors_ndim, data=color)
-            if colors_ndim == 3:
-                self.add_fragment_main("""
-            out_color = texture(tex_sampler, gl_PointCoord) * vec4(color, 1.0);
-                """)
-            elif colors_ndim == 4:
-                self.add_fragment_main("""
-            out_color = texture(tex_sampler, gl_PointCoord) * color;
-                """)
+            self.add_uniform("color", ndim=colors_ndim, data=color)   
+            shader_color_name = "color"
         # multiple colors case: color attribute
         else:
             self.add_attribute("color", ndim=colors_ndim, data=color)
             self.add_varying("varying_color", vartype="float", ndim=colors_ndim)
-            
             self.add_vertex_main("""
             varying_color = color;
             """)
+            shader_color_name = "varying_color"
             
-            if colors_ndim == 3:
-                self.add_fragment_main("""
-            out_color = texture(tex_sampler, gl_PointCoord) * vec4(varying_color, 1.0);
-                """)
-            elif colors_ndim == 4:
-                self.add_fragment_main("""
-            out_color = texture(tex_sampler, gl_PointCoord) * varying_color;
-                """)
+        if colors_ndim == 3:
+            shader_color = "vec4(%s, 1.0)" % shader_color_name
+        elif colors_ndim == 4:
+            shader_color = shader_color_name
+        
+        texture_shader = texture_shader.replace('%COLOR%', shader_color)
+        texture_shader = texture_shader.replace('%NDIM%', shader_ndim)
+        texture_shader = texture_shader.replace('%POINTCOORD%', shader_pointcoord)
+        self.add_fragment_main(texture_shader)
         
         # add variables
         self.add_attribute("position", vartype="float", ndim=2, data=position)
-        self.add_texture("tex_sampler", size=shape, ndim=2,
+        self.add_texture("tex_sampler", size=shape, ndim=self.ndim,
             ncomponents=ncomponents)
         self.add_compound("texture", fun=lambda texture: \
                          dict(tex_sampler=texture), data=texture)

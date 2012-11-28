@@ -180,9 +180,12 @@ def _get_texinfo(data):
       * texinfo: a dictionary with the information related to the texture data.
       
     """
-    ndim = 2
     assert data.ndim == 3
     size = data.shape[:2]
+    if size[0] == 1:
+        ndim = 1
+    elif size[0] > 1:
+        ndim = 2
     ncomponents = data.shape[2]
     return dict(size=size, ndim=ndim, ncomponents=ncomponents)
     
@@ -333,9 +336,6 @@ def get_varying_declarations(varying):
 # Shader creator
 # --------------
 class ShaderCreator(object):
-    
-    # TODO: add_main(..., shader='vertex', after='navigation', name='navigation')
-    
     """Create the shader codes using the defined variables in the visual."""
     def __init__(self):
         self.version_header = '#version 120'
@@ -346,14 +346,6 @@ class ShaderCreator(object):
         # self.vs_mains = []
         self.headers = {'vertex': [], 'fragment': []}
         self.mains = {'vertex': [], 'fragment': []}
-        
-        # list of headers and main code portions of the fragment shader
-        # self.fs_headers = []
-        # self.fs_mains = []
-        
-        # number of shader snippets to insert at the end
-        # self.vs_main_end = 0
-        # self.fs_main_end = 0
         
     def set_variables(self, **kwargs):
         # record all visual variables in the shader creator
@@ -489,8 +481,9 @@ class ShaderCreator(object):
         
         # OLDGLSL does not know the texture function
         # TODO: handle non-2D textures...
-        if OLDGLSL:
-            fs = fs.replace("texture(", "texture%dD(" % 2)
+        if not OLDGLSL:
+            fs = fs.replace("texture1D(", "texture(" % 2)
+            fs = fs.replace("texture2D(", "texture(" % 2)
         
         # set default color
         fs = fs.replace('%DEFAULT_COLOR%', str(self.default_color))

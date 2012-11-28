@@ -1,8 +1,22 @@
 Galry: high-performance interactive visualization in Python
 ===========================================================
 
-  * webgl renderer: one gl object per renderer (no global variable)
-    and fix bug in ipython notebook with empty arrays when loading a script
+
+
+  * colormap example, with 1D texture with all colors, and an index
+
+  * update the documentation and merge refactoring in main
+
+  * blog post about what's new in galry (refactoring, notebook, GL...)  
+ 
+  * unit test with 2D rectangular textures
+    
+  * include ony shader snippets in the scene, and include shader creation
+    in the renderers
+
+
+
+  * fix bug in ipython notebook with empty arrays when loading a script
     for the first time
 
 
@@ -14,10 +28,10 @@ Galry: high-performance interactive visualization in Python
     interactivity
   * more modular interaction system (not having navigation related stuff in
     core classes)
-    
   
   * high level interface
 
+  
 Automation
 ----------
   
@@ -46,6 +60,7 @@ Fixes
             drawn right afterwards (there are no such bugs on windows). 
             Unbounding the texture does not appear to solve the problem. To be
             continued...
+            TODO: simple minimalistic script which reproduces the bug
         Appart from that, everything appears to work correctly (tutorials
         and examples).
   

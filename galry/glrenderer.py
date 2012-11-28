@@ -190,6 +190,7 @@ class Texture(object):
             ndim = 1
         elif shape[0] > 1:
             ndim = 2
+        # ndim = 2
         ncomponents = shape[2]
         # ncomponents==1 ==> GL_R, 3 ==> GL_RGB, 4 ==> GL_RGBA
         component_type = getattr(gl, ["GL_INTENSITY8", None, "GL_RGB", "GL_RGBA"] \
@@ -210,12 +211,14 @@ class Texture(object):
         # get texture info
         ndim, ncomponents, component_type = Texture.get_info(data)
         textype = getattr(gl, "GL_TEXTURE_%dD" % ndim)
+        # print ndim, shape, data.shape
         # load data in the buffer
         if ndim == 1:
             gl.glTexImage1D(textype, 0, component_type, shape[1], 0, component_type,
                             gl.GL_UNSIGNED_BYTE, data)
         elif ndim == 2:
-            gl.glTexImage2D(textype, 0, component_type, shape[0], shape[1], 0,
+            # width, height == shape[1], shape[0]: Thanks to the Confusion Club
+            gl.glTexImage2D(textype, 0, component_type, shape[1], shape[0], 0,
                             component_type, gl.GL_UNSIGNED_BYTE, data)
         
     @staticmethod
@@ -291,6 +294,7 @@ class ShaderManager(object):
     def compile(self):
         """Compile the shaders."""
         # print self.vertex_shader
+        # print self.fragment_shader
         self.vs = self.compile_shader(self.vertex_shader, gl.GL_VERTEX_SHADER)
         self.fs = self.compile_shader(self.fragment_shader, gl.GL_FRAGMENT_SHADER)
         
@@ -564,6 +568,11 @@ class GLVisualRenderer(object):
         # compile and link the shaders
         self.shader_manager = ShaderManager(self.visual['vertex_shader'],
                                             self.visual['fragment_shader'])
+                                            
+        # DEBUG
+        # log_info(self.shader_manager.vertex_shader)
+        # log_info(self.shader_manager.fragment_shader)
+                                            
         # initialize all variables
         self.initialize_variables()
         self.load_variables()
@@ -878,10 +887,16 @@ class GLVisualRenderer(object):
         kwargs2 = kwargs.copy()
         for name, data in kwargs2.iteritems():
             variable = self.get_variable(name)
+            if variable is None:
+                # log_info("variable '%s' unknown" % name)
+                continue
             if variable is not None and variable['shader_type'] == 'compound':
                 fun = variable['fun']
                 kwargs.pop(name)
                 kwargs.update(**fun(data))
+            # remove non-visible variables
+            if not variable.get('visible', True):
+                kwargs.pop(name)
         
         # handle visual visibility
         visible = kwargs.pop('visible', None)

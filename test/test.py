@@ -15,6 +15,14 @@ from matplotlib.pyplot import imread
 # reference image
 REFIMG = imread("autosave/_REF.png")
 
+def erase_images():
+    log_info("Erasing all non reference images.")
+    # erase all non ref png at the beginning
+    l = filter(lambda f: not(f.endswith('.ref.png')) and f != '_REF.png', 
+        os.listdir('autosave'))
+    [os.remove('autosave/%s' % f) for f in l]
+        
+
 class GalryTest(unittest.TestCase):
     """Base class for the tests. Child classes should call `self.show` with
     the same keyword arguments as those of `show_basic_window`.
@@ -74,11 +82,18 @@ class GalryTest(unittest.TestCase):
         self.assertTrue(boo)
         return window
             
+            
+class MyTestSuite(unittest.TestSuite):
+    def run(self, *args, **kwargs):
+        erase_images()
+        super(MyTestSuite, self).run(*args, **kwargs)
+            
 def all_tests(folder=None):
     if folder is None:
         folder = os.path.dirname(os.path.realpath(__file__))
     suites = unittest.TestLoader().discover(folder, pattern='*_test.py')
-    allsuites = unittest.TestSuite(suites)
+    # allsuites = unittest.TestSuite(suites)
+    allsuites = MyTestSuite(suites)
     return allsuites
 
 def test():

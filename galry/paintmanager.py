@@ -144,6 +144,11 @@ class PaintManager(Manager):
           * **kwargs: keyword arguments as `visual_field_name: value` pairs.
         
         """
+        
+        # DEBUG
+        # log_info("set data " + str(visual) + " " + str(kwargs.keys()))
+        
+        
         # default name
         if visual is None:
             visual = 'visual0'
