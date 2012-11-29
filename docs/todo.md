@@ -2,9 +2,6 @@ Galry: high-performance interactive visualization in Python
 ===========================================================
 
 
-
-  * colormap example, with 1D texture with all colors, and an index
-
   * update the documentation and merge refactoring in main
 
   * blog post about what's new in galry (refactoring, notebook, GL...)  
@@ -15,8 +12,6 @@ Galry: high-performance interactive visualization in Python
     in the renderers
 
 
-  * handle location=-1 bug in set data when a variable is not used in
-    the shader
     
 
   * fix bug in ipython notebook with empty arrays when loading a script
@@ -92,6 +87,11 @@ Later
   * texture1D
   * opencl buffers and opencl/gl interop buffers
   * handle more complete data type (int 8/16/32 bits, floats, etc)
+  * dynamic resampling with HDF5 stride for highly efficient interactive 
+    visualization of multi-GB datasets (that cannot reside entirely in memory).
+    Refinement: thread to update data on the GPU only when no action is occurring,
+    for maximum perceived performance
+  * check GL capabilities for different features
   
 Doc
 ---

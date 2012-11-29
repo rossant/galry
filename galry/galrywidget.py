@@ -83,7 +83,7 @@ class GalryWidget(QGLWidget):
     
     # Initialization methods
     # ----------------------
-    def __init__(self, format=None, autosave=None, **kwargs):
+    def __init__(self, format=None, autosave=None, getfocus=True, **kwargs):
         """Constructor. Call `initialize` and initialize the companion classes
         as well."""
         super(GalryWidget, self).__init__(format)
@@ -94,7 +94,10 @@ class GalryWidget(QGLWidget):
         cursors.load()
         
         # Capture keyboard events.
-        self.setFocusPolicy(Qt.WheelFocus)
+        if getfocus:
+            self.setFocusPolicy(Qt.WheelFocus)
+        
+        # Capture mouse events.
         self.setMouseTracking(True)
         
         # Initialize the objects providing the core features of the widget.
@@ -288,6 +291,10 @@ class GalryWidget(QGLWidget):
     def wheelEvent(self, e):
         self.user_action_generator.wheelEvent(e)
         self.process_interaction()
+        
+    # def redirect_event(self, event_name, e):
+        # # print event_name
+        # getattr(self, event_name)(e)
         
         
     # Normalization methods
@@ -567,6 +574,7 @@ def create_custom_widget(bindings=None,
                          display_fps=False,
                          update_interval=None,
                          autosave=None,
+                         getfocus=True,
                         **companion_classes):
     """Helper function to create a custom widget class from various parameters.
     
@@ -604,7 +612,8 @@ def create_custom_widget(bindings=None,
             format = QGLFormat()
             if antialiasing:
                 format.setSampleBuffers(True)
-            super(MyWidget, self).__init__(format=format, autosave=autosave)
+            super(MyWidget, self).__init__(format=format, autosave=autosave,
+                getfocus=getfocus)
         
         def initialize(self):
             self.set_bindings(*bindings)
