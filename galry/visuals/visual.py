@@ -1,5 +1,6 @@
 import numpy as np
 import collections
+from textwrap import dedent
 
 __all__ = ['OLDGLSL', 'RefVar', 'Visual']
 
@@ -356,6 +357,7 @@ class ShaderCreator(object):
     # Header-related methods
     # ----------------------
     def add_header(self, code, shader=None):
+        code = dedent(code)
         self.headers[shader].append(code)
         
     def add_vertex_header(self, code):
@@ -384,6 +386,7 @@ class ShaderCreator(object):
     def add_main(self, code, shader=None, name=None, after=None, position=None):
         if name is None:
             name = '%s_main_%d' % (shader, len(self.mains[shader]))
+        code = dedent(code)
         self.mains[shader].append(dict(name=name, code=code, after=after, position=position))
     
     def add_vertex_main(self, *args, **kwargs):

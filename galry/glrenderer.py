@@ -454,9 +454,10 @@ class Slicer(object):
        
        
 class SlicedAttribute(object):
-    def __init__(self, slicer, location, buffers=None):
+    def __init__(self, slicer, location, buffers=None):#, name=''):
         # self.set_slicer(slicer)
         self.slicer = slicer
+        # self.name = name
         self.location = location
         if buffers is None:
             # create the sliced buffers
@@ -703,6 +704,14 @@ class GLVisualRenderer(object):
     def load_attribute(self, name, data=None):
         """Load data for an attribute variable."""
         variable = self.get_variable(name)
+        
+        
+        if variable['sliced_attribute'].location < 0:
+            log_info(("Variable '%s' could not be loaded, probably because "
+                      "it is not used in the shaders") % name)
+            return
+        
+        
         olddata = variable.get('data', None)
         if isinstance(olddata, RefVar):
             log_info("Skipping loading data for attribute '%s' since it "
@@ -726,6 +735,14 @@ class GLVisualRenderer(object):
     def load_texture(self, name, data=None):
         """Load data for a texture variable."""
         variable = self.get_variable(name)
+        
+        
+        if variable['buffer'] < 0:
+            log_info(("Variable '%s' could not be loaded, probably because "
+                      "it is not used in the shaders") % name)
+            return
+        
+        
         if data is None:
             data = variable.get('data', None)
         if data is not None:
@@ -736,6 +753,15 @@ class GLVisualRenderer(object):
         """Load data for an uniform variable."""
         variable = self.get_variable(name)
         location = variable['location']
+        
+        
+        if location < 0:
+            log_info(("Variable '%s' could not be loaded, probably because "
+                      "it is not used in the shaders") % name)
+            return
+        
+        
+        
         if data is None:
             data = variable.get('data', None)
         if data is not None:
@@ -780,6 +806,15 @@ class GLVisualRenderer(object):
     def update_attribute(self, name, data):#, bounds=None):
         """Update data for an attribute variable."""
         variable = self.get_variable(name)
+        
+        
+        if variable['sliced_attribute'].location < 0:
+            log_info(("Variable '%s' could not be updated, probably because "
+                      "it is not used in the shaders") % name)
+            return
+        
+        
+        
         # handle reference variable
         olddata = variable.get('data', np.array([]))
         if isinstance(olddata, RefVar):
@@ -813,8 +848,7 @@ class GLVisualRenderer(object):
             # load data
             att.load(data)
             # forget previous size
-            # self.previous_size = None
-            
+            # self.previous_size = None            
         else:
             # update data
             att.update(data)
@@ -845,6 +879,13 @@ class GLVisualRenderer(object):
     def update_texture(self, name, data):
         """Update data for a texture variable."""
         variable = self.get_variable(name)
+        
+        if variable['buffer'] < 0:
+            log_info(("Variable '%s' could not be loaded, probably because "
+                      "it is not used in the shaders") % name)
+            return
+        
+        
         prevshape = variable['data'].shape
         variable['data'] = data
         # handle size changing
@@ -959,8 +1000,13 @@ class GLVisualRenderer(object):
         # for each attribute, bind the sub buffer corresponding to the given
         # slice
         for variable in attributes:
+            loc = variable['location']
+            if loc < 0:
+                log_debug(("Unable to bind attribute '%s', probably because "
+                "it is not used in the shaders.") % variable['name'])
+                continue
             variable['sliced_attribute'].bind(slice)
-            Attribute.set_attribute(variable['location'], variable['ndim'])
+            Attribute.set_attribute(loc, variable['ndim'])
             
     def bind_indices(self):
         indices = self.get_variables('index')

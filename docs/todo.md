@@ -15,6 +15,9 @@ Galry: high-performance interactive visualization in Python
     in the renderers
 
 
+  * handle location=-1 bug in set data when a variable is not used in
+    the shader
+    
 
   * fix bug in ipython notebook with empty arrays when loading a script
     for the first time
