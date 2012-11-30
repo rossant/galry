@@ -4,6 +4,7 @@ from visual import Visual
 class PlotVisual(Visual):
     def initialize(self, x=None, y=None, color=None, point_size=1.0,
             position=None, nprimitives=None, index=None, color_array_index=None):
+            
         # if position is specified, it contains x and y as column vectors
         if position is not None:
             x, y = position.T
@@ -110,28 +111,32 @@ class PlotVisual(Visual):
         elif use_color_array:
             if color_array_index is None:
                 color_array_index = np.repeat(np.arange(nprimitives), nsamples)
+            color_array_index = np.array(color_array_index)
+                
+            ncolors = color.shape[0]
+            ncomponents = color.shape[1]
             
-            self.add_attribute("color_array_index", vartype="int", ndim=1,
-                data=color_array_index)
-                
-            color_array_size = color.shape[0]
-                
-            self.add_uniform("color", vartype="float", ndim=colors_ndim,
-                size=color_array_size, data=color)
-            self.add_varying("varying_color", vartype="float", ndim=colors_ndim)
+            color = color.reshape((1, ncolors, ncomponents))
+            
+            dx = 1. / ncolors
+            offset = dx / 2.
+            
+            # print offset, dx, color, color.shape, color_array_index
+            
+            self.add_texture('colormap', ncomponents=ncomponents, ndim=1, data=color)
+            self.add_attribute('index', ndim=1, vartype='int', data=color_array_index)
+            self.add_varying('vindex', vartype='int', ndim=1)
             
             self.add_vertex_main("""
-            varying_color = color[int(color_array_index)];
+            vindex = index;
             """)
             
-            if colors_ndim == 3:
-                self.add_fragment_main("""
-            out_color = vec4(varying_color, 1.0);
-                """)
-            elif colors_ndim == 4:
-                self.add_fragment_main("""
-            out_color = varying_color;
-                """)
+            self.add_fragment_main("""
+            float coord = %.5f + vindex * %.5f;
+            vec4 color = texture1D(colormap, coord);
+            out_color = color;
+            """ % (offset, dx))
+
         
         # add point size uniform (when it's not specified, there might be some
         # bugs where its value is obtained from other datasets...)

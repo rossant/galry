@@ -33,7 +33,8 @@ class ColormapVisual(Visual):
         """)
         
         self.add_fragment_main("""
-        vec4 color = texture1D(colormap, %.1f + vindex * %.1f);
+        float coord = %.5f + vindex * %.5f;
+        vec4 color = texture1D(colormap, coord);
         out_color = color;
         """ % (offset, dx))
         
@@ -41,9 +42,9 @@ class ColormapVisual(Visual):
 class PM(PaintManager):
     def initialize(self):
         colormap = np.ones((3, 4))
-        colormap[0,:3] = (1,0,0)
-        colormap[1,:3] = (0,1,0)
-        colormap[2,:3] = (0,0,1)
+        colormap[0,:3] = (1, 0, 0)
+        colormap[1,:3] = (0, 1, 0)
+        colormap[2,:3] = (0, 0, 1)
         self.add_visual(ColormapVisual, colormap=colormap)
     
 if __name__ == '__main__':

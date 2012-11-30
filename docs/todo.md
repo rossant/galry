@@ -4,15 +4,14 @@ Galry: high-performance interactive visualization in Python
 
   * update the documentation and merge refactoring in main
 
-  * blog post about what's new in galry (refactoring, notebook, GL...)  
- 
   * unit test with 2D rectangular textures
     
   * include ony shader snippets in the scene, and include shader creation
     in the renderers
 
 
-    
+  * when updating textures with a different size: no need to recreate a new
+    buffer, just directly load the new data?  
 
   * fix bug in ipython notebook with empty arrays when loading a script
     for the first time
@@ -84,7 +83,6 @@ Later
   * better error messages when template is not correct (eg data is missing,
     size is missing, etc)
   * update text template to allow for several texts at different positions
-  * texture1D
   * opencl buffers and opencl/gl interop buffers
   * handle more complete data type (int 8/16/32 bits, floats, etc)
   * dynamic resampling with HDF5 stride for highly efficient interactive 
