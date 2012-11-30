@@ -96,6 +96,7 @@ class PaintManager(Manager):
         # handle special keywords (TODO: improve this, maybe by storing this
         # list somewhere)
         data_updating = {}
+        data_updating0 = {}
         special_keywords = ['visible',
                             'size',
                             'bounds',
@@ -105,13 +106,16 @@ class PaintManager(Manager):
                             ]
         for kw in special_keywords:
             if kw in kwargs:
-                data_updating[kw] = kwargs.pop(kw)
+                data_updating0[kw] = kwargs.pop(kw)
         # extract common parameters
         # kwargs = visual.extract_common_parameters(**kwargs)
         # call initialize with the new arguments
         visual.initialize(**kwargs)
         # retrieve the updated data for all variables
         data_updating.update(visual.get_data_updating())
+        # keywords given here in kwargs have higher priority than those in
+        # get_data_updating
+        data_updating.update(data_updating0)
         # finally, call set_data
         self.set_data(visual=name, **data_updating)
         
@@ -184,6 +188,7 @@ class PaintManager(Manager):
             # empty data_updating
             if visual in self.data_updating:
                 self.data_updating[visual] = {}
+            
             
     # Methods related to visuals
     # --------------------------

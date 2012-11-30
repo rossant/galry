@@ -621,6 +621,12 @@ class Visual(object):
        
     def get_data_updating(self):
         """Return the dictionary with the updated variable data."""
+        # add some special keywords, if they are specified in self.initialize
+        special_keywords = ['size', 'bounds', 'primitive_type']
+        for keyword in special_keywords:
+            val = getattr(self, keyword)
+            if val is not None and keyword not in self.data_updating:
+                self.data_updating[keyword] = val
         return self.data_updating
        
         
@@ -629,7 +635,8 @@ class Visual(object):
     def add_foo(self, shader_type, name, **kwargs):
         # for reinitialization, just record the data
         if self.reinitialization:
-            self.data_updating[name] = kwargs.pop('data', None)
+            if 'data' in kwargs:
+                self.data_updating[name] = kwargs['data']
             return
         # otherwise, add the variable normally
         kwargs['shader_type'] = shader_type

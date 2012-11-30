@@ -946,6 +946,7 @@ class GLVisualRenderer(object):
         
         # handle size keyword
         size = kwargs.pop('size', None)
+        # print size
         if size is not None:
             self.slicer.set_size(size)
         
