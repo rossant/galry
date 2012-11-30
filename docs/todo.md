@@ -28,6 +28,10 @@ Galry: high-performance interactive visualization in Python
   
   * high level interface
 
+  * better handling of special_keywords
+  
+  * global color module in galry
+  
   
 Automation
 ----------

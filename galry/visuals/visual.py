@@ -528,26 +528,9 @@ class Visual(object):
         # initialize the shader creator
         self.shader_creator = ShaderCreator()
         # default options
-        self.size = kwargs.pop('size', 0)
-        self.default_color = kwargs.pop('default_color', (1., 1., 0., 1.))
-        self.bounds = kwargs.pop('bounds', None)
-        self.is_static = kwargs.pop('is_static', False)
-        self.position_attribute_name = kwargs.pop('position_attribute_name', 'position')
-        self.primitive_type = kwargs.pop('primitive_type', None)
-        self.constrain_ratio = kwargs.pop('constrain_ratio', False)
-        self.constrain_navigation = kwargs.pop('constrain_navigation', False)
-        self.visible = kwargs.pop('visible', True)
-        # deal with reference variables
-        self.references = {}
-        # record all reference variables in the references dictionary
-        for name, value in kwargs.iteritems():
-            if isinstance(value, RefVar):
-                self.references[name] = value
-                # then, resolve the reference value on the CPU only, so that
-                # it can be used in initialize(). The reference variable will
-                # still be registered in the visual dictionary, for later use
-                # by the GL renderer.
-                kwargs[name] = self.resolve_reference(value)['data']
+        kwargs = self.extract_common_parameters(**kwargs)
+        self.reinitialization = False
+        kwargs = self.resolve_references(**kwargs)
         # initialize the visual
         self.initialize(*args, **kwargs)
         self.initialize_default()
@@ -564,6 +547,18 @@ class Visual(object):
         # create the shader source codes
         self.vertex_shader, self.fragment_shader = \
             self.shader_creator.get_shader_codes()
+        
+    def extract_common_parameters(self, **kwargs):
+        self.size = kwargs.pop('size', 0)
+        self.default_color = kwargs.pop('default_color', (1., 1., 0., 1.))
+        self.bounds = kwargs.pop('bounds', None)
+        self.is_static = kwargs.pop('is_static', False)
+        self.position_attribute_name = kwargs.pop('position_attribute_name', 'position')
+        self.primitive_type = kwargs.pop('primitive_type', None)
+        self.constrain_ratio = kwargs.pop('constrain_ratio', False)
+        self.constrain_navigation = kwargs.pop('constrain_navigation', False)
+        self.visible = kwargs.pop('visible', True)
+        return kwargs
         
     
     # Reference variables methods
@@ -596,12 +591,47 @@ class Visual(object):
         """Resolve a reference variable: return its true value (a Numpy array).
         """
         return self.get_variable(refvar.variable, visual=refvar.visual)
-        
-        
+       
+    def resolve_references(self, **kwargs):
+        """Resolve all references in the visual initializer."""
+        # deal with reference variables
+        self.references = {}
+        # record all reference variables in the references dictionary
+        for name, value in kwargs.iteritems():
+            if isinstance(value, RefVar):
+                self.references[name] = value
+                # then, resolve the reference value on the CPU only, so that
+                # it can be used in initialize(). The reference variable will
+                # still be registered in the visual dictionary, for later use
+                # by the GL renderer.
+                kwargs[name] = self.resolve_reference(value)['data']
+        return kwargs
+    
+    
+    # Reinitialization methods
+    # ------------------------
+    def reinit(self):
+        """Begin a reinitialization process, where paint_manager.initialize()
+        is called after initialization. The visual initializer is then
+        called again, but it is only used to update the data, not to create
+        the visual variables and the shader, which have already been created
+        in the first place."""
+        self.data_updating = {}
+        self.reinitialization = True
+       
+    def get_data_updating(self):
+        """Return the dictionary with the updated variable data."""
+        return self.data_updating
+       
         
     # Variable methods
     # ----------------
     def add_foo(self, shader_type, name, **kwargs):
+        # for reinitialization, just record the data
+        if self.reinitialization:
+            self.data_updating[name] = kwargs.pop('data', None)
+            return
+        # otherwise, add the variable normally
         kwargs['shader_type'] = shader_type
         kwargs['name'] = name
         # default parameters
@@ -648,16 +678,20 @@ class Visual(object):
     # Shader methods
     # --------------
     def add_vertex_header(self, *args, **kwargs):
-        self.shader_creator.add_vertex_header(*args, **kwargs)
+        if not self.reinitialization:
+            self.shader_creator.add_vertex_header(*args, **kwargs)
         
     def add_vertex_main(self, *args, **kwargs):
-        self.shader_creator.add_vertex_main(*args, **kwargs)
+        if not self.reinitialization:
+            self.shader_creator.add_vertex_main(*args, **kwargs)
         
     def add_fragment_header(self, *args, **kwargs):
-        self.shader_creator.add_fragment_header(*args, **kwargs)
+        if not self.reinitialization:
+            self.shader_creator.add_fragment_header(*args, **kwargs)
         
     def add_fragment_main(self, *args, **kwargs):
-        self.shader_creator.add_fragment_main(*args, **kwargs)
+        if not self.reinitialization:
+            self.shader_creator.add_fragment_main(*args, **kwargs)
         
         
     # Default visual methods
@@ -729,6 +763,7 @@ class Visual(object):
     
         if self.primitive_type is None:
             self.primitive_type = 'LINE_STRIP'
+    
     
     # Output methods
     # --------------

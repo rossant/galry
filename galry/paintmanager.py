@@ -73,12 +73,55 @@ class PaintManager(Manager):
         self.set_data(visible=False, visual='navigation_rectangle')
         
         
+    # Visual reinitialization methods
+    # -------------------------------
+    def reinitialize_visual(self, visual=None, **kwargs):
+        """Reinitialize a visual, by calling visual.initialize() after
+        initialization, just to update the data.
+        
+        This function retrieves the data of all variables, as specified in
+        visual.initialize(), and call paint_manager.set_data with this 
+        information.
+        
+        """
+        if visual is None:
+            visual = 'visual0'
+        name = visual
+        # retrieve the visual dictionary
+        visual = self.scene_creator.get_visual_object(visual)
+        # tell the visual we want to reinitialize it
+        visual.reinit()
+        # resolve the reference variables
+        kwargs = visual.resolve_references(**kwargs)
+        # handle special keywords (TODO: improve this, maybe by storing this
+        # list somewhere)
+        data_updating = {}
+        special_keywords = ['visible',
+                            'size',
+                            'bounds',
+                            'primitive_type',
+                            'constrain_ratio',
+                            'constrain_navigation',
+                            ]
+        for kw in special_keywords:
+            if kw in kwargs:
+                data_updating[kw] = kwargs.pop(kw)
+        # extract common parameters
+        # kwargs = visual.extract_common_parameters(**kwargs)
+        # call initialize with the new arguments
+        visual.initialize(**kwargs)
+        # retrieve the updated data for all variables
+        data_updating.update(visual.get_data_updating())
+        # finally, call set_data
+        self.set_data(visual=name, **data_updating)
+        
+        
     # Visual creation methods
     # -----------------------
     def add_visual(self, visual_class, *args, **kwargs):
         """Add a visual. This method should be called in `self.initialize`.
         
-        A visual is an instanciation of a `DataVisual`. A DataVisual
+        A visual is an instanciation of a `Visual`. A Visual
         defines a pattern for one, or a homogeneous set of plotting objects.
         Example: a text string, a set of rectangles, a set of triangles,
         a set of curves, a set of points. A set of points and rectangles
@@ -89,7 +132,7 @@ class PaintManager(Manager):
         need to be rendered, e.g. several rectangles). The lower the number
         of rendering calls, the better the performance.
         
-        Hence, a visual is defined by a particular DataVisual, and by
+        Hence, a visual is defined by a particular Visual, and by
         specification of fields in this visual (positions of the points,
         colors, text string for the example of the TextVisual, etc.). It
         also comes with a number `N` which is the number of vertices contained
@@ -114,21 +157,6 @@ class PaintManager(Manager):
             the visual, and that can be used in `set_data`.
         
         """
-        # # get the name of the visual from kwargs
-        # name = kwargs.pop('name', 'visual%d' % (len(self.get_visuals())))
-        # if self.get_visual(name):
-            # raise ValueError("Visual name '%s' already exists." % name)
-        # # pass constrain_ratio to all visuals
-        # if 'constrain_ratio' not in kwargs:
-            # kwargs['constrain_ratio'] = self.parent.constrain_ratio
-        # # create the visual object
-        # visual = visual_class(self.scene, *args, **kwargs)
-        # # get the dictionary version
-        # dic = visual.get_dic()
-        # dic['name'] = name
-        # # append the dic to the visuals list of the scene
-        # self.get_visuals().append(dic)
-        # return visual
         self.scene_creator.add_visual(visual_class, *args, **kwargs)
         
     def set_data(self, visual=None, **kwargs):
@@ -144,11 +172,6 @@ class PaintManager(Manager):
           * **kwargs: keyword arguments as `visual_field_name: value` pairs.
         
         """
-        
-        # DEBUG
-        # log_info("set data " + str(visual) + " " + str(kwargs.keys()))
-        
-        
         # default name
         if visual is None:
             visual = 'visual0'
@@ -161,7 +184,6 @@ class PaintManager(Manager):
             # empty data_updating
             if visual in self.data_updating:
                 self.data_updating[visual] = {}
-            
             
     # Methods related to visuals
     # --------------------------

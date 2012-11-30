@@ -3,7 +3,8 @@ from visual import Visual
 
 class PlotVisual(Visual):
     def initialize(self, x=None, y=None, color=None, point_size=1.0,
-            position=None, nprimitives=None, index=None, color_array_index=None):
+            position=None, nprimitives=None, index=None,
+            color_array_index=None):
             
         # if position is specified, it contains x and y as column vectors
         if position is not None:
@@ -115,13 +116,10 @@ class PlotVisual(Visual):
                 
             ncolors = color.shape[0]
             ncomponents = color.shape[1]
-            
             color = color.reshape((1, ncolors, ncomponents))
             
             dx = 1. / ncolors
             offset = dx / 2.
-            
-            # print offset, dx, color, color.shape, color_array_index
             
             self.add_texture('colormap', ncomponents=ncomponents, ndim=1, data=color)
             self.add_attribute('index', ndim=1, vartype='int', data=color_array_index)

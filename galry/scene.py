@@ -16,6 +16,7 @@ class SceneCreator(object):
         
         # create an empty scene
         self.scene = {'visuals': [], 'renderer_options': {}}
+        self.visual_objects = {}
         
         
     # Visual methods
@@ -24,7 +25,12 @@ class SceneCreator(object):
         """Return all visuals defined in the scene."""
         return self.scene['visuals']
         
+    def get_visual_object(self, name):
+        """Get a visual object from its name."""
+        return self.visual_objects[name]
+        
     def get_visual(self, name):
+        """Get a visual dictionary from its name."""
         visuals = [v for v in self.get_visuals() if v.get('name', '') == name]
         if not visuals:
             return None
@@ -86,6 +92,8 @@ class SceneCreator(object):
         dic['name'] = name
         # append the dic to the visuals list of the scene
         self.get_visuals().append(dic)
+        # also, record the visual object
+        self.visual_objects[name] = visual
         return visual
         
         
