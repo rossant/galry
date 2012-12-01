@@ -36,7 +36,8 @@ class TextureVisual(Visual):
         # print fragment
         self.add_fragment_main(fragment)
     
-    def initialize(self, texture=None, points=None):
+    def initialize(self, texture=None, points=None,
+            mipmap=None, minfilter=None, maxfilter=None):
         
         shape = texture.shape[:2]
         ncomponents = texture.shape[2]
@@ -53,7 +54,13 @@ class TextureVisual(Visual):
         self.primitive_type = 'TRIANGLE_STRIP'
         
         if points is None:
-            points = (-1., -1., 1., 1.)
+            ratio = shape[1] / float(shape[0])
+            if ratio < 1:
+                a = ratio
+                points = (-a, -1., a, 1.)
+            else:
+                a = 1. / ratio
+                points = (-1., -a, 1., a)
         
         # texture coordinates, interpolated in the fragment shader within the
         # rectangle primitive
@@ -77,7 +84,11 @@ class TextureVisual(Visual):
         self.add_varying("varying_tex_coords", vartype="float", ndim=ndim)
         
         self.add_texture("tex_sampler", size=shape, ndim=ndim,
-            ncomponents=ncomponents)
+            ncomponents=ncomponents,
+            mipmap=mipmap,
+            minfilter=minfilter,
+            maxfilter=maxfilter,
+            )
         # HACK: to avoid conflict in GLSL shader with the "texture" function
         # we redirect the "texture" variable here to "tex_sampler" which
         # is the real name of the variable in the shader

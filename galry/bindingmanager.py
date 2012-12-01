@@ -145,6 +145,10 @@ class DefaultBindingSet(BindingSet):
     This binding set makes use of the keyboard and the mouse.
     
     """
+    def set_fullscreen(self):
+        self.set(actions.KeyPressAction, events.ToggleFullScreenEvent,
+            key=Qt.Key_F)
+    
     def set_panning_mouse(self):
         """Set panning bindings with the mouse."""
         # Panning: left button mouse
@@ -232,6 +236,7 @@ class DefaultBindingSet(BindingSet):
     def initialize(self):
         """Initialize all bindings. Can be overriden."""
         self.set_base_cursor()
+        self.set_fullscreen()
         # panning
         self.set_panning_mouse()
         self.set_panning_keyboard()

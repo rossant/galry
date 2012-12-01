@@ -79,6 +79,10 @@ class InteractionManager(Manager):
             self.reset_zoom()
             self.cursor = None
         
+    def process_fullscreen_event(self, event, parameter):
+        if event == events.ToggleFullScreenEvent:
+            self.parent.toggle_fullscreen()
+        
     def process_event(self, event, parameter):
         """Process an event.
         
@@ -93,6 +97,7 @@ class InteractionManager(Manager):
         """
         if event is None:
             self.process_none_event()
+        self.process_fullscreen_event(event, parameter)
         self.process_pan_event(event, parameter)
         self.process_rotation_event(event, parameter)
         self.process_zoom_event(event, parameter)

@@ -163,7 +163,7 @@ class Uniform(object):
 
 class Texture(object):
     @staticmethod
-    def create(ndim):
+    def create(ndim, mipmap=False, minfilter=None, maxfilter=None):
         """Create a texture with the specifyed number of dimensions."""
         buffer = gl.glGenTextures(1)
         gl.glPixelStorei(gl.GL_UNPACK_ALIGNMENT, 1)
@@ -171,8 +171,21 @@ class Texture(object):
         textype = getattr(gl, "GL_TEXTURE_%dD" % ndim)
         gl.glTexParameteri(textype, gl.GL_TEXTURE_WRAP_S, gl.GL_CLAMP)
         gl.glTexParameteri(textype, gl.GL_TEXTURE_WRAP_T, gl.GL_CLAMP)
-        gl.glTexParameteri(textype, gl.GL_TEXTURE_MAG_FILTER, gl.GL_NEAREST)
-        gl.glTexParameteri(textype, gl.GL_TEXTURE_MIN_FILTER, gl.GL_NEAREST)
+        
+        if mipmap:
+            gl.glGenerateMipmap(textype)
+            
+        if minfilter is None:
+            minfilter = 'NEAREST'
+        if maxfilter is None:
+            maxfilter = 'NEAREST'
+            
+        minfilter = getattr(gl, 'GL_' + minfilter)
+        maxfilter = getattr(gl, 'GL_' + maxfilter)
+            
+        gl.glTexParameteri(textype, gl.GL_TEXTURE_MIN_FILTER, minfilter)
+        gl.glTexParameteri(textype, gl.GL_TEXTURE_MAG_FILTER, maxfilter)
+        
         return buffer
         
     @staticmethod
@@ -200,7 +213,12 @@ class Texture(object):
     @staticmethod    
     def convert_data(data):
         """convert data in a array of uint8 in [0, 255]."""
-        return np.array(255 * data, dtype=np.uint8)
+        if data.dtype == np.float32 or data.dtype == np.float64:
+            return np.array(255 * data, dtype=np.uint8)
+        elif data.dtype == np.uint8:
+            return data
+        else:
+            raise ValueError("The texture is in an unsupported format.")
     
     @staticmethod
     def load(data):
@@ -676,7 +694,11 @@ class GLVisualRenderer(object):
         
     def initialize_texture(self, name):
         variable = self.get_variable(name)
-        variable['buffer'] = Texture.create(variable['ndim'])
+        variable['buffer'] = Texture.create(variable['ndim'],
+            mipmap=variable.get('mipmap', None),
+            minfilter=variable.get('minfilter', None),
+            maxfilter=variable.get('maxfilter', None),
+            )
         
     def initialize_uniform(self, name):
         """Initialize an uniform: get the location after the shaders have
@@ -894,7 +916,10 @@ class GLVisualRenderer(object):
             Texture.delete(variable['buffer'])
             variable['ndim'], variable['ncomponents'], _ = Texture.get_info(data)
             # create new buffer
-            variable['buffer'] = Texture.create(variable['ndim'])
+            variable['buffer'] = Texture.create(variable['ndim'],
+                mipmap=variable.get('mipmap', None),
+                minfilter=variable.get('minfilter', None),
+                maxfilter=variable.get('maxfilter', None),)
             # load data
             Texture.bind(variable['buffer'], variable['ndim'])
             Texture.load(data)

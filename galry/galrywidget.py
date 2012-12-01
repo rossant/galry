@@ -103,6 +103,8 @@ class GalryWidget(QGLWidget):
         # Initialize the objects providing the core features of the widget.
         self.user_action_generator = UserActionGenerator()
         
+        self.is_fullscreen = False
+        
         self.events_to_signals = {}
         self.prev_event = None
                                     
@@ -291,10 +293,6 @@ class GalryWidget(QGLWidget):
     def wheelEvent(self, e):
         self.user_action_generator.wheelEvent(e)
         self.process_interaction()
-        
-    # def redirect_event(self, event_name, e):
-        # # print event_name
-        # getattr(self, event_name)(e)
         
         
     # Normalization methods
@@ -490,12 +488,23 @@ class GalryWidget(QGLWidget):
         # keep track of the previous event
         self.prev_event = event
     
+    
+    # Miscellaneous
+    # -------------
     def save_image(self, file=None):
         """Save a screenshot of the widget in the specified file."""
         if file is None:
             file = "image.png"
         image = self.grabFrameBuffer()
         image.save(file,"PNG")
+    
+    def toggle_fullscreen(self):
+        self.is_fullscreen = not self.is_fullscreen
+        print self.is_fullscreen
+        if self.is_fullscreen:
+            self.window.showFullScreen()
+        else:
+            self.window.showNormal()
     
     
     # Focus methods
@@ -710,6 +719,7 @@ def create_basic_window(widget=None, size=None, position=(100, 100),
             # then try to instanciate it
             if not isinstance(widget, GalryWidget):
                 widget = widget()
+            widget.window = self
             # create widget
             self.widget = widget
             if size is None:
