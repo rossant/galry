@@ -24,6 +24,8 @@ Galry: high-performance interactive visualization in Python
   
   * global color module in galry
   
+  * 3D mesh example
+  
   
 Automation
 ----------

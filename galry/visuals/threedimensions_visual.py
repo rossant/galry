@@ -142,23 +142,21 @@ class ThreeDimensionsVisual(Visual):
             self.add_vertex_main("""
                 gl_Position = projection * camera * gl_Position;""")
         
-    # def initialize_viewport(self, constrain_ratio=False):
-        # """Add viewport-related code."""
-        # self.add_uniform("viewport", vartype="float", ndim=2)
-        # self.add_uniform("window_size", vartype="float", ndim=2)
-        # if constrain_ratio:
-            # self.add_vertex_main("gl_Position.xy = gl_Position.xy / viewport;")
+    def initialize_viewport(self, constrain_ratio=False):
+        """Add viewport-related code."""
+        self.add_uniform("viewport", vartype="float", ndim=2)
+        self.add_uniform("window_size", vartype="float", ndim=2)
+        if constrain_ratio:
+            self.add_vertex_main("gl_Position.xy = gl_Position.xy / viewport;")
 
     def initialize_default(self, is_static=False, constrain_ratio=False, **kwargs): 
         """Default initialization with navigation-related code."""
         self.is_static = is_static
         self.constrain_ratio = constrain_ratio
-        
         self.initialize_navigation(is_static)
-        self.initialize_viewport()
     
     def initialize(self, camera_angle=None, camera_ratio=None,
-        camera_zrange=None, position=None, color=None, normal=None):
+        camera_zrange=None, position=None, color=None, normal=None, index=None):
         """Initialize the template.
         
         Arguments:
@@ -199,6 +197,8 @@ class ThreeDimensionsVisual(Visual):
         self.add_attribute("position", vartype="float", ndim=3, data=position)
         self.add_attribute("normal", vartype="float", ndim=3, data=normal)
         self.add_attribute("color", vartype="float", ndim=4, data=color)
+        if index is not None:
+            self.add_index("index", data=index)
         
         # varying color
         self.add_varying("varying_color", vartype="float", ndim=4)
@@ -241,4 +241,4 @@ class ThreeDimensionsVisual(Visual):
             out_color = varying_color;
         """)
         
-        
+        self.initialize_viewport(True)
