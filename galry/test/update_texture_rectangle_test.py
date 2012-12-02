@@ -2,12 +2,12 @@ import unittest
 import numpy as np
 from pylab import imread
 from galry import *
-from test import GalryTest
+from test import GalryTest, get_image_path
 
 class PM(PaintManager):
     def initialize(self):
         texture0 = np.zeros((2, 10, 4))
-        texture1 = imread('autosave/_REF.png')
+        texture1 = imread(get_image_path('_REF.png'))
         texture1 = texture1[:,75:-75,:]
         
         self.add_visual(TextureVisual, texture=texture0,

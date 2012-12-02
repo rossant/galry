@@ -12,19 +12,36 @@ import re
 from galry import *
 from matplotlib.pyplot import imread
 
-path = os.path.dirname(os.path.realpath(__file__))
-path = os.path.join(path, "autosave/_REF.png")
+def get_image_path(filename=''):
+    path = os.path.dirname(os.path.realpath(__file__))
+    return os.path.join(path, 'autosave/%s' % filename)
 
-REFIMG = imread(path)
+REFIMG = imread(get_image_path('_REF.png'))
+
+# maximum accepted difference between the sums of the test and 
+# reference images
+TOLERANCE = 10
 
 def erase_images():
     log_info("Erasing all non reference images.")
     # erase all non ref png at the beginning
-    l = filter(lambda f: not(f.endswith('.ref.png')) and f != '_REF.png', 
-        os.listdir('autosave'))
-    [os.remove('autosave/%s' % f) for f in l]
-        
+    l = filter(lambda f: not(f.endswith('REF.png')),# and f != '_REF.png', 
+        os.listdir(get_image_path()))
+    [os.remove(get_image_path(f)) for f in l]
 
+def compare_subimages(img1, img2):
+    """Compare the sum of the values in the two images."""
+    return np.abs(img1.sum() - img2.sum()) <= TOLERANCE
+    
+def compare_images(img1, img2):
+    """Compare the sum of the values in the two images and in two
+    quarter subimages in opposite corners."""
+    n, m, k = img1.shape
+    boo = compare_subimages(img1, img2)
+    boo = boo and compare_subimages(img1[:n/2, :m/2, ...], img2[:n/2, :m/2, ...])
+    boo = boo and compare_subimages(img1[n/2:, m/2:, ...], img2[n/2:, m/2:, ...])
+    return boo
+          
 class GalryTest(unittest.TestCase):
     """Base class for the tests. Child classes should call `self.show` with
     the same keyword arguments as those of `show_basic_window`.
@@ -33,10 +50,6 @@ class GalryTest(unittest.TestCase):
         
     # in milliseconds
     autodestruct = 100
-        
-    # maximum accepted difference between the sums of the test and 
-    # reference images
-    tolerance = 10
     
     def log_header(self, s):
         s += '\n' + ('-' * (len(s) + 10))
@@ -55,10 +68,10 @@ class GalryTest(unittest.TestCase):
     def filename(self):
         """Return the filename of the output image, depending on this class
         name."""
-        return "autosave/%s.png" % self.classname()
+        return get_image_path(self.classname() + '.png')
         
     def reference_image(self):
-        filename = "autosave/%s.ref.png" % self.classname()
+        filename = get_image_path(self.classname() + '.REF.png')
         if os.path.exists(filename):
             return imread(filename)
         else:
@@ -75,31 +88,28 @@ class GalryTest(unittest.TestCase):
         window = self._show(**kwargs)
         # make sure the output image is the same as the reference image
         img = imread(self.filename())
-        n1, n2 = img.sum(), self.reference_image().sum()
-        d = np.abs(n1 - n2)
-        boo = d <= self.tolerance
-        if not boo:
-            log_warn(("Images sums differ by %.0f whereas the tolerance is " \
-                + "%d") % (d, self.tolerance))
+        boo = compare_images(img, self.reference_image())
         self.assertTrue(boo)
         return window
-            
-            
+
 class MyTestSuite(unittest.TestSuite):
     def run(self, *args, **kwargs):
         erase_images()
         super(MyTestSuite, self).run(*args, **kwargs)
-            
-def all_tests(folder=None):
+
+def all_tests(pattern=None, folder=None):
     if folder is None:
         folder = os.path.dirname(os.path.realpath(__file__))
-    suites = unittest.TestLoader().discover(folder, pattern='*_test.py')
-    # allsuites = unittest.TestSuite(suites)
+    if pattern is None:
+        pattern = '*_test.py'
+    suites = unittest.TestLoader().discover(folder, pattern=pattern)
     allsuites = MyTestSuite(suites)
     return allsuites
 
-def test():
-    unittest.main(defaultTest='all_tests')
+def test(pattern=None, folder=None):
+    # unittest.main(defaultTest='all_tests')
+    unittest.TextTestRunner(verbosity=2).run(all_tests(folder=folder,
+        pattern=pattern))
 
 if __name__ == '__main__':
     test()
