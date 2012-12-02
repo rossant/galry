@@ -43,7 +43,7 @@ What's new? [2012-12-02]
       * New example: **3D mesh** viewer (adapted from an example in Glumpy).
       * New example: **Pong video game**.
   * The 
-    [context of the development of Galry can be found on this blog post](cyrille.rossant.net/galrys-story-or-the-quest-of-multi-million-plots/).
+    [context of the development of Galry can be found on this blog post](http://cyrille.rossant.net/galrys-story-or-the-quest-of-multi-million-plots/).
 
 
 What is Galry?
