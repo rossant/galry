@@ -4,14 +4,60 @@ Welcome to Galry: high performance interactive 2D visualization in Python
 **Important note: Galry is still in development. The programming interface
 may change without notice.**
 
+What's new? [2012-12-02]
+------------------------
+
+  * The rendering engine has been entirely rewritten in order to increase
+    the separation between the scene creation logic, and the actual GL 
+    rendering.
+  * This new architecture will make it easier to integrate Galry into the
+    **IPython notebook**. A highly experimental proof of concept has been
+    implemented and gives encouraging results (see the `experimental` folder).
+  * A **high-level interface**, much similar to the pylab interface of
+    matplotlib,
+    will be available later. Using Galry for high-performance interactive 
+    visualization with a given plotting script using matplotlib will just be
+    a matter of replacing `import pylab as plt` with
+    `import galry.plot as plt`.
+  * It will be possible to automatically convert a Python plotting
+    script using Galry to **WebGL/Javascript code** for integration within a
+    standalone webpage. No Python required for running the webpage, just
+    a WebGL-enabled browser.
+  * The interaction system will be improved soon and the interface will
+    probably change.
+  * New features:
+      * More efficient data updating system: before, the data could be changed
+        at the condition that the size of all attributes and textures were kept
+        unchanged. This limitation has fortunately disappeared.
+      * Support for **texture filtering** options (including mipmapping).
+      * Support for 1D and non-square textures.
+      * Support for reference buffers: the same memory buffer on the GPU
+        can now be used for several visuals in order to save memory
+        (useful for graph rendering, where edges and nodes share the same
+        memory buffer on the GPU).
+      * Support for indexed rendering (index buffers). Useful for graph
+        rendering where the edges are specified with indices targetting
+        node positions.
+      * New example: dynamic planar **graph rendering** with a simple CPU-based
+        physics engine.
+      * New example: **3D mesh** viewer (adapted from an example in Glumpy).
+      * New example: **Pong video game**.
+  * The 
+    [context of the development of Galry can be found on this blog post](cyrille.rossant.net/galrys-story-or-the-quest-of-multi-million-plots/).
+
 
 What is Galry?
 --------------
 
-Galry is a **high performance interactive 2D/3D visualization package in 
+Galry is a **high performance interactive visualization package in 
 Python**. It lets you visualize and navigate into very large plots (signals,
 points, textures...) in real time, by using the graphics card as much as
-possible (with OpenGL).
+possible. Galry is written directly on top of PyOpenGL for the highest
+performance possible.
+OpenGL is a widely used hardware-accelerated open library implemented in
+virtually every graphics card. As of today, it is probably the most efficient
+portable low-level library for interactive rendering.
+
 On a 2012 computer with a recent graphics card, one can interactively
 visualize as much as **100 million points** at a reasonable framerate.
 High performance is achieved through techniques coming from real-time 3D 
@@ -19,10 +65,9 @@ video games.
 
 Galry is not meant to generate high-quality plots (like matplotlib), and is
 more "low-level". It can be used to write complex interactive visualization
-GUIs that deal with large 2D datasets (only with QT for now). Galry is
+GUIs that deal with large 2D/3D datasets (only with QT for now). Galry is
 fully customizable, and all aspects of rendering and interaction can be 
-controlled by the developer. Support for 3D rendering is also possible (there
-is an example of 3D rendering in the `examples` folder).
+controlled by the developer.
 
 Galry is based on PyOpenGL and Numpy and should work on any platform
 (Window/Linux/MacOS).
@@ -51,7 +96,7 @@ Existing 2D plotting packages do not generally offer an efficient way to
 interactively visualize large datasets (1, 10, even 100 million points). 
 The main goal of Galry is to provide the most optimized way of visualizing
 large 2D datasets, by using the full power of the graphics card.
-Experimental support for 3D rendering is also available.
+3D rendering is also possible.
 
 
 How fast is it?
@@ -84,16 +129,16 @@ What can I do with Galry?
 
 You can either:
 
-  * Visualize large 2D datasets consisting of points, lines or textures,
-    and pan/zoom smoothly into your data.
+  * Visualize large 2D/3D datasets consisting of points, lines, textures,
+    meshes, and pan/zoom smoothly into your data.
     
   * Create your own customized GUI designed for highly efficient specialized
-    interactive visualization of large 2D datasets.
+    interactive visualization of large 2D/3D datasets.
     
 Galry is fully customizable, and you can either write a specialized scientific
 visualization GUI, a particle system, a fractal viewer, or even a video
-game! Even if Galry is oriented toward 2D rendering, 3D rendering is also
-possible.
+game (Pong can be written in 150 lines of commented code) !
+All those examples are implemented in the `examples` folder.
 
 ### Custom visualization
 
@@ -107,7 +152,7 @@ Learning and using GLSL lets you exploit the full power of the GPU for
 the most optimized possible way of rendering data.
 
 Helper functions are also included for common tasks such as displaying
-lines, points, polygons, textures, sprites, and text.
+lines, points, polygons, textures, point sprite textures, 3D meshes, and text.
 
 ### Custom interactivity
 
@@ -133,21 +178,6 @@ as some point. The only constraint is that this system provides an OpenGL
 context.
 
 
-How does it work?
------------------
-
-Galry is written directly on top of PyOpenGL, a Python wrapper to OpenGL.
-OpenGL is a widely used hardware-accelerated open library implemented in
-virtually every graphics card. As of today, it is probably the most efficient
-portable low-level library for interactive rendering.
-
-Whereas OpenGL provides a low-level API for rendering, Galry offers a
-plotting-oriented interface, allowing to render points, lines, textures,
-sprites and text. However, you can also use lower-level functions that
-give you full control about the data you put on GPU memory, and how this data 
-is transformed into pixels through vertex and fragment shaders.
-
-
 How to get started?
 -------------------
 
@@ -158,9 +188,6 @@ difficult depending on the OS and the graphics card drivers (even if it has
 been successfully tested on Windows, Linux and MacOS systems as of now).
 That being said, please feel
 free to download the library and take a look to the documentation.
-
-The `master` branch contains the latest "stable" version, whereas the
-development version is in the `dev` branch.
 
 The [installation page](https://github.com/rossant/galry/wiki/Installation)
 also contains details on how to install Galry. 
@@ -179,7 +206,8 @@ Examples and tutorials are in separated folders.
   * The examples: they cover a wide range of Galry's possibilities.
     
   * The API reference: once you know the fundamentals, use the reference
-    if you want to go deeper into Galry.
+    if you want to go deeper into Galry. It will be available on the wiki at
+    some point, for now you'll have to look at the docstrings in the code...
     
     
 How did this project start?
