@@ -23,12 +23,14 @@ class PaintManager(Manager):
     # Initialization methods
     # ----------------------
     def reset(self):
+        """Reset the scene."""
         # create the scene creator
         self.scene_creator = SceneCreator(
                     constrain_ratio=self.parent.constrain_ratio)
         self.data_updating = {}
         
     def set_rendering_options(self, **kwargs):
+        """Set rendering options in the scene."""
         self.scene_creator.get_scene()['renderer_options'].update(**kwargs)
         
     def initialize(self):

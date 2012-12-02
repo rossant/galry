@@ -1,6 +1,8 @@
 Implementation notes
 ====================
 
+**WARNING: this document is outdated.**
+
 The base class GalryWidget contains plotting methods that can be 
 conveniently used by child classes to plot anything on the screen.
 
@@ -212,17 +214,3 @@ Chosen solutions to those issues are the following:
   * Additionnaly, when loading data where x is in [x0, x1], rather generate 
     values in [0, x1-x0] which are more precise, and modify the translation 
     accordingly.
-
-
-Misc notes
-----------
-    
-  * HACK for text rendering: text rendering is done with GLUT. There are
-    two implementations of GLUT possible with PyOpenGL. One has the right 
-    routine to display text, the other not. By default, the wrong implementation
-    might be used (at least on Windows). The trick to make PyOpenGL use the 
-    correct one is, on Windows, to rename:
-    C:\Python27\Lib\site-packages\OpenGL\DLLS\glut32.dll => glut32.dll!
-    This way, PyOpenGL will fall back on the correct one (freeglut).
-    see: http://choorucode.wordpress.com/2012/04/28/using-freeglut-calls-with-pyopengl/
-    

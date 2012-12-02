@@ -6,8 +6,8 @@ __all__ = ['SceneCreator',
            'encode_data', 'decode_data', 'serialize', 'deserialize', ]
 
 
-# Scene Creator
 class SceneCreator(object):
+    """Construct a scene with `add_*` methods."""
     def __init__(self, constrain_ratio=False,):
         """Initialize the scene."""
         
@@ -42,7 +42,7 @@ class SceneCreator(object):
     def add_visual(self, visual_class, *args, **kwargs):
         """Add a visual. This method should be called in `self.initialize`.
         
-        A visual is an instanciation of a `DataVisual`. A DataVisual
+        A visual is an instanciation of a `Visual`. A Visual
         defines a pattern for one, or a homogeneous set of plotting objects.
         Example: a text string, a set of rectangles, a set of triangles,
         a set of curves, a set of points. A set of points and rectangles
@@ -53,7 +53,7 @@ class SceneCreator(object):
         need to be rendered, e.g. several rectangles). The lower the number
         of rendering calls, the better the performance.
         
-        Hence, a visual is defined by a particular DataVisual, and by
+        Hence, a visual is defined by a particular Visual, and by
         specification of fields in this visual (positions of the points,
         colors, text string for the example of the TextVisual, etc.). It
         also comes with a number `N` which is the number of vertices contained
@@ -67,11 +67,12 @@ class SceneCreator(object):
         
         Arguments:
           * visual_class=None: the visual class, deriving from
-            `Visual` (or directly from the base class `DataVisual`
+            `Visual` (or directly from the base class `Visual`
             if you don't want the navigation-related functionality).
           * visible=True: whether this visual should be rendered. Useful
             for showing/hiding a transient element. When hidden, the visual
             does not go through the rendering pipeline at all.
+          * **kwargs: keyword arguments for the visual `initialize` method.
           
         Returns:
           * visual: a dictionary containing all the information about
@@ -100,13 +101,16 @@ class SceneCreator(object):
     # Output methods
     # --------------
     def get_scene(self):
+        """Return the scene dictionary."""
         return self.scene
 
     def serialize(self, **kwargs):
+        """Return the JSON representation of the scene."""
         self.scene.update(**kwargs)
         return serialize(self.scene)
         
     def from_json(self, scene_json):
+        """Import the scene from a JSON string."""
         self.scene = deserialize(scene_json)
         
 

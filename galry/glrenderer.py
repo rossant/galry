@@ -10,6 +10,7 @@ from visuals import RefVar
 # GLVersion class
 # ---------------
 class GLVersion(object):
+    """Methods related to the GL version."""
     # self.version_header = '#version 120'
     # self.precision_header = 'precision mediump float;'
     @staticmethod
@@ -44,6 +45,7 @@ class GLVersion(object):
 # Low-level OpenGL functions to initialize/load variables
 # -------------------------------------------------------
 class Attribute(object):
+    """Contains OpenGL functions related to attributes."""
     @staticmethod
     def create():
         """Create a new buffer and return a `buffer` index."""
@@ -106,6 +108,7 @@ class Attribute(object):
         
         
 class Uniform(object):
+    """Contains OpenGL functions related to uniforms."""
     float_suffix = {True: 'f', False: 'i'}
     array_suffix = {True: 'v', False: ''}
     # glUniform[Matrix]D[f][v]
@@ -162,6 +165,7 @@ class Uniform(object):
         
 
 class Texture(object):
+    """Contains OpenGL functions related to textures."""
     @staticmethod
     def create(ndim, mipmap=False, minfilter=None, maxfilter=None):
         """Create a texture with the specifyed number of dimensions."""
@@ -265,7 +269,11 @@ class Texture(object):
 # Shader manager
 # --------------
 class ShaderManager(object):
-    """Handle vertex and fragment shaders."""
+    """Handle vertex and fragment shaders.
+    
+    TODO: integrate in the renderer the shader code creation module.
+    
+    """
     
     # Initialization methods
     # ----------------------
@@ -384,6 +392,8 @@ class ShaderManager(object):
 MAX_VBO_SIZE = 65000
 
 class Slicer(object):
+    """Handle attribute slicing, necessary because of the size
+    of buffer objects which is limited on some GPUs."""
     @staticmethod
     def _get_slices(size, maxsize=None):
         """Return a list of slices for a given dataset size.
@@ -444,7 +454,7 @@ class Slicer(object):
         return enforce_dtype(bounds_sliced, np.int32)
         
     def set_size(self, size, doslice=True):
-        """Update the total size of the buffer and/or the bounds, and update
+        """Update the total size of the buffer, and update
         the slice information accordingly."""
         # deactivate slicing by using a maxsize number larger than the
         # actual size
@@ -463,19 +473,20 @@ class Slicer(object):
         self.slice_count = len(self.slices)
     
     def set_bounds(self, bounds=None):
+        """Update the bound size, and update the slice information
+        accordingly."""
         if bounds is None:
             bounds = np.array([0, self.size], dtype=np.int32)
         self.bounds = bounds
         self.subdata_bounds = [self._slice_bounds(self.bounds, pos, size) \
             for pos, size in self.slices]
-        # print "changing sub data bounds", self.subdata_bounds
        
        
 class SlicedAttribute(object):
-    def __init__(self, slicer, location, buffers=None):#, name=''):
-        # self.set_slicer(slicer)
+    """Encapsulate methods for slicing an attribute and handling several
+    buffer objects for a single attribute."""
+    def __init__(self, slicer, location, buffers=None):
         self.slicer = slicer
-        # self.name = name
         self.location = location
         if buffers is None:
             # create the sliced buffers
@@ -597,10 +608,11 @@ class GLVisualRenderer(object):
         self.load_variables()
         
     def set_primitive_type(self, primtype):
-        # set the primitive type from its name
+        """Set the primitive type from its name (without the GL_ prefix)."""
         self.primitive_type = getattr(gl, "GL_%s" % primtype.upper())
     
     def getarg(self, name):
+        """Get a visual parameter."""
         return self.visual.get(name, None)
     
     
@@ -954,14 +966,13 @@ class GLVisualRenderer(object):
         Arguments:
           * **kwargs: the data to update as name:value pairs. name can be
             any field of the visual, plus one of the following keywords:
+              * visible: whether this visual should be visible,
               * size: the size of the visual,
               * primitive_type: the GL primitive type,
               * constrain_ratio: whether to constrain the ratio of the visual,
               * constrain_navigation: whether to constrain the navigation,
         
         """
-        
-        # print self.get_variable("position")["data"].shape
         
         # handle compound variables
         kwargs2 = kwargs.copy()
@@ -985,11 +996,6 @@ class GLVisualRenderer(object):
             # remove non-visible variables
             if not variable.get('visible', True):
                 kwargs.pop(name)
-        
-        # print self.data_updating.keys()
-        # if 'position' in self.data_updating:
-            # print self.get_variable('position')['data'].shape
-        # print
         
         # handle visual visibility
         visible = kwargs.pop('visible', None)

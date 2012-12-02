@@ -1,10 +1,10 @@
 User manual
 ===========
 
-Galry is a **high-performance interactive 2D visualization in Python**.
+Galry is a **high-performance interactive visualization library in Python**.
 
-It offers a **high-level interface** for quickly visualizing large 2D
-datasets. It can be used either in script mode, or in interactive mode
+It offers a **high-level interface** for quickly visualizing large
+visuals. It can be used either in script mode, or in interactive mode
 with IPython. It integrates smoothly with the QT event system of IPython
 so that you can interact with the plotting widget from the IPython console
 (much like matplotlib).
@@ -23,12 +23,29 @@ High-level interface
 
 This interface is not done yet. *It is currently not the highest priority*.
 
+The long-term goal is to have an interface highly similar to the one offered
+by matplotlib. One should be able to replace `import matplotlib.pyplot as plt`
+by `import galry.plot as plt` in order to use Galry instead of matplotlib
+to plot a figure. At first, only the most common commands will be available,
+like `figure`, `plot`, `imshow`, etc.
+
+A GL backend for matplotlib might also be an idea, but the current internal
+architecture of matplotlib is not adapted for high-performance interactive
+rendering for now.
+
 
 Low-level interface
 -------------------
 
-The low-level interface is not necessarily *that* low-level. 
-Basically, it is meant to be used in script mode rather than in interactive
+The low-level interface is not *that* low-level. It contains two parts:
+a rendering module, and an interactivity module. The rendering module should
+be thought as a module on top of OpenGL, which hides low-level implementation
+details about OpenGL and exposes functions related to data and rendering.
+The basic principles of OpenGL should however be understood in order to
+customize all aspects of rendering.
+
+THe low-level interface is meant to be used in script mode rather than in
+interactive
 mode. It allows to plot simple figures (scatter plots, curves, etc.) in
 less than 10 lines of code. But it also gives you the opportunity to customize 
 plots as 
@@ -126,22 +143,19 @@ an automatically-created custom widget by specifying the companion classes,
 without the need of explicitely creating a new class (see `show_basic_window`).
 
 
-
-
-
 ### The `PaintManager` companion class
 
 The `PaintManager` class is the most important companion class. It specifies
 what to render in the widget.
 
 
-#### Datasets
+#### Visuals
 
-The main method to override is `initialize`. This is where **datasets** are
-created. A dataset is a particular plot object, such as a set of points, of
+The main method to override is `initialize`. This is where **visuals** are
+created. A visual is a particular plot object, such as a set of points, of
 curves, of rectangles, one image, one text string, etc. The key point is that
-several *primitives* can be contained in a dataset: several points in a 
-scatter plot, several line segments in a curve, etc. So, **a dataset is a
+several *primitives* can be contained in a visual: several points in a 
+scatter plot, several line segments in a curve, etc. So, **a visual is a
 homogeneous set of primitives**. Primitives are defined in OpenGL and include
 pixels, line segments, and triangles.
 [The full list of primitives can be found for example 
@@ -149,37 +163,32 @@ here](http://www.informit.com/articles/article.aspx?p=461848).
 Those primitives are described by a set of **vertices**.
 A **vertex** is a vector of length 2, 3 or 4.
 
-A dataset is rendered *with a single call*
+A visual is rendered *with a single call*
 to an OpenGL command, so that rendering is fast. This explains why there is
-the need for homogeneity within a dataset. Also, let's note that within a 
-dataset, objects can be drawn independently (for example, different curves
+the need for homogeneity within a visual. Also, let's note that within a 
+visual, objects can be drawn independently (for example, different curves
 that are not physically connected).
 
-**In conclusion, a dataset is meant to be
-a big object in general**. It is not a good idea to define too many datasets
+**In conclusion, a visual is meant to be
+a big object in general**. It is not a good idea to define too many visuals
 since that can really hurt performance.
 
 *Very technical note: actually, it may happen that several OpenGL commands
-are issued for a single dataset. It occurs when the number of vertices is 
+are issued for a single visual. It occurs when the number of vertices is 
 high, typically higher than 65,000. The reason is that the OpenGL buffers
 cannot always be bigger than that. The set of vertices is then automatically
 and transparently cut by Galry into multiple buffers, which are rendered
 in sequence at each frame.*
 
 
-#### Templates
+#### Visual creation
 
-A dataset is an instance of a **data template**. A data template is a
-particular type of graphical object that follows a specific pattern. Examples:
-a single-line text, a scatter plot (set of points), a set of curves, a set of 
-rectangles or
-triangles, a set of barplots, a single bitmap image, a set of identical
-textures at different positions (sprites), etc. Galry comes with predefined
-templates
-that can be used for simple plots. However, custom templates can also be
-created, either from scratch or through specialization of predefined templates.
+A visual can either be created from scratch, or by specializing an existing
+visual. Galry comes with a set of predefined visuals to plot curves, points,
+images, point sprite textures, text, 3D meshes, etc. The user interested in
+creating its own custom visual should look the code of the existing visuals.
 
-More precisely, a template is defined by:
+Technically, a visual is defined by:
   * a set of *variables*, or *fields*, that have a name, a type, and various
     characteristics,
   * *vertex shader* and *fragment shader* source codes, that describe how
@@ -192,7 +201,7 @@ A **vertex shader** is a small program in a C-like language called
 [**GLSL**](http://en.wikipedia.org/wiki/GLSL) that
 is **executed once per vertex**. Vertex shaders execute in 
 parallel across all vertices, using the high computational power of the 
-GPU. A vertex shader takes some DataTemplate fields as inputs, and
+GPU. A vertex shader takes some Visual fields as inputs, and
 returns the final position of the current vertex. Execution of shaders can
 be extremely fast thanks to the highly parallel architecture of the graphics
 card.
@@ -203,19 +212,25 @@ as (possibly) some outputs of the vertex shader. It returns the final color of
 the current pixel.
 
 
-##### Template fields
+##### Visual fields
 
-There are different types of template fields:
+There are different types of visual fields:
 
   * **attributes**: an *attribute* is an array variable of size `N`.
-    **All attributes in a given DataTemplate share the same number `N`.**
-    This number is essentially
+    **All attributes in a given Visual share the same number `N`.**
+    This number `N` is essentially
     the number of vertices. Also, there is one execution of the vertex 
     shader per vertex (so `N` executions), at every rendering call (so
     every frame). Examples of attributes: the position (coordinates of the
     points to render), the color of the points (if each point needs to have
     its own color), etc. Every variable that has one specific value per
     vertex is an attribute.
+    
+    When using *indexed rendering*, it is possible to
+    use one vertex several times during rendering in order
+    to save memory, so that the number of rendered vertices can be different
+    from the number of vertices in the buffer (typically higher, since vertices
+    are used several times).
     
   * **uniforms**: an *uniform* is a global variable, shared by all vertices. It
     may change at every frame, but it is global to the vertex and fragment
@@ -233,22 +248,26 @@ There are different types of template fields:
     RGB(A) components) and can be accessed in the fragment shader in
     order to display it.
     
+  * **indices**: an *index* variables holds a buffer of integer values which
+    target vertices in all attributes. The number of rendered points is then
+    the length of the index buffer rather than the length of the vertex buffer.
+    
   * **compounds**: a particular type of variable that has no counterpart in
     the shaders. A *compound variable* allows to automatically change
-    several template variables according to a high-level value. They exist
-    only for convenience for the user. For example, in the TextTemplate,
+    several visual variables according to a high-level value. They exist
+    only for convenience for the user. For example, in the TextVisual,
     where characters are individually positioned on the screen, the
     text variable is a compound variable that affects the texture of the
     characters (i.e. the points), their particular position, etc.
     
 
-##### Predefined templates
+##### Predefined visuals
 
-Galry comes with a set of predefined templates for convenient use. More
-templates may be added as the development of the package goes along.
-Currently, available templates are:
+Galry comes with a set of predefined visuals for convenient use. More
+visuals may be added as the development of the package goes along.
+Currently, available visuals are:
 
-  * `PlotTemplate`: generic template for basic or advanced plotting. Any
+  * `PlotVisual`: generic visual for basic or advanced plotting. Any
     GL primitive is possible:
       * `Lines`: independent line segments,
       * `LineStrip`: continuous signal as successive line segments,
@@ -260,21 +279,23 @@ Currently, available templates are:
       * `TriangleFan`: successive triangles, all sharing the very first vertex.
         Useful for rendering discs.
     In addition, multiple independent primitives of the same type can be 
-    rendered in the same dataset (example: multiple signals as multiple
-    `LineStrip`).
+    rendered in the same visual (example: multiple signals as multiple
+    `LineStrip`). Indexed rendering is also possible.
     
-  * `RectanglesTemplate`: multiple rectangles in a single dataset.
+  * `RectanglesVisual`: multiple rectangles in a single visual.
   
-  * `SpriteTemplate`: one texture at multiple positions (e.g. scatter plot with
+  * `SpriteVisual`: one texture at multiple positions (e.g. scatter plot with
     special markers).
     
-  * `TextTemplate`: a single line of text.
+  * `TextVisual`: a single line of text.
   
-  * `TextureTemplate`: a single textured rectangle.
+  * `TextureVisual`: a single textured rectangle. It can accept filtering
+    options and mipmapping. Non power-of-two and non-square textures are
+    supported if the graphics card support them.
   
-  * `ThreeDimensionsTemplate`: template example for 3D rendering, implementing
+  * `ThreeDimensionsVisual`: visual example for 3D rendering, implementing
     3D/4D transformation matrices, basic lighting, etc. The developer
-    interested in 3D rendering should take this template as an example and
+    interested in 3D rendering should take this visual as an example and
     customize it.
 
     
@@ -284,7 +305,7 @@ Let's give an example of a *particle system*, where there is a number of
 independent particles, defined at any time by a position, a velocity, and 
 a color. To achieve the highest performance possible, we want to execute this
 system on the GPU. It means that vertex shaders are responsible for
-updating the position of the particles at any time. So the template could 
+updating the position of the particles at any time. So the visual could 
 contain:
 
   * an *attribute variable* with the *initial position* of each particle,
@@ -326,7 +347,7 @@ This example is implemented in `examples/mandelbrot.py`.
 Vertex and fragment shaders are widely used in real-time 3D video games,
 but not so much in scientific applications, particulary when it concerns
 2D rendering. Yet, they are extremely powerful for 2D rendering of huge
-datasets with millions of points. They considerably widen the plotting 
+visuals with millions of points. They considerably widen the plotting 
 possibilities of Galry.
 
 To learn the OpenGL shading language, GLSL, a great, freely available

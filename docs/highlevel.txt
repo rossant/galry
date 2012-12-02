@@ -1,6 +1,9 @@
 High level interface
 --------------------
 
+Notes about the future high-level interface. It should be as close as possible
+from the matplotlib interface.
+
 ### Example:
         
     import galry.plot as plt

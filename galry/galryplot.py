@@ -1,3 +1,6 @@
+"""Temporary class used for the IPython notebook. It will disappear when
+the high level interface is ready."""
+
 import numpy as np
 from galry import *
 

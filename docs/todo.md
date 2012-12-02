@@ -1,13 +1,8 @@
 Galry: high-performance interactive visualization in Python
 ===========================================================
 
-  * update the documentation and merge refactoring in main
-
   * include ony shader snippets in the scene, and include shader creation
     in the renderers
-
-  * fix bug in ipython notebook with empty arrays when loading a script
-    for the first time
 
   * get rid of all enum and replace with strings
   * refactoring of interaction system, with EventProcessor objects which
@@ -23,8 +18,6 @@ Galry: high-performance interactive visualization in Python
   * better handling of special_keywords
   
   * global color module in galry
-  
-  * 3D mesh example
   
   
 Automation
@@ -62,6 +55,9 @@ Fixes
   * try to reproduce bug with violation memory access when there are several
     widgets within a main window (concurrency issue in pyopengl?)
   
+  * fix bug in ipython notebook with empty arrays when loading a script
+    for the first time
+    
   
 Tested
 ------
@@ -77,6 +73,8 @@ Tested
 Later
 -----
 
+  * HDF5 viewer for long signals: use stride to implement a dynamic 
+    multi-resolution undersampling method.
   * user preferences, with DEBUG option
   * better error messages when template is not correct (eg data is missing,
     size is missing, etc)
