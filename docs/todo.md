@@ -6,9 +6,6 @@ Galry: high-performance interactive visualization in Python
   * include ony shader snippets in the scene, and include shader creation
     in the renderers
 
-  * when updating textures with a different size: no need to recreate a new
-    buffer, just directly load the new data?  
-
   * fix bug in ipython notebook with empty arrays when loading a script
     for the first time
 

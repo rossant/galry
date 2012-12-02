@@ -917,13 +917,13 @@ class GLVisualRenderer(object):
         # handle size changing
         if data.shape != prevshape:
             # delete old buffers
-            Texture.delete(variable['buffer'])
+            # Texture.delete(variable['buffer'])
             variable['ndim'], variable['ncomponents'], _ = Texture.get_info(data)
             # create new buffer
-            variable['buffer'] = Texture.create(variable['ndim'],
-                mipmap=variable.get('mipmap', None),
-                minfilter=variable.get('minfilter', None),
-                maxfilter=variable.get('maxfilter', None),)
+            # variable['buffer'] = Texture.create(variable['ndim'],
+                # mipmap=variable.get('mipmap', None),
+                # minfilter=variable.get('minfilter', None),
+                # maxfilter=variable.get('maxfilter', None),)
             # load data
             Texture.bind(variable['buffer'], variable['ndim'])
             Texture.load(data)
