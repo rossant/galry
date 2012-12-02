@@ -3,8 +3,6 @@ Galry: high-performance interactive visualization in Python
 
   * update the documentation and merge refactoring in main
 
-  * unit test with 2D rectangular textures
-    
   * include ony shader snippets in the scene, and include shader creation
     in the renderers
 
