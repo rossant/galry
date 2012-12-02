@@ -1077,7 +1077,11 @@ class GLVisualRenderer(object):
             else:
                 log_info("Texture '%s' was not propertly initialized." % \
                          variable['name'])
-
+        # deactivate all textures if there are not textures
+        if not textures:
+            Texture.bind(0, 1)
+            Texture.bind(0, 2)
+            
 
     # Paint methods
     # -------------
