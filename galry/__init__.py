@@ -18,5 +18,6 @@ from visuals import *
 from glrenderer import *
 from paintmanager import *
 from datanormalizer import *
-from icons import *
 # from plot import *
+from icons import *
+from test import *

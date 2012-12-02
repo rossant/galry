@@ -12,8 +12,10 @@ import re
 from galry import *
 from matplotlib.pyplot import imread
 
-# reference image
-REFIMG = imread("autosave/_REF.png")
+path = os.path.dirname(os.path.realpath(__file__))
+path = os.path.join(path, "autosave/_REF.png")
+
+REFIMG = imread(path)
 
 def erase_images():
     log_info("Erasing all non reference images.")
