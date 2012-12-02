@@ -829,25 +829,30 @@ class GLVisualRenderer(object):
         """Update data for an attribute variable."""
         variable = self.get_variable(name)
         
-        
         if variable['sliced_attribute'].location < 0:
             log_info(("Variable '%s' could not be updated, probably because "
                       "it is not used in the shaders") % name)
             return
         
-        
-        
         # handle reference variable
-        olddata = variable.get('data', np.array([]))
+        olddata = variable.get('data', None)
         if isinstance(olddata, RefVar):
             raise ValueError("Unable to load data for a reference " +
                 "attribute. Use the target variable directly.""")
         variable['data'] = data
         att = variable['sliced_attribute']
+        
+        if olddata is None:
+            oldshape = 0
+        else:
+            oldshape = olddata.shape
+        
+        # print name, oldshape, data.shape
+        
         # handle size changing
-        if data.shape[0] != olddata.shape[0]:
-            # log_info(("Creating new buffers for variable %s, old size=%s,"
-                # "new size=%d") % (name, olddata.shape[0], data.shape[0]))
+        if data.shape[0] != oldshape[0]:
+            log_info(("Creating new buffers for variable %s, old size=%s,"
+                "new size=%d") % (name, oldshape[0], data.shape[0]))
             # update the size only when not using index arrays
             if self.use_index:
                 newsize = self.slicer.size
@@ -861,7 +866,6 @@ class GLVisualRenderer(object):
             # changed explicitely
             if len(self.slicer.bounds) == 2:
                 self.slicer.set_bounds()
-                
                 
             # delete old buffers
             att.delete_buffers()
@@ -935,6 +939,13 @@ class GLVisualRenderer(object):
         # the uniform interface is the same for load/update
         self.load_uniform(name, data)
         
+    special_keywords = ['visible',
+                        'size',
+                        'bounds',
+                        'primitive_type',
+                        'constrain_ratio',
+                        'constrain_navigation',
+                        ]
     def set_data(self, **kwargs):
         """Load data for the specified visual. Uploading does not happen here
         but in `update_all_variables` instead, since this needs to happen
@@ -949,6 +960,9 @@ class GLVisualRenderer(object):
               * constrain_navigation: whether to constrain the navigation,
         
         """
+        
+        # print self.get_variable("position")["data"].shape
+        
         # handle compound variables
         kwargs2 = kwargs.copy()
         for name, data in kwargs2.iteritems():
@@ -959,10 +973,23 @@ class GLVisualRenderer(object):
             if variable is not None and variable['shader_type'] == 'compound':
                 fun = variable['fun']
                 kwargs.pop(name)
+                # HACK: if the target variable in the compound is a special
+                # keyword, we update it in kwargs, otherwise we update the
+                # data in self.data_updating
+                # print name, fun(data)
+                # if name in self.special_keywords:
+                    # kwargs.update(**fun(data))
+                # else:
+                    # self.data_updating.update(**fun(data))
                 kwargs.update(**fun(data))
             # remove non-visible variables
             if not variable.get('visible', True):
                 kwargs.pop(name)
+        
+        # print self.data_updating.keys()
+        # if 'position' in self.data_updating:
+            # print self.get_variable('position')['data'].shape
+        # print
         
         # handle visual visibility
         visible = kwargs.pop('visible', None)

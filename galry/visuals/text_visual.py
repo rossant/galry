@@ -28,16 +28,19 @@ class TextVisual(Visual):
         shader."""
         if position is None:
             position = (0., 0.)
-        position = np.tile(np.array(position).reshape((1, -1)), self.size)
+        position = np.tile(np.array(position).reshape((1, -1)), (self.size, 1))
         return dict(position=position)
     
     def text_compound(self, text):
         """Compound variable for the text string. It changes the text map,
         the character position, and the text width."""
+        self.size = len(text)
         text_map = self.get_map(text)
         offset = np.hstack((0., np.cumsum(text_map[:, 2])[:-1]))    
         text_map = self.get_map(text.ljust(self.size, ' '))
-        return dict(text_map=text_map, offset=offset, text_width=offset[-1])
+        d = dict(text_map=text_map, offset=offset, text_width=offset[-1])
+        d.update(self.position_compound(self.coordinates))
+        return d
     
     def initialize_font(self, font, fontsize):
         """Initialize the specified font at a given size."""
@@ -54,6 +57,7 @@ class TextVisual(Visual):
 
         text_length = self.size
         self.initialize_font(font, fontsize)
+        self.coordinates = coordinates
         
         point_size = float(self.matrix[:,4].max() * self.texture.shape[1])
 
@@ -84,32 +88,32 @@ class TextVisual(Visual):
 
         # vertex shader
         self.add_vertex_main("""
-    gl_Position.x += (offset - text_width / 2) * letter_spacing / window_size.x;
-    gl_PointSize = point_size;
-    flat_text_map = text_map;
+            gl_Position.x += (offset - text_width / 2) * letter_spacing / window_size.x;
+            gl_PointSize = point_size;
+            flat_text_map = text_map;
         """, after='navigation')
 
         # fragment shader
         fragment = """
-    // relative coordinates of the pixel within the sprite (in [0,1])
-    float x = gl_PointCoord.x;
-    float y = gl_PointCoord.y;
-    
-    // size of the corresponding character
-    float w = flat_text_map.z;
-    float h = flat_text_map.w;
-    
-    // display the character at the left of the sprite
-    float delta = h / w;
-    x = delta * x;
-    if ((x >= 0) && (x <= 1))
-    {
-        // coordinates of the character in the font atlas
-        vec2 coord = flat_text_map.xy + vec2(w * x, h * y);
-        out_color = texture(tex_sampler, coord) * color;
-    }
-    else
-        out_color = vec4(0, 0, 0, 0);
+            // relative coordinates of the pixel within the sprite (in [0,1])
+            float x = gl_PointCoord.x;
+            float y = gl_PointCoord.y;
+            
+            // size of the corresponding character
+            float w = flat_text_map.z;
+            float h = flat_text_map.w;
+            
+            // display the character at the left of the sprite
+            float delta = h / w;
+            x = delta * x;
+            if ((x >= 0) && (x <= 1))
+            {
+                // coordinates of the character in the font atlas
+                vec2 coord = flat_text_map.xy + vec2(w * x, h * y);
+                out_color = texture(tex_sampler, coord) * color;
+            }
+            else
+                out_color = vec4(0, 0, 0, 0);
         """
         
         self.add_fragment_main(fragment)

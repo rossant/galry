@@ -38,7 +38,7 @@ class PongPaintManager(PaintManager):
         self.score_right = 0
         
         # text visual
-        self.add_visual(TextVisual, coordinates=(0., .9), text=self.get_score_text(),
+        self.add_visual(TextVisual, coordinates=(0., .9), text='',
             fontsize=36, name='score', color=(1.,) * 4)
             
         # initialize game
@@ -94,7 +94,9 @@ class PongPaintManager(PaintManager):
             # update ball velocity
             if np.abs(y - py) <= DL:
                 self.ball_v[0,0] *= -1
-                self.ball_v[0,1] = 2 * (y - py)
+                # rebound angle depending on the position of the rebound on 
+                # the racket
+                self.ball_v[0,1] = 3 * (y - py)
         
         # one player wins, next game
         if x >= .95:

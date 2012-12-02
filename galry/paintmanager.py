@@ -176,11 +176,15 @@ class PaintManager(Manager):
           * **kwargs: keyword arguments as `visual_field_name: value` pairs.
         
         """
+        
         # default name
         if visual is None:
             visual = 'visual0'
+            
+            
         # if this method is called in initialize (the renderer is then not
         # defined) we save the data to be updated later
+        # print hasattr(self, 'renderer'), kwargs
         if not hasattr(self, 'renderer'):
             self.data_updating[visual] = kwargs
         else:
