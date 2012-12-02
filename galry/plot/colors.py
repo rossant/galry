@@ -1,5 +1,7 @@
 import re
 
+__all__ = ['get_color']
+
 HEX = '0123456789abcdef'
 HEX2 = dict((a+b, (HEX.index(a)*16 + HEX.index(b)) / 255.) \
              for a in HEX for b in HEX)
@@ -51,6 +53,16 @@ PATTERNS = {
 }
   
 def get_color(color):
+    """Return a color RGBA normalized coefficients from any of the following
+    possible inputs:
+      * (r, g, b) or (r, g, b, a) with r, g, b, a between 0 and 1.
+      * a string with one of the following characters: rgbcymkw for the
+        primary colors, and optionnaly a floating number between 0 and 1 for 
+        the alpha channel, ie 'r.75' for red at 75%.
+      * a string with an hexadecimal code.
+      * a list of colors
+    
+    """
     if type(color) is str:
         color = color.lower()
         for pattern, fun in PATTERNS.iteritems():

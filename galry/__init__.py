@@ -1,4 +1,4 @@
-"""Galry: high-performance interactive visualization in Python"""
+"""Galry: high-performance interactive visualization package in Python"""
 
 from debugtools import *
 
@@ -18,6 +18,6 @@ from visuals import *
 from glrenderer import *
 from paintmanager import *
 from datanormalizer import *
-# from plot import *
+from plot import *
 from icons import *
 from test import *

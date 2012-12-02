@@ -54,7 +54,9 @@ class PlotVisual(Visual):
                 color = tuple(color)
             else:
                 color = np.array(color)
-        use_color_array = False
+        # first, initialize use_color_array to False except if
+        # color_array_index is not None
+        use_color_array = color_array_index is not None
         if isinstance(color, np.ndarray):
             colors_ndim = color.shape[1]
             # first case: one color per point
@@ -79,7 +81,7 @@ class PlotVisual(Visual):
             self.add_index("index", data=index)
         
         # single color case: no need for a color buffer, just use default color
-        if single_color:
+        if single_color and not use_color_array:
             self.add_uniform("color", ndim=colors_ndim, data=color)
             if colors_ndim == 3:
                 self.add_fragment_main("""

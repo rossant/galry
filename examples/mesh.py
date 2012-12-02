@@ -76,7 +76,7 @@ class MyPaintManager(PaintManager):
 
     def initialize(self):
         # Important: tells Galry to activate depth buffer
-        self.set_rendering_options(activate3D = True)
+        self.set_rendering_options(activate3D=True)
         
         vertices, normals, faces = load_obj("images/mesh.obj")
         n = len(vertices)

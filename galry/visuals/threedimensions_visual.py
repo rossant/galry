@@ -142,12 +142,12 @@ class ThreeDimensionsVisual(Visual):
             self.add_vertex_main("""
                 gl_Position = projection * camera * gl_Position;""")
         
-    def initialize_viewport(self, constrain_ratio=False):
-        """Add viewport-related code."""
-        self.add_uniform("viewport", vartype="float", ndim=2)
-        self.add_uniform("window_size", vartype="float", ndim=2)
-        if constrain_ratio:
-            self.add_vertex_main("gl_Position.xy = gl_Position.xy / viewport;")
+    # def initialize_viewport(self, constrain_ratio=False):
+        # """Add viewport-related code."""
+        # self.add_uniform("viewport", vartype="float", ndim=2)
+        # self.add_uniform("window_size", vartype="float", ndim=2)
+        # if constrain_ratio:
+            # self.add_vertex_main("gl_Position = gl_Position / viewport;")
 
     def initialize_default(self, is_static=False, constrain_ratio=False, **kwargs): 
         """Default initialization with navigation-related code."""
@@ -187,7 +187,7 @@ class ThreeDimensionsVisual(Visual):
         if camera_ratio is None:
             camera_ratio = 4./3.
         if camera_zrange is None:
-            camera_zrange = (.5, 5.)
+            camera_zrange = (.5, 10.)
             
         self.size = position.shape[0]
         if self.primitive_type is None:
@@ -206,8 +206,8 @@ class ThreeDimensionsVisual(Visual):
         # default matrices
         projection = projection_matrix(camera_angle, camera_ratio, *camera_zrange)
         camera = camera_matrix(np.array([0., 0., -4.]),  # position
-                               np.zeros(3),  # look at
-                               np.array([0., 1., 0.]))  # top
+                               np.zeros(3),              # look at
+                               np.array([0., 1., 0.]))   # top
         transform = np.eye(4)
                 
         # matrix uniforms
@@ -241,4 +241,4 @@ class ThreeDimensionsVisual(Visual):
             out_color = varying_color;
         """)
         
-        self.initialize_viewport(True)
+        # self.initialize_viewport(True)

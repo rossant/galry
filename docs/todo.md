@@ -1,6 +1,8 @@
 Galry: high-performance interactive visualization in Python
 ===========================================================
 
+  * make unit tests work in ipython with pylab activated
+
   * include ony shader snippets in the scene, and include shader creation
     in the renderers
 
