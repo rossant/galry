@@ -314,7 +314,7 @@ class ShaderManager(object):
             msg += source
             raise RuntimeError(msg)
         else:
-            log_info("Compilation succeeded for %s.%s" % (str(shader_type), infolog))
+            log_debug("Compilation succeeded for %s.%s" % (str(shader_type), infolog))
         return shader
         
     def compile(self):
@@ -790,7 +790,7 @@ class GLVisualRenderer(object):
         
         
         if location < 0:
-            log_info(("Variable '%s' could not be loaded, probably because "
+            log_debug(("Variable '%s' could not be loaded, probably because "
                       "it is not used in the shaders") % name)
             return
         
@@ -863,7 +863,7 @@ class GLVisualRenderer(object):
         
         # handle size changing
         if data.shape[0] != oldshape[0]:
-            log_info(("Creating new buffers for variable %s, old size=%s,"
+            log_debug(("Creating new buffers for variable %s, old size=%s,"
                 "new size=%d") % (name, oldshape[0], data.shape[0]))
             # update the size only when not using index arrays
             if self.use_index:
@@ -1254,7 +1254,7 @@ class GLRenderer(object):
         """Initialize the renderer."""
         # print the renderer information
         for key, value in GLVersion.get_renderer_info().iteritems():
-            log_info(key + ": " + value)
+            log_debug(key + ": " + value)
         # initialize the renderer options using the options set in the Scene
         self.set_renderer_options()
         # create the VisualRenderer objects

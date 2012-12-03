@@ -183,7 +183,7 @@ class GalryWidget(QGLWidget):
         
         # create the managers
         for key, val in self.companion_classes.iteritems():
-            log_info("Initializing '%s'" % key)
+            log_debug("Initializing '%s'" % key)
             obj = val(self)
             setattr(self, key, obj)
         
