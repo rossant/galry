@@ -32,7 +32,7 @@
       <section>
         <div id="title">
           <h1>Galry</h1>
-          <p>High-performance interactive 2D visualization in Python</p>
+          <p>High-performance interactive visualization in Python</p>
           <hr>
           <span class="credits left">Project maintained by <a href="https://github.com/rossant">rossant</a></span>
           <span class="credits right">Hosted on GitHub Pages &mdash; Theme by <a href="http://twitter.com/#!/michigangraham">mattgraham</a></span>
@@ -41,23 +41,71 @@
         <p><strong>Important note: Galry is still in development. The programming interface
 may change without notice.</strong></p>
 
-<h2>What is Galry?</h2>
+<h2>What's new? [2012-12-02]</h2>
 
-<p>Galry is a <strong>high performance interactive 2D/3D visualization package in 
+<ul>
+<li>The rendering engine has been entirely rewritten in order to increase
+the separation between the scene creation logic, and the actual GL 
+rendering.</li>
+<li>This new architecture will make it easier to integrate Galry into the
+<strong>IPython notebook</strong>. A highly experimental proof of concept has been
+implemented and gives encouraging results (see the <code>experimental</code> folder).</li>
+<li>A <strong>high-level interface</strong>, much similar to the pylab interface of
+matplotlib,
+will be available later. Using Galry for high-performance interactive 
+visualization with a given plotting script using matplotlib will just be
+a matter of replacing <code>import pylab as plt</code> with
+<code>import galry.plot as plt</code>.</li>
+<li>It will be possible to automatically convert a Python plotting
+script using Galry to <strong>WebGL/Javascript code</strong> for integration within a
+standalone webpage. No Python required for running the webpage, just
+a WebGL-enabled browser.</li>
+<li>The interaction system will be improved soon and the interface will
+probably change.</li>
+<li>New features:
+
+<ul>
+<li>More efficient data updating system: before, the data could be changed
+at the condition that the size of all attributes and textures were kept
+unchanged. This limitation has fortunately disappeared.</li>
+<li>Support for <strong>texture filtering</strong> options (including mipmapping).</li>
+<li>Support for 1D and non-square textures.</li>
+<li>Support for reference buffers: the same memory buffer on the GPU
+can now be used for several visuals in order to save memory
+(useful for graph rendering, where edges and nodes share the same
+memory buffer on the GPU).</li>
+<li>Support for indexed rendering (index buffers). Useful for graph
+rendering where the edges are specified with indices targetting
+node positions.</li>
+<li>New example: dynamic planar <strong>graph rendering</strong> with a simple CPU-based
+physics engine.</li>
+<li>New example: <strong>3D mesh</strong> viewer (adapted from an example in Glumpy).</li>
+<li>New example: <strong>Pong video game</strong>.</li>
+</ul>
+</li>
+<li>The 
+<a href="http://cyrille.rossant.net/galrys-story-or-the-quest-of-multi-million-plots/">context of the development of Galry can be found on this blog post</a>.</li>
+</ul><h2>What is Galry?</h2>
+
+<p>Galry is a <strong>high performance interactive visualization package in 
 Python</strong>. It lets you visualize and navigate into very large plots (signals,
 points, textures...) in real time, by using the graphics card as much as
-possible (with OpenGL).
-On a 2012 computer with a recent graphics card, one can interactively
+possible. Galry is written directly on top of PyOpenGL for the highest
+performance possible.
+OpenGL is a widely used hardware-accelerated open library implemented in
+virtually every graphics card. As of today, it is probably the most efficient
+portable low-level library for interactive rendering.</p>
+
+<p>On a 2012 computer with a recent graphics card, one can interactively
 visualize as much as <strong>100 million points</strong> at a reasonable framerate.
 High performance is achieved through techniques coming from real-time 3D 
 video games.</p>
 
 <p>Galry is not meant to generate high-quality plots (like matplotlib), and is
 more "low-level". It can be used to write complex interactive visualization
-GUIs that deal with large 2D datasets (only with QT for now). Galry is
+GUIs that deal with large 2D/3D datasets (only with QT for now). Galry is
 fully customizable, and all aspects of rendering and interaction can be 
-controlled by the developer. Support for 3D rendering is also possible (there
-is an example of 3D rendering in the <code>examples</code> folder).</p>
+controlled by the developer.</p>
 
 <p>Galry is based on PyOpenGL and Numpy and should work on any platform
 (Window/Linux/MacOS).
@@ -71,9 +119,7 @@ currently used but may be in the future).</p>
 
 <h2>I want to see a demo!</h2>
 
-<!--<p><a href="http://www.youtube.com/watch?v=jYNJJ4O3pXo"><img src="https://raw.github.com/rossant/galry/master/images/youtube.png" alt="Galry's Demo"></a></p>-->
-
-<iframe width="640" height="480" src="http://www.youtube.com/embed/jYNJJ4O3pXo?rel=0" frameborder="0" allowfullscreen></iframe>
+<p><a href="http://www.youtube.com/watch?v=jYNJJ4O3pXo"><img src="https://raw.github.com/rossant/galry/master/images/youtube.png" alt="Galry's Demo"></a></p>
 
 <h2>Why Galry?</h2>
 
@@ -84,7 +130,7 @@ Existing 2D plotting packages do not generally offer an efficient way to
 interactively visualize large datasets (1, 10, even 100 million points). 
 The main goal of Galry is to provide the most optimized way of visualizing
 large 2D datasets, by using the full power of the graphics card.
-Experimental support for 3D rendering is also available.</p>
+3D rendering is also possible.</p>
 
 <h2>How fast is it?</h2>
 
@@ -114,14 +160,14 @@ more details. Users are invited to do their own benchmark.</p>
 <p>You can either:</p>
 
 <ul>
-<li><p>Visualize large 2D datasets consisting of points, lines or textures,
-and pan/zoom smoothly into your data.</p></li>
+<li><p>Visualize large 2D/3D datasets consisting of points, lines, textures,
+meshes, and pan/zoom smoothly into your data.</p></li>
 <li><p>Create your own customized GUI designed for highly efficient specialized
-interactive visualization of large 2D datasets.</p></li>
+interactive visualization of large 2D/3D datasets.</p></li>
 </ul><p>Galry is fully customizable, and you can either write a specialized scientific
 visualization GUI, a particle system, a fractal viewer, or even a video
-game! Even if Galry is oriented toward 2D rendering, 3D rendering is also
-possible.</p>
+game (Pong can be written in 150 lines of commented code) !
+All those examples are implemented in the <code>examples</code> folder.</p>
 
 <h3>Custom visualization</h3>
 
@@ -135,7 +181,7 @@ Learning and using GLSL lets you exploit the full power of the GPU for
 the most optimized possible way of rendering data.</p>
 
 <p>Helper functions are also included for common tasks such as displaying
-lines, points, polygons, textures, sprites, and text.</p>
+lines, points, polygons, textures, point sprite textures, 3D meshes, and text.</p>
 
 <h3>Custom interactivity</h3>
 
@@ -160,19 +206,6 @@ to the QT interaction system based on signals and slots.</p>
 as some point. The only constraint is that this system provides an OpenGL
 context.</p>
 
-<h2>How does it work?</h2>
-
-<p>Galry is written directly on top of PyOpenGL, a Python wrapper to OpenGL.
-OpenGL is a widely used hardware-accelerated open library implemented in
-virtually every graphics card. As of today, it is probably the most efficient
-portable low-level library for interactive rendering.</p>
-
-<p>Whereas OpenGL provides a low-level API for rendering, Galry offers a
-plotting-oriented interface, allowing to render points, lines, textures,
-sprites and text. However, you can also use lower-level functions that
-give you full control about the data you put on GPU memory, and how this data 
-is transformed into pixels through vertex and fragment shaders.</p>
-
 <h2>How to get started?</h2>
 
 <p>At the time of writing, the code is still experimental and is not
@@ -182,9 +215,6 @@ difficult depending on the OS and the graphics card drivers (even if it has
 been successfully tested on Windows, Linux and MacOS systems as of now).
 That being said, please feel
 free to download the library and take a look to the documentation.</p>
-
-<p>The <code>master</code> branch contains the latest "stable" version, whereas the
-development version is in the <code>dev</code> branch.</p>
 
 <p>The <a href="https://github.com/rossant/galry/wiki/Installation">installation page</a>
 also contains details on how to install Galry. </p>
@@ -201,7 +231,8 @@ technical details than the user guide. It is recommanded that you go
 through both the user guide and the tutorials anyway.</p></li>
 <li><p>The examples: they cover a wide range of Galry's possibilities.</p></li>
 <li><p>The API reference: once you know the fundamentals, use the reference
-if you want to go deeper into Galry.</p></li>
+if you want to go deeper into Galry. It will be available on the wiki at
+some point, for now you'll have to look at the docstrings in the code...</p></li>
 </ul><h2>How did this project start?</h2>
 
 <p>Galry is developed in the context of the creation of
@@ -215,30 +246,17 @@ The development of Galry will be done in parallel.</p>
       </section>
 
     </div>
-<!--[if !IE]><script>fixScale(document);</script><![endif]-->
-<script type="text/javascript">
-var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
-document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
-</script>
-<script type="text/javascript">
-try {
-var pageTracker = _gat._getTracker("UA-6774000-3");
-pageTracker._trackPageview();
-} catch(err) {}
-</script>
-<script type="text/javascript">
-var sc_project=8405204; 
-var sc_invisible=1; 
-var sc_security="c13aafcf"; 
-var scJsHost = (("https:" == document.location.protocol) ?
-"https://secure." : "http://www.");
-document.write("<sc"+"ript type='text/javascript' src='" +
-scJsHost +
-"statcounter.com/counter/counter.js'></"+"script>");</script>
-<noscript><div class="statcounter"><a title="web analytics"
-href="http://statcounter.com/" target="_blank"><img
-class="statcounter"
-src="https://c.statcounter.com/8405204/0/c13aafcf/1/"
-alt="web analytics"></a></div></noscript>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+              <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-6774000-3");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
   </body>
 </html>
