@@ -41,7 +41,16 @@
         <p><strong>Important note: Galry is still in development. The programming interface
 may change without notice.</strong></p>
 
-<h2>What's new? [2012-12-02]</h2>
+<h3>Quick links</h3>
+
+<ul>
+<li><a href="https://github.com/rossant/galry/wiki/Installation">Installation wiki</a></li>
+<li><a href="https://groups.google.com/forum/?fromgroups#!forum/galry-users">Galry Users Google Group</a></li>
+<li><a href="https://github.com/rossant/galry/wiki/Benchmarks">Benchmarks wiki</a></li>
+<li><a href="https://github.com/rossant/galry/blob/master/docs/manual.md">User Manual</a></li>
+<li><a href="https://github.com/rossant/galry/tree/master/tutorials">Tutorials</a></li>
+<li><a href="https://github.com/rossant/galry">Source code</a></li>
+</ul><h2>What's new? [2012-12-02]</h2>
 
 <ul>
 <li>The rendering engine has been entirely rewritten in order to increase
@@ -112,16 +121,14 @@ controlled by the developer.</p>
 Mandatory dependencies include Python 2.7, Numpy, either PyQt4 or PySide,
 PyOpenGL, matplotlib.</p>
 
-<p>Optional dependencies include IPython, hdf5, PyOpenCL (the last two are not
-currently used but may be in the future).</p>
+<p>Optional dependencies include IPython, PIL, hdf5, PyOpenCL (the last two are
+not currently used but may be in the future).</p>
 
 <p>Galry is licensed under the BSD license.</p>
 
 <h2>I want to see a demo!</h2>
 
-<!--<p><a href="http://www.youtube.com/watch?v=jYNJJ4O3pXo"><img src="https://raw.github.com/rossant/galry/master/images/youtube.png" alt="Galry's Demo"></a></p>-->
-
-<iframe width="640" height="480" src="http://www.youtube.com/embed/jYNJJ4O3pXo?rel=0" frameborder="0" allowfullscreen></iframe>
+<p><a href="http://www.youtube.com/watch?v=jYNJJ4O3pXo"><img src="https://raw.github.com/rossant/galry/master/images/youtube.png" alt="Galry's Demo"></a></p>
 
 <h2>Why Galry?</h2>
 
@@ -131,8 +138,7 @@ visualization (like mayavi).
 Existing 2D plotting packages do not generally offer an efficient way to 
 interactively visualize large datasets (1, 10, even 100 million points). 
 The main goal of Galry is to provide the most optimized way of visualizing
-large 2D datasets, by using the full power of the graphics card.
-3D rendering is also possible.</p>
+large 2D/3D datasets, by using the full power of the graphics card.</p>
 
 <h2>How fast is it?</h2>
 
@@ -248,30 +254,17 @@ The development of Galry will be done in parallel.</p>
       </section>
 
     </div>
-<!--[if !IE]><script>fixScale(document);</script><![endif]-->
-<script type="text/javascript">
-var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
-document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
-</script>
-<script type="text/javascript">
-try {
-var pageTracker = _gat._getTracker("UA-6774000-3");
-pageTracker._trackPageview();
-} catch(err) {}
-</script>
-<script type="text/javascript">
-var sc_project=8405204; 
-var sc_invisible=1; 
-var sc_security="c13aafcf"; 
-var scJsHost = (("https:" == document.location.protocol) ?
-"https://secure." : "http://www.");
-document.write("<sc"+"ript type='text/javascript' src='" +
-scJsHost +
-"statcounter.com/counter/counter.js'></"+"script>");</script>
-<noscript><div class="statcounter"><a title="web analytics"
-href="http://statcounter.com/" target="_blank"><img
-class="statcounter"
-src="https://c.statcounter.com/8405204/0/c13aafcf/1/"
-alt="web analytics"></a></div></noscript>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+              <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-6774000-3");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
   </body>
 </html>
