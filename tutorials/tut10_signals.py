@@ -20,19 +20,18 @@ class MyPaintManager(PaintManager):
         y = .2 * rdn.randn(n)
         data = np.hstack((x.reshape((-1, 1)), y.reshape((-1, 1))))
         self.add_visual(PlotVisual, position=data)
-                                    
-# We define two custom interaction events. They occur on the receiver side,
-# when widget B needs to synchronize its navigation according to widget A,
-# which triggered the event.
-MyEvents = enum("SynchronizePanEvent", "SynchronizeZoomEvent")
-
+                    
 # A custom interaction manager processes the synchronization by calling
 # the `pan` and `zoom` methods of the InteractionManager.
-class MyInteractionManager(InteractionManager):
+class MyInteractionManager(InteractionManager):      
+    
+    # We define two custom interaction events. They occur on the receiver side,
+    # when widget B needs to synchronize its navigation according to widget A,
+    # which triggered the event.
     def process_custom_event(self, event, parameter):
-        if event == MyEvents.SynchronizePanEvent:
+        if event == 'SynchronizePanEvent':
             self.pan(parameter)
-        if event == MyEvents.SynchronizeZoomEvent:
+        if event == 'SynchronizeZoomEvent':
             self.zoom(parameter)
 
 # In this custom widget, we just specify our two custom companion classes.
@@ -94,15 +93,15 @@ class MyWindow(AutodestructibleWindow):
         # linked directly these QT signals to the native interaction events,
         # but we would have had infinite recursion loop problems. For
         # an unidirectional signal, that wouldn't have been a problem.
-        self.glwidget2.connect_events(self.pan1, MyEvents.SynchronizePanEvent)
-        self.glwidget2.connect_events(self.zoom1, MyEvents.SynchronizeZoomEvent)
+        self.glwidget2.connect_events(self.pan1, 'SynchronizePanEvent')
+        self.glwidget2.connect_events(self.zoom1, 'SynchronizeZoomEvent')
         
         # This is the exact symmetrical of the above code snippet.
         self.glwidget2.connect_events(InteractionEvents.PanEvent, self.pan2)
         self.glwidget2.connect_events(InteractionEvents.ZoomEvent, self.zoom2)
         
-        self.glwidget1.connect_events(self.pan2, MyEvents.SynchronizePanEvent)
-        self.glwidget1.connect_events(self.zoom2, MyEvents.SynchronizeZoomEvent)
+        self.glwidget1.connect_events(self.pan2, 'SynchronizePanEvent')
+        self.glwidget1.connect_events(self.zoom2, 'SynchronizeZoomEvent')
         
         # Finally, we add our Galry widgets to the layout.
         self.layout.addWidget(self.glwidget1)

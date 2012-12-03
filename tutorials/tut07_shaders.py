@@ -11,11 +11,6 @@ a sinus function (with a parametrizable frequency) by the vertex shader.
 from galry import *
 import numpy as np
 
-# We first define a custom vertex shader. This small program, written in a
-# C-like low-level language called GLSL, is compiled and runs on the GPU.
-# At every frame, this program is executed in parallel for every single point.
-# Here, it takes the initial position as input, and returns the final position.
-# It also passes the default color to the fragment shader.
 
 class MyVisual(Visual):
     def initialize(self, initial_position=None, frequency=None):
@@ -28,6 +23,10 @@ class MyVisual(Visual):
         self.add_uniform("frequency", vartype="float", ndim=1,
             data=frequency)
         
+        # We define a custom vertex shader. This small program, written in a
+        # C-like low-level language called GLSL, is compiled and runs on the GPU.
+        # At every frame, this program is executed in parallel for every single point.
+        # Here, it takes the initial position as input, and returns the final position.
         self.add_vertex_main("""
     float x = initial_position.x;
     vec2 position = vec2(x, sin(frequency * x));
@@ -44,8 +43,7 @@ class MyPaintManager(PaintManager):
         positions = np.zeros((n, 2))
         positions[:,0] = np.linspace(-1., 1., n)
         
-        # We create a dataset of size n.
-        # We also specify a white color, and our custom shaders.
+        # We add our visual.
         self.add_visual(MyVisual,
                         initial_position=positions,
                         # We set the frequency.

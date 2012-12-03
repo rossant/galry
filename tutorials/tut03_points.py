@@ -17,8 +17,7 @@ class MyPaintManager(PaintManager):
         # The initial coordinate range of the window is [-1, 1]^2.
         data = 0.2 * rdn.randn(10000, 2)
         
-        # We plot data with coordinates X and Y, rendered by default
-        # as yellow points.
+        # We plot data with coordinates X and Y, rendered as yellow points.
         self.add_visual(PlotVisual, position=data, primitive_type='POINTS')
 
 # By default, you can navigate into the window with the following commands:

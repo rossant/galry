@@ -167,7 +167,7 @@ class Uniform(object):
 class Texture(object):
     """Contains OpenGL functions related to textures."""
     @staticmethod
-    def create(ndim, mipmap=False, minfilter=None, maxfilter=None):
+    def create(ndim, mipmap=False, minfilter=None, magfilter=None):
         """Create a texture with the specifyed number of dimensions."""
         buffer = gl.glGenTextures(1)
         gl.glPixelStorei(gl.GL_UNPACK_ALIGNMENT, 1)
@@ -181,14 +181,14 @@ class Texture(object):
             
         if minfilter is None:
             minfilter = 'NEAREST'
-        if maxfilter is None:
-            maxfilter = 'NEAREST'
+        if magfilter is None:
+            magfilter = 'NEAREST'
             
         minfilter = getattr(gl, 'GL_' + minfilter)
-        maxfilter = getattr(gl, 'GL_' + maxfilter)
+        magfilter = getattr(gl, 'GL_' + magfilter)
             
         gl.glTexParameteri(textype, gl.GL_TEXTURE_MIN_FILTER, minfilter)
-        gl.glTexParameteri(textype, gl.GL_TEXTURE_MAG_FILTER, maxfilter)
+        gl.glTexParameteri(textype, gl.GL_TEXTURE_MAG_FILTER, magfilter)
         
         return buffer
         
@@ -709,7 +709,7 @@ class GLVisualRenderer(object):
         variable['buffer'] = Texture.create(variable['ndim'],
             mipmap=variable.get('mipmap', None),
             minfilter=variable.get('minfilter', None),
-            maxfilter=variable.get('maxfilter', None),
+            magfilter=variable.get('magfilter', None),
             )
         
     def initialize_uniform(self, name):
@@ -935,7 +935,7 @@ class GLVisualRenderer(object):
             # variable['buffer'] = Texture.create(variable['ndim'],
                 # mipmap=variable.get('mipmap', None),
                 # minfilter=variable.get('minfilter', None),
-                # maxfilter=variable.get('maxfilter', None),)
+                # magfilter=variable.get('magfilter', None),)
             # load data
             Texture.bind(variable['buffer'], variable['ndim'])
             Texture.load(data)

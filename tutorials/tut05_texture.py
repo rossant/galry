@@ -20,10 +20,12 @@ class MyPaintManager(PaintManager):
         # We create an m x n texture as an m x n x 3 array.
         # We could also use matplotlib.pyplot.imread("image.png") to
         # load a PNG image as a RGB texture.
-        self.add_visual(TextureVisual, texture=texture)
+        self.add_visual(TextureVisual, texture=texture,
+            # uncomment to activate bilinear filtering for magnification
+            # magfilter='LINEAR'
+            )
         
-        # GalryWidget has a special attribute to constrain the viewport ratio 
-        # when navigating or resizing the window. It can be useful when
-        # displaying an image, for instance.
-
+# GalryWidget has a special attribute to constrain the viewport ratio 
+# when navigating or resizing the window. It can be useful when
+# displaying an image, for instance.
 show_basic_window(paint_manager=MyPaintManager, constrain_ratio=True)

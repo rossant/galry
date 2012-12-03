@@ -1,7 +1,10 @@
 import os
 from galry import *
 import pylab as plt
-import Image
+try:
+    import Image
+except Exception as e:
+    raise ImportError("You need PIL for this example.")
 import urllib, cStringIO
 
 def load_image(url):
@@ -17,8 +20,9 @@ class EarthPaintManager(PaintManager):
         texture = np.array(load_image(url))
         self.add_visual(TextureVisual, texture=texture,
             mipmap=True,  # use mipmapping, i.e. multiresolution texture 
-            minfilter='LINEAR_MIPMAP_NEAREST',  # bilinear + mipmap filtering
-            maxfilter='LINEAR'  # bilinear filtering
+            minfilter='LINEAR_MIPMAP_NEAREST',  # bilinear + mipmap filtering for
+                                                # minification
+            magfilter='LINEAR'  # bilinear filtering for magnification
             )       
 
 if __name__ == '__main__':

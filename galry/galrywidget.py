@@ -347,13 +347,13 @@ class GalryWidget(QGLWidget):
           * arg2: an interaction event or a QT bound signal.
         
         """
-        if type(arg1) == int:
+        if type(arg1) == int or type(arg1) == str:
             self.connect_event_to_signal(arg1, arg2)
-        elif type(arg2) == int:
+        elif type(arg2) == int or type(arg2) == str:
             self.connect_signal_to_event(arg1, arg2)
-        else:
-            raise TypeError("One of the arguments must be an InteractionEvents \
-               enum value")
+        # else:
+            # raise TypeError("One of the arguments must be an InteractionEvents \
+               # enum value")
     
     def connect_signal_to_event(self, signal, event):
         """Connect a QT signal to an interaction event.

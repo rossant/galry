@@ -37,7 +37,7 @@ class TextureVisual(Visual):
         self.add_fragment_main(fragment)
     
     def initialize(self, texture=None, points=None,
-            mipmap=None, minfilter=None, maxfilter=None):
+            mipmap=None, minfilter=None, magfilter=None):
         
         shape = texture.shape[:2]
         ncomponents = texture.shape[2]
@@ -87,7 +87,7 @@ class TextureVisual(Visual):
             ncomponents=ncomponents,
             mipmap=mipmap,
             minfilter=minfilter,
-            maxfilter=maxfilter,
+            magfilter=magfilter,
             )
         # HACK: to avoid conflict in GLSL shader with the "texture" function
         # we redirect the "texture" variable here to "tex_sampler" which

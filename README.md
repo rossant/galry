@@ -4,6 +4,16 @@ Welcome to Galry: high performance interactive 2D visualization in Python
 **Important note: Galry is still in development. The programming interface
 may change without notice.**
 
+### Quick links
+
+  * [Installation wiki](https://github.com/rossant/galry/wiki/Installation)
+  * [Galry Users Google Group](https://groups.google.com/forum/?fromgroups#!forum/galry-users)
+  * [Benchmarks wiki](https://github.com/rossant/galry/wiki/Benchmarks)
+  * [User Manual](https://github.com/rossant/galry/blob/master/docs/manual.md)
+  * [Tutorials](https://github.com/rossant/galry/tree/master/tutorials)
+  * [Source code](https://github.com/rossant/galry)
+  
+  
 What's new? [2012-12-02]
 ------------------------
 
@@ -74,8 +84,8 @@ Galry is based on PyOpenGL and Numpy and should work on any platform
 Mandatory dependencies include Python 2.7, Numpy, either PyQt4 or PySide,
 PyOpenGL, matplotlib.
 
-Optional dependencies include IPython, hdf5, PyOpenCL (the last two are not
-currently used but may be in the future).
+Optional dependencies include IPython, PIL, hdf5, PyOpenCL (the last two are
+not currently used but may be in the future).
 
 Galry is licensed under the BSD license.
 
@@ -95,8 +105,7 @@ visualization (like mayavi).
 Existing 2D plotting packages do not generally offer an efficient way to 
 interactively visualize large datasets (1, 10, even 100 million points). 
 The main goal of Galry is to provide the most optimized way of visualizing
-large 2D datasets, by using the full power of the graphics card.
-3D rendering is also possible.
+large 2D/3D datasets, by using the full power of the graphics card.
 
 
 How fast is it?

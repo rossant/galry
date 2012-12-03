@@ -34,7 +34,7 @@ class MyPaintManager(PaintManager):
         else:
             newdata = get_uniform(self.n)
         
-        # We update the buffer by specifying the name, dataset, and
+        # We update the buffer by specifying the name, visual, and
         # the updated data. This array must have the exact same
         # dimensions as the original data in the buffer.
         self.set_data(position=newdata)
@@ -46,24 +46,20 @@ class MyPaintManager(PaintManager):
         
         # We add a plot with random points.
         data = get_gaussian(self.n)
-        self.dataset = self.add_visual(PlotVisual, position=data,
-            primitive_type='POINTS')
-
-# We define a new event as part of a new enumeration `MyEvents`.
-MyEvents = enum("ChangeLawEvent")
+        self.add_visual(PlotVisual, position=data, primitive_type='POINTS')
 
 # We create a class deriving from `InteractionManager` that processes the
 # newly defined event.
 class MyInteractionManager(InteractionManager):
     # The method `process_custom_event` processes the newly created events
     # when they are raised. The first parameter `event` is an element of the
-    # `MyEvents` enumeration, whereas `parameter` contains the parameters of
+    # an identifier string, whereas `parameter` contains the parameters of
     # the associated user action that was returned by the `param_getter` 
     # function defined in the binding.
     def process_custom_event(self, event, parameter):
         # Here, we call the `update_data` method of the PaintManager whenever
         # this event is raised. We don't use the parameter here.
-        if event == MyEvents.ChangeLawEvent:
+        if event == "ChangeLawEvent":
             self.paint_manager.update_data()
 
 # We define a custom interaction mode by deriving from the default one.
@@ -73,7 +69,7 @@ class MyBinding(DefaultBindingSet):
     def extend(self):
         # This binding associates pressing the space button with the 
         # `ChangeLawEvent`.
-        self.set(UserActions.KeyPressAction, MyEvents.ChangeLawEvent,
+        self.set(UserActions.KeyPressAction, "ChangeLawEvent",
                  key=QtCore.Qt.Key_Space)
 
 print "Press space!"

@@ -20,13 +20,10 @@ class MyPaintManager(PaintManager):
         # We add text at the center of the widget.
         text = "Hello world! :)"
         
-        # Here we add a dataset on the screen. A dataset is an object drawn
+        # Here we add a visual on the screen. A visual is an object drawn
         # on the screen that consists in a homogeneous set of primitives.
         # A text, a set of rectangles, triangles, points, curves, textures
-        # are examples of datasets. A dataset is defined by its template, which
-        # describes how this object is rendered on the screen. The template 
-        # can have several slots containing data or parameters, that can be
-        # filled here with the `set_data` method.
+        # are examples of visuals. 
         self.add_visual(TextVisual, text=text)
                 
 # We show a basic QT window with a custom galry widget.
