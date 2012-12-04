@@ -2,16 +2,11 @@ Galry: high-performance interactive visualization in Python
 ===========================================================
 
   * better way of switching pyside/pyqt
-  
   * sometimes both pyqt and pyside seem to be loaded?? (mac and linux)
-
   * import galry.*** in the code instead of relative imports?
-
   * make unit tests work in ipython with pylab activated
-
   * include ony shader snippets in the scene, and include shader creation
     in the renderers
-
   * get rid of all enum and replace with strings
   * refactoring of interaction system, with EventProcessor objects which
     process events.
@@ -21,13 +16,9 @@ Galry: high-performance interactive visualization in Python
   * more modular interaction system (not having navigation related stuff in
     core classes)
   * key: string with "Key_%s"
-  
   * high level interface
-
   * better handling of special_keywords
-  
   * global color module in galry
-  
   * check gl capabilities
   * check support for mipmapping
   
@@ -99,20 +90,27 @@ Later
     for maximum perceived performance
   * check GL capabilities for different features
   
+  
 Doc
 ---
+
   * generate API reference
 
+  
 Code quality
 ------------
+
   * identifier strings with '' instead of ""
   * PEP8
   * test coverage
   * lint
   * prepare for Python 3
+  * absolute imports for intra package modules
 
+  
 Ideas
 -----
+
   * several plots (like subplot) with different widgets, linking possible
   * colormaps
   * new example: raster plot with sprites

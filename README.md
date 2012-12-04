@@ -1,5 +1,5 @@
-Welcome to Galry: high performance interactive 2D visualization in Python
-=========================================================================
+Welcome to Galry: a high performance interactive visualization package in Python
+=================================================================================
 
 **Important note: Galry is still in development. The programming interface
 may change without notice.**
