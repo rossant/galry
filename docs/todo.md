@@ -14,6 +14,7 @@ Galry: high-performance interactive visualization in Python
     interactivity
   * more modular interaction system (not having navigation related stuff in
     core classes)
+  * key: string with "Key_%s"
   
   * high level interface
 
