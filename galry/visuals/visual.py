@@ -483,7 +483,6 @@ class ShaderCreator(object):
         fs = fs.replace(b"\r\n", b"\n")
         
         # OLDGLSL does not know the texture function
-        # TODO: handle non-2D textures...
         if not OLDGLSL:
             fs = fs.replace("texture1D(", "texture(" % 2)
             fs = fs.replace("texture2D(", "texture(" % 2)

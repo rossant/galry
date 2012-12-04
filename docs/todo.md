@@ -22,6 +22,9 @@ Galry: high-performance interactive visualization in Python
   
   * global color module in galry
   
+  * check gl capabilities
+  * check support for mipmapping
+  
   
 Automation
 ----------

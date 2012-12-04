@@ -60,7 +60,7 @@ class FilterVisual(TextureVisual):
     {
         for (int j = 0; j < 3; j++)
         {
-            out_color.xyz += kernel[i][j] * texture(tex_sampler, 
+            out_color.xyz += kernel[i][j] * texture2D(tex_sampler, 
                 varying_tex_coords + step * vec2(j - 1, i - 1)).xyz;
         }
     }

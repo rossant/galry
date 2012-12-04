@@ -83,7 +83,7 @@ class ParticleVisual(Visual):
 
         self.add_fragment_main(
         """
-            out_color = texture(tex_sampler, gl_PointCoord) * varying_color;
+            out_color = texture2D(tex_sampler, gl_PointCoord) * varying_color;
         """)
 
     def initialize(self, **kwargs):

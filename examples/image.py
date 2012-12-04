@@ -2,7 +2,7 @@ import os
 from galry import *
 import pylab as plt
 try:
-    import Image
+    from PIL import Image
 except Exception as e:
     raise ImportError("You need PIL for this example.")
 import urllib, cStringIO

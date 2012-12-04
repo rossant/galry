@@ -110,7 +110,7 @@ class TextVisual(Visual):
             {
                 // coordinates of the character in the font atlas
                 vec2 coord = flat_text_map.xy + vec2(w * x, h * y);
-                out_color = texture(tex_sampler, coord) * color;
+                out_color = texture2D(tex_sampler, coord) * color;
             }
             else
                 out_color = vec4(0, 0, 0, 0);

@@ -26,10 +26,11 @@ class TextureVisual(Visual):
     
     def initialize_fragment(self):
         """Set the fragment shader code."""
-        if self.ndim == 1:
-            shader_pointcoord = ".x"
-        else:
-            shader_pointcoord = ""
+        # if self.ndim == 1:
+            # shader_pointcoord = ".x"
+        # else:
+            # shader_pointcoord = ""
+        shader_pointcoord = ""
         fragment = """
         out_color = texture%dD(tex_sampler, varying_tex_coords%s);
         """ % (self.ndim, shader_pointcoord)

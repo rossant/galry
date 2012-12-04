@@ -1254,7 +1254,7 @@ class GLRenderer(object):
         """Initialize the renderer."""
         # print the renderer information
         for key, value in GLVersion.get_renderer_info().iteritems():
-            log_debug(key + ": " + value)
+            log_info(key + ": " + value)
         # initialize the renderer options using the options set in the Scene
         self.set_renderer_options()
         # create the VisualRenderer objects
