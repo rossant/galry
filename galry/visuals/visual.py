@@ -513,7 +513,7 @@ class RefVar(object):
         self.variable = variable
         
     def __repr__(self):
-        return '%s.%s' % (self.visual, self.variable)
+        return "<reference variable to '%s.%s'>" % (self.visual, self.variable)
         
     
 # Visual creator

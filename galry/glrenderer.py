@@ -570,10 +570,13 @@ class Painter(object):
 class GLVisualRenderer(object):
     """Handle rendering of one visual"""
     
-    def __init__(self, scene, visual):
+    def __init__(self, renderer, visual):
         """Initialize the visual renderer, create the slicer, initialize
         all variables and the shaders."""
-        self.scene = scene
+        # register the master renderer (to access to other visual renderers)
+        # and register the scene dictionary
+        self.renderer = renderer
+        self.scene = renderer.scene
         # register the visual dictionary
         self.visual = visual
         # hold all data changes until the next rendering pass happens
@@ -582,6 +585,9 @@ class GLVisualRenderer(object):
         self.set_primitive_type(self.visual['primitive_type'])
         # indexed mode? set in initialize_variables
         self.use_index = None
+        # whether to use slicing? always True except when indexing should not
+        # be used, but slicing neither
+        self.use_slice = True
         # self.previous_size = None
         # set the slicer
         self.slicer = Slicer()
@@ -665,7 +671,7 @@ class GLVisualRenderer(object):
         if self.get_variables('index'):
             # deactivate slicing
             self.slicer = self.noslicer
-            log_info("deactivating slicing")
+            log_info("deactivating slicing because there's an indexed buffer")
             self.use_index = True
         else:
             self.use_index = False
@@ -692,10 +698,21 @@ class GLVisualRenderer(object):
         # deal with reference attributes: share the same buffers between 
         # several different visuals
         if isinstance(variable.get('data', None), RefVar):
+            
+            # HACK: if the targeted attribute is indexed, we should
+            # deactivate slicing here
+            if self.renderer.visual_renderers[variable['data'].visual].use_index:
+                log_info("deactivating slicing")
+                self.slicer = self.noslicer
+            
             # use the existing buffers from the target variable
             buffers = self.resolve_reference(variable['data'])
             variable['sliced_attribute'] = SlicedAttribute(self.slicer, location,
                 buffers=buffers['sliced_attribute'].buffers)
+            # copy the use_index value from the target visual, because if it
+            # uses indexing, then it does not use slicing, and this visual
+            # should not use slicing too.
+            # self.use_index = 
         else:
             # initialize the sliced buffers
             variable['sliced_attribute'] = SlicedAttribute(self.slicer, location)
@@ -1108,7 +1125,7 @@ class GLVisualRenderer(object):
             self.bind_indices()
             Painter.draw_indexed_arrays(self.primitive_type, self.indexsize)
         # or paint without
-        else:
+        elif self.use_slice:
             # draw all sliced buffers
             for slice in xrange(len(self.slicer.slices)):
                 # get slice bounds
@@ -1261,7 +1278,7 @@ class GLRenderer(object):
         self.visual_renderers = OrderedDict()
         for visual in self.get_visuals():
             name = visual['name']
-            self.visual_renderers[name] = GLVisualRenderer(self.scene, visual)
+            self.visual_renderers[name] = GLVisualRenderer(self, visual)
         
     def clear(self):
         """Clear the scene."""

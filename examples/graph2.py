@@ -25,7 +25,7 @@ def get_tex(n):
 class GraphPaintManager(PaintManager):
     def initialize(self):
         
-        n = 200
+        n = 100
         # we define a random graph with networkx
         # g = nx.barabasi_albert_graph(n, 5)
         
@@ -51,7 +51,7 @@ class GraphPaintManager(PaintManager):
         color = np.random.rand(len(positions), 4)
         color[:,-1] = 1
         
-        coledges = (1., 1., 1., .1)
+        coledges = (1., 1., 1., .25)
         
         self.add_visual(PlotVisual, position=positions,
             primitive_type='LINES', color=coledges, index=edges, name='edges')
@@ -78,6 +78,7 @@ class GraphPaintManager(PaintManager):
         u = x[:,0] - x[:,0].reshape((-1, 1))
         v = x[:,1] - x[:,1].reshape((-1, 1))
         r = np.sqrt(u ** 2 + v ** 2) ** 3
+        # dist = np.sqrt(x[:,0] ** 2 + x[:,1] ** 2)
         
         # ind = r==0.
         r[r<.01] = .01
@@ -107,12 +108,14 @@ class GraphPaintManager(PaintManager):
         # attraction (spring)
         b = 5.
         
+        c = .1
+        
         # damping
-        damp = .99
+        damp = .95
         
         self.forces = np.empty((len(x), 2))
-        self.forces[:,0] = a * u1.ravel() + b * u2
-        self.forces[:,1] = a * v1.ravel() + b * v2
+        self.forces[:,0] = -c * x[:,0] + a * u1.ravel() + b * u2
+        self.forces[:,1] = -c * x[:,1] + a * v1.ravel() + b * v2
         
         v = damp * (self.velocities + self.forces * self.dt)
         if self.interaction_manager.selected_node is not None:
