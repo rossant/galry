@@ -4,18 +4,6 @@ import networkx as nx
 from networkx import adjacency_matrix
 import itertools
 
-# def complete_graph_from_list(L, create_using=None):
-    # G=networkx.empty_graph(len(L), create_using)
-    # if n>1:
-        # if G.is_directed():
-            # edges=itertools.permutations(L,2)
-        # else:
-            # edges=itertools.combinations(L,2)
-        # G.add_edges_from(edges)
-    # return G
-
-
-
 def get_tex(n):
     """Create a texture for the nodes. It may be simpler to just use an image!
     
@@ -39,7 +27,12 @@ class GraphPaintManager(PaintManager):
         
         n = 200
         # we define a random graph with networkx
-        g = nx.barabasi_albert_graph(n, 3)
+        # g = nx.barabasi_albert_graph(n, 5)
+        
+        # g = nx.erdos_renyi_graph(n, 0.01)
+        g=nx.watts_strogatz_graph(n, 3, 0.5)
+        # g=nx.barabasi_albert_graph(n,5)
+        # g=nx.random_lobster(n, 0.9, 0.9)
         
         # edges = itertools.combinations(g.subgraph(range(20)), 2)
         # g.add_edges_from(edges)
@@ -112,13 +105,16 @@ class GraphPaintManager(PaintManager):
         a = -.5
         
         # attraction (spring)
-        b = .5
+        b = 5.
+        
+        # damping
+        damp = .99
         
         self.forces = np.empty((len(x), 2))
         self.forces[:,0] = a * u1.ravel() + b * u2
         self.forces[:,1] = a * v1.ravel() + b * v2
         
-        v = .9 * (self.velocities + self.forces * self.dt)
+        v = damp * (self.velocities + self.forces * self.dt)
         if self.interaction_manager.selected_node is not None:
             v[self.interaction_manager.selected_node] = self.velocities[self.interaction_manager.selected_node]
         self.velocities = v
