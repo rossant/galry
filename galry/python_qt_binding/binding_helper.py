@@ -39,8 +39,8 @@ def _select_qt_binding(binding_name=None):
     global QT_BINDING, QT_BINDING_VERSION
 
     # order of default bindings can be changed here
-    # DEFAULT_BINDING_ORDER = ['pyside', 'pyqt']  # PySide first
-    DEFAULT_BINDING_ORDER = ['pyqt', 'pyside']  # PyQt first
+    DEFAULT_BINDING_ORDER = ['pyside', 'pyqt']  # PySide first
+    # DEFAULT_BINDING_ORDER = ['pyqt', 'pyside']  # PyQt first
 
     # determine binding preference
     if binding_name is not None:
@@ -110,7 +110,6 @@ def _named_optional_import(name):
 
 
 def _load_pyqt(required_modules, optional_modules):
-    log_info("loading PyQt")
     
     # set environment variable QT_API for matplotlib
     os.environ['QT_API'] = 'pyqt'
@@ -158,11 +157,13 @@ def _load_pyqt(required_modules, optional_modules):
     QFileDialog.getSaveFileName = QFileDialog.getSaveFileNameAndFilter
 
     import PyQt4.QtCore
+    
+    log_info("PyQt loaded")
+    
     return PyQt4.QtCore.PYQT_VERSION_STR
 
 
 def _load_pyside(required_modules, optional_modules):
-    log_info("loading PySide")
     
     # set environment variable QT_API for matplotlib
     os.environ['QT_API'] = 'pyside'
@@ -233,6 +234,9 @@ def _load_pyside(required_modules, optional_modules):
         return ui
 
     import PySide
+    
+    log_info("PySide loaded")
+    
     return PySide.__version__
 
 
