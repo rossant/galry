@@ -500,7 +500,6 @@ class GalryWidget(QGLWidget):
     
     def toggle_fullscreen(self):
         self.is_fullscreen = not self.is_fullscreen
-        print self.is_fullscreen
         if self.is_fullscreen:
             self.window.showFullScreen()
         else:
