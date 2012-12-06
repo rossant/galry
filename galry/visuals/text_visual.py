@@ -28,53 +28,69 @@ class TextVisual(Visual):
         shader."""
         if coordinates is None:
             coordinates = (0., 0.)
-        # position = np.tile(np.array(coordinates).reshape((1, -1)), (self.size, 1))
         if type(coordinates) == tuple:
             coordinates = [coordinates]
         position = np.repeat(np.array(coordinates), self.textsizes, axis=0)
-        # print position
         return dict(position=position)
     
     def text_compound(self, text):
         """Compound variable for the text string. It changes the text map,
         the character position, and the text width."""
         
+        coordinates = self.coordinates
+        
         if type(text) == list:
             self.textsizes = [len(t) for t in text]
             text = "".join(text)
             if type(self.coordinates) != list:
-                self.coordinates = [self.coordinates] * len(self.textsizes)
+                coordinates = [self.coordinates] * len(self.textsizes)
+                
+            text_map = self.get_map(text)
+            
+            # offset for all characters in the merging of all texts
+            offset = np.hstack((0., np.cumsum(text_map[:, 2])[:-1]))
+            
+            # for each text, the cumsum of the length of all texts strictly
+            # before
+            d = np.hstack(([0], np.cumsum(self.textsizes)[:-1]))
+            # d -= d[0]
+            
+            # print self.textsizes
+            # print offset
+            # print d
+            # print
+            
+            # compensate the offsets for the length of each text
+            offset -= np.repeat(offset[d], self.textsizes)
+            
+            # print offset[-5]
+            
+            text_width = 0.
+                
         else:
             self.textsizes = len(text)
+            text_map = self.get_map(text)
+            offset = np.hstack((0., np.cumsum(text_map[:, 2])[:-1]))    
+            text_width = offset[-1]
+            
             
         self.size = len(text)
-            
-        # print self.coordinates, self.textsizes
-            
-        text_map = self.get_map(text)
-        offset = np.hstack((0., np.cumsum(text_map[:, 2])[:-1]))    
-        text_map = self.get_map(text.ljust(self.size, ' '))
-        d = dict(text_map=text_map, offset=offset, text_width=offset[-1])
-        d.update(self.position_compound(self.coordinates))
+        
+        d = dict(text_map=text_map, offset=offset, text_width=text_width)
+        d.update(self.position_compound(coordinates))
+        
         return d
     
     def initialize_font(self, font, fontsize):
         """Initialize the specified font at a given size."""
         self.texture, self.matrix, self.get_map = load_font(font, fontsize)
 
-    def initialize(self, text, coordinates=(0., 0.), font='segoe', fontsize=24, color=None):
+    def initialize(self, text, coordinates=(0., 0.), font='segoe', fontsize=24,
+            color=None, letter_spacing=None):
         """Initialize the text template."""
         
         if color is None:
             color = self.default_color
-        
-        # if type(text) == list:
-            # self.textsizes = [len(t) for t in text]
-            # text = "".join(text)
-            # if type(coordinates) != list:
-                # coordinates = [coordinates] * len(self.textsizes)
-        # else:
-            # self.textsizes = len(text)
         
         self.size = len(text)
         self.primitive_type = 'POINTS'
@@ -97,8 +113,9 @@ class TextVisual(Visual):
                             ncomponents=self.texture.shape[2],
                             data=self.texture)
         
-        # pure heuristic
-        letter_spacing = (100 + 17. * fontsize)
+        # pure heuristic (probably bogus)
+        if letter_spacing is None:
+            letter_spacing = (100 + 17. * fontsize)
         self.add_uniform("letter_spacing", vartype="float", ndim=1,
                             data=letter_spacing)
         self.add_uniform("point_size", vartype="float", ndim=1,

@@ -5,7 +5,7 @@ fileVersion=1
 fontName=Segoe UI
 fontFile=
 charSet=0
-fontSize=-32
+fontSize=-14
 aa=1
 scaleH=100
 useSmoothing=1
@@ -30,8 +30,8 @@ useFixedHeight=1
 forceZero=1
 
 # output file
-outWidth=400
-outHeight=400
+outWidth=200
+outHeight=200
 outBitDepth=32
 fontDescFormat=0
 fourChnlPacked=0

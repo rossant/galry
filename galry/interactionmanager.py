@@ -107,7 +107,8 @@ class InteractionManager(Manager):
     def process_custom_event(self, event, parameter):
         """Process a custom event."""
         pass
-            
+           
+           
     # Navigation methods
     # ------------------    
     def set_navigation_constraints(self, constraints=None, maxzoom=1e6):

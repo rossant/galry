@@ -39,7 +39,7 @@ class PongPaintManager(PaintManager):
         
         # text visual
         self.add_visual(TextVisual, coordinates=(0., .9), text='',
-            fontsize=36, name='score', color=(1.,) * 4)
+            fontsize=32, name='score', color=(1.,) * 4)
             
         # initialize game
         self.new_game()
