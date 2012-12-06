@@ -22,19 +22,35 @@ class TextVisual(Visual):
     
     """
     
-    def position_compound(self, position=None):
+    def position_compound(self, coordinates=None):
         """Compound variable with the position of the text. All characters
         are at the exact same position, and are then shifted in the vertex
         shader."""
-        if position is None:
-            position = (0., 0.)
-        position = np.tile(np.array(position).reshape((1, -1)), (self.size, 1))
+        if coordinates is None:
+            coordinates = (0., 0.)
+        # position = np.tile(np.array(coordinates).reshape((1, -1)), (self.size, 1))
+        if type(coordinates) == tuple:
+            coordinates = [coordinates]
+        position = np.repeat(np.array(coordinates), self.textsizes, axis=0)
+        # print position
         return dict(position=position)
     
     def text_compound(self, text):
         """Compound variable for the text string. It changes the text map,
         the character position, and the text width."""
+        
+        if type(text) == list:
+            self.textsizes = [len(t) for t in text]
+            text = "".join(text)
+            if type(self.coordinates) != list:
+                self.coordinates = [self.coordinates] * len(self.textsizes)
+        else:
+            self.textsizes = len(text)
+            
         self.size = len(text)
+            
+        # print self.coordinates, self.textsizes
+            
         text_map = self.get_map(text)
         offset = np.hstack((0., np.cumsum(text_map[:, 2])[:-1]))    
         text_map = self.get_map(text.ljust(self.size, ' '))
@@ -51,6 +67,14 @@ class TextVisual(Visual):
         
         if color is None:
             color = self.default_color
+        
+        # if type(text) == list:
+            # self.textsizes = [len(t) for t in text]
+            # text = "".join(text)
+            # if type(coordinates) != list:
+                # coordinates = [coordinates] * len(self.textsizes)
+        # else:
+            # self.textsizes = len(text)
         
         self.size = len(text)
         self.primitive_type = 'POINTS'

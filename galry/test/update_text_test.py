@@ -6,7 +6,7 @@ class PM(PaintManager):
     def initialize(self):
         # test buffer updating with different sizes
         self.add_visual(TextVisual, text="short")
-        self.set_data(coordinates=(0., .5),text="long text!")
+        self.set_data(coordinates=(0., .5), text="long text!")
         
 class UpdateTextTest(GalryTest):
     def test(self):
