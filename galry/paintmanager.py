@@ -113,6 +113,8 @@ class PaintManager(Manager):
         # kwargs = visual.extract_common_parameters(**kwargs)
         # call initialize with the new arguments
         visual.initialize(**kwargs)
+        # call finalize again in the visual
+        visual.finalize()
         # retrieve the updated data for all variables
         data_updating.update(visual.get_data_updating())
         # keywords given here in kwargs have higher priority than those in

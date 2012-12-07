@@ -83,6 +83,6 @@ class SpriteVisual(Visual):
         
         # Vertex shader
         self.add_vertex_main("""
-    gl_PointSize = point_size;
+        gl_PointSize = point_size;
         """)
         

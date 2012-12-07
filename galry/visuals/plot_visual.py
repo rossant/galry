@@ -143,3 +143,4 @@ class PlotVisual(Visual):
         self.add_uniform("point_size", data=point_size)
         self.add_vertex_main("""gl_PointSize = point_size;""")
         
+        # print self.bounds

@@ -617,6 +617,8 @@ class Visual(object):
         in the first place."""
         self.data_updating = {}
         self.reinitialization = True
+        # force the bounds to be defined again
+        self.bounds = None
        
     def get_data_updating(self):
         """Return the dictionary with the updated variable data."""
