@@ -501,9 +501,11 @@ class GalryWidget(QGLWidget):
     def toggle_fullscreen(self):
         self.is_fullscreen = not self.is_fullscreen
         if self.is_fullscreen:
-            self.window.showFullScreen()
+            if hasattr(self.window, 'showFullScreen'):
+                self.window.showFullScreen()
         else:
-            self.window.showNormal()
+            if hasattr(self.window, 'showNormal'):
+                self.window.showNormal()
     
     
     # Focus methods

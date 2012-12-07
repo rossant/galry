@@ -2,8 +2,7 @@ Galry: high-performance interactive visualization in Python
 ===========================================================
 
   * better way of switching pyside/pyqt
-  * sometimes both pyqt and pyside seem to be loaded?? (mac and linux)
-  * import galry.*** in the code instead of relative imports?
+  * import galry.*** in the code instead of relative imports
   * make unit tests work in ipython with pylab activated
   * include ony shader snippets in the scene, and include shader creation
     in the renderers
@@ -19,8 +18,7 @@ Galry: high-performance interactive visualization in Python
   * high level interface
   * better handling of special_keywords
   * global color module in galry
-  * check gl capabilities
-  * check support for mipmapping
+  * check gl capabilities (eg mipmapping)
   
   
 Automation
@@ -78,17 +76,13 @@ Later
 
   * HDF5 viewer for long signals: use stride to implement a dynamic 
     multi-resolution undersampling method.
+    Refinement: thread to update data on the GPU only when no action is occurring,
+    for maximum perceived performance
   * user preferences, with DEBUG option
   * better error messages when template is not correct (eg data is missing,
     size is missing, etc)
-  * update text template to allow for several texts at different positions
   * opencl buffers and opencl/gl interop buffers
   * handle more complete data type (int 8/16/32 bits, floats, etc)
-  * dynamic resampling with HDF5 stride for highly efficient interactive 
-    visualization of multi-GB datasets (that cannot reside entirely in memory).
-    Refinement: thread to update data on the GPU only when no action is occurring,
-    for maximum perceived performance
-  * check GL capabilities for different features
   
   
 Doc

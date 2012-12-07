@@ -167,17 +167,14 @@ def format_number(x, nfrac=None):
     
     if np.abs(x) < 1e-15:
         return "0"
-    # elif np.abs(x) < .0999:
-        # return "%.2e" % x
-    # elif np.abs(x) > 10.001:
-        # return "%.2e" % x
-    # else:
-        # return "%.2f" % x
+        
+    elif np.abs(x) > 100.001:
+        return "%.2e" % x
         
     if nfrac <= 2:
         return "%.2f" % x
     else:
-        return ("%." + str(nfrac) + "e") % x
+        return ("%." + str(nfrac - 2) + "e") % x
 
 def get_ticks_text(x0, y0, x1, y1):
     ticksx, nfracx = get_ticks(x0, x1)
@@ -269,7 +266,7 @@ class TicksVisual(Visual):
                 // alpha channel
                 float alpha = .25;
                 
-                if (abs(vtick) < .0000001)
+                if (abs(vtick) < .0000000000001)
                     alpha = .75;
                     
                 // define the tick texture
@@ -313,13 +310,15 @@ class PM(PaintManager):
         # axes
         # self.add_visual(AxesVisual)
         # ticks
-        self.add_visual(TicksVisual, showgrid=True)
-        
-        self.add_visual(PlotVisual, position=np.random.randn(1000, 2) * .2,
+        self.add_visual(PlotVisual, position=np.random.randn(100000, 2) * .2,
             primitive_type='POINTS')
+        
+        
         
         viewbox = self.interaction_manager.get_viewbox()
         text, coordinates, _ = get_ticks_text(*viewbox)
+        
+        self.add_visual(TicksVisual, showgrid=True)
         
         self.add_visual(TicksTextVisual, text=text, coordinates=coordinates,
             fontsize=14, color=(1., 1., 1., .75), name='ticks_text',
