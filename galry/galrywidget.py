@@ -299,6 +299,8 @@ class GalryWidget(QGLWidget):
     # ---------------------
     def normalize_position(self, x, y):
         """Window coordinates ==> world coordinates."""
+        if not hasattr(self.paint_manager, 'renderer'):
+            return None
         vx, vy = self.paint_manager.renderer.viewport
         x = -vx + 2 * vx * x / float(self.width)
         y = -(-vy + 2 * vy * y / float(self.height))
@@ -308,6 +310,8 @@ class GalryWidget(QGLWidget):
         """Normalize the coordinates of a difference vector between two
         points.
         """
+        if not hasattr(self.paint_manager, 'renderer'):
+            return None
         vx, vy = self.paint_manager.renderer.viewport
         x = 2 * vx * x/float(self.width)
         y = -2 * vy * y/float(self.height)
