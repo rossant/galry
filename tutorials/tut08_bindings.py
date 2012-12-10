@@ -33,7 +33,7 @@ class MyBinding(BindingSet):
         # from galry import cursors
         
         # We specify a custom base cursor for this interaction mode.
-        self.set_base_cursor(cursors.MagnifyingGlassCursor)
+        self.set_base_cursor('MagnifyingGlassCursor')
         
         # We bind the action corresponding to a mouse move while pressing
         # the left button, with the zooming event. The parameters associated

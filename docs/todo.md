@@ -1,28 +1,20 @@
 Galry: high-performance interactive visualization in Python
 ===========================================================
 
+  * rename extend into initialize (and have initialize_default)
+  * rename "bindings" to "mode"
+  * way of having several visuals in a single visual
+  * high level interface
+  * import galry.*** in the code instead of relative imports
   * include ony shader snippets in the scene, and include shader creation
     in the renderers
-
+  * check gl capabilities (eg mipmapping)
+  * check gl version in glrenderer and adapt the shader code to it
   * window timer update: make it an event instead
-  * refactoring of interaction system, with EventProcessor objects which
-    process events.
-  * rename "bindings" to "mode"
-  * process_action(action, parameters) in interaction manager for quick 
-    interactivity
-  * more modular interaction system (not having navigation related stuff in
-    core classes)
-  * key: string with "Key_%s"
-
   * better way of switching pyside/pyqt
-  * import galry.*** in the code instead of relative imports
   * make unit tests work in ipython with pylab activated
   * better handling of special_keywords
   * global color module in galry
-  * check gl capabilities (eg mipmapping)
-  
-  * way of having several visuals in a single visual
-  * high level interface
   
   
 Automation
@@ -78,6 +70,8 @@ Tested
 Later
 -----
 
+  * process_action(action, parameters) in interaction manager for quick 
+    interactivity
   * HDF5 viewer for long signals: use stride to implement a dynamic 
     multi-resolution undersampling method.
     Refinement: thread to update data on the GPU only when no action is occurring,
@@ -87,6 +81,10 @@ Later
     size is missing, etc)
   * opencl buffers and opencl/gl interop buffers
   * handle more complete data type (int 8/16/32 bits, floats, etc)
+  
+  * several plots (like subplot) with different widgets, linking possible
+  * colormaps
+  * new example: raster plot with sprites
   
   
 Doc
@@ -103,13 +101,5 @@ Code quality
   * test coverage
   * lint
   * prepare for Python 3
-  * absolute imports for intra package modules
 
-  
-Ideas
------
-
-  * several plots (like subplot) with different widgets, linking possible
-  * colormaps
-  * new example: raster plot with sprites
   

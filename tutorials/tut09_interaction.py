@@ -48,6 +48,15 @@ class MyPaintManager(PaintManager):
         data = get_gaussian(self.n)
         self.add_visual(PlotVisual, position=data, primitive_type='POINTS')
 
+        
+class MyEventProcessor(EventProcessor):
+    def initialize(self):
+        self.register('ChangeLawEvent', self.change_law)
+    
+    def change_law(self, parameter):
+        self.paint_manager.update_data()
+    
+        
 # We create a class deriving from `InteractionManager` that processes the
 # newly defined event.
 class MyInteractionManager(InteractionManager):
@@ -56,11 +65,13 @@ class MyInteractionManager(InteractionManager):
     # an identifier string, whereas `parameter` contains the parameters of
     # the associated user action that was returned by the `param_getter` 
     # function defined in the binding.
-    def process_custom_event(self, event, parameter):
+    def initialize(self):
         # Here, we call the `update_data` method of the PaintManager whenever
         # this event is raised. We don't use the parameter here.
-        if event == "ChangeLawEvent":
-            self.paint_manager.update_data()
+        # self.register
+        # if event == "ChangeLawEvent":
+            # self.
+        self.add_processor(MyEventProcessor)
 
 # We define a custom interaction mode by deriving from the default one.
 # The `DefaultBindingSet` implements navigation events.
@@ -69,7 +80,7 @@ class MyBinding(DefaultBindingSet):
     def extend(self):
         # This binding associates pressing the space button with the 
         # `ChangeLawEvent`.
-        self.set('KeyPressAction', "ChangeLawEvent",
+        self.set('KeyPressAction', 'ChangeLawEvent',
                  key='Space')
 
 print "Press space!"

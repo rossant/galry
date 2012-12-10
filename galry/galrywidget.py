@@ -16,7 +16,7 @@ from debugtools import DEBUG, log_debug, log_info, log_warn
 import interactionmanager
 import paintmanager
 from tools import FpsCounter, show_window
-import cursors
+from cursors import get_cursor
 
 __all__ = [
 'GalryWidget',
@@ -91,7 +91,7 @@ class GalryWidget(QGLWidget):
         self.initialized = False
         
         # Load the QT curors here, after QT has been initialized.
-        cursors.load()
+        # cursors.load()
         
         # Capture keyboard events.
         if getfocus:
@@ -106,7 +106,7 @@ class GalryWidget(QGLWidget):
         self.is_fullscreen = False
         
         self.events_to_signals = {}
-        self.prev_event = None
+        # self.prev_event = None
                                     
         # keyword arguments without "_manager" => passed to initialize                  
         self.initialize(**kwargs)
@@ -120,7 +120,7 @@ class GalryWidget(QGLWidget):
         self.paint_manager.set_rendering_options(
                         constrain_ratio=self.constrain_ratio,
                         )
-        self.interaction_manager.constrain_navigation = self.constrain_navigation
+        # self.interaction_manager.constrain_navigation = self.constrain_navigation
         
         self.autosave = autosave
         
@@ -172,9 +172,6 @@ class GalryWidget(QGLWidget):
             self.set_bindings()
         self.binding_manager.add(*self.bindings)
         
-        # set base cursor: the current binding is the first one
-        self.interaction_manager.base_cursor = self.bindings[0].base_cursor
-        
     def initialize_companion_classes(self):
         """Initialize companion classes."""
         # default companion classes
@@ -190,6 +187,7 @@ class GalryWidget(QGLWidget):
         # link all managers
         for key, val in self.companion_classes.iteritems():
             for child_key, child_val in self.companion_classes.iteritems():
+                # no self-reference
                 if child_key == key:
                     continue
                 obj = getattr(self, key)
@@ -355,9 +353,6 @@ class GalryWidget(QGLWidget):
             self.connect_event_to_signal(arg1, arg2)
         elif type(arg2) == int or type(arg2) == str:
             self.connect_signal_to_event(arg1, arg2)
-        # else:
-            # raise TypeError("One of the arguments must be an InteractionEvents \
-               # enum value")
     
     def connect_signal_to_event(self, signal, event):
         """Connect a QT signal to an interaction event.
@@ -388,13 +383,13 @@ class GalryWidget(QGLWidget):
         self.events_to_signals[event] = signal
         
         
-    # Interaction methods
-    # -------------------
+    # Binding mode methods
+    # --------------------
     def switch_interaction_mode(self):
         """Switch the interaction mode."""
         binding = self.binding_manager.switch()
         # set base cursor
-        self.interaction_manager.base_cursor = binding.base_cursor
+        # self.interaction_manager.base_cursor = binding.base_cursor
         return binding
     
     def set_interaction_mode(self, mode):
@@ -407,9 +402,12 @@ class GalryWidget(QGLWidget):
         """
         binding = self.binding_manager.set(mode)
         # set base cursor
-        self.interaction_manager.base_cursor = binding.base_cursor
+        # self.interaction_manager.base_cursor = binding.base_cursor
         return binding
         
+        
+    # Interaction methods
+    # -------------------
     def get_current_action(self):
         """Return the current user action with the action parameters."""
         # get current action
@@ -448,6 +446,14 @@ class GalryWidget(QGLWidget):
             
         return event, args
         
+    def set_current_cursor(self):
+        cursor = self.interaction_manager.get_cursor()
+        # if no cursor set, then use the default one in the current binding
+        # mode
+        if cursor is None:
+            cursor = self.binding_manager.get().get_base_cursor()
+        self.setCursor(get_cursor(cursor))
+        
     def process_interaction(self, event=None, args=None):
         """Process user interaction.
         
@@ -466,6 +472,8 @@ class GalryWidget(QGLWidget):
             # get current event from current user action
             event, args = self.get_current_event()
         
+        prev_event = self.interaction_manager.prev_event
+        
         # handle interaction mode change
         if event == 'SwitchInteractionModeEvent':
             binding = self.switch_interaction_mode()
@@ -480,18 +488,17 @@ class GalryWidget(QGLWidget):
             self.events_to_signals[event].emit(*args)
         
         # set cursor
-        self.setCursor(self.interaction_manager.get_cursor())
+        self.set_current_cursor()
         
         # clean current action (unique usage)
         self.user_action_generator.clean_action()
         
         # update the OpenGL view
-        if not isinstance(self, GalryTimerWidget) and (event is not None or self.prev_event is not None):
+        if not isinstance(self, GalryTimerWidget) and (event is not None or prev_event is not None):
             self.updateGL()
+            # print self, "update"
             
-        # keep track of the previous event
-        self.prev_event = event
-    
+        # print self, event
     
     # Miscellaneous
     # -------------

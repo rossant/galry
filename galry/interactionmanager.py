@@ -1,47 +1,115 @@
 import numpy as np
-import cursors
+# import cursors
 from manager import Manager
-# from interactionevents import InteractionEvents as events
 
-__all__ = ['InteractionManager']
 
+__all__ = ['InteractionManager', 'EventProcessor', 'NavigationEventProcessor']
+
+
+class EventProcessor(object):
+    """Process several related events."""
+    def __init__(self, interaction_manager, *args, **kwargs):
+        self.interaction_manager = interaction_manager
+        self.parent = interaction_manager.parent
+        self.handlers = {}
+        
+        # current cursor and base cursor for the active interaction mode
+        self.cursor = None
+        # self.base_cursor = None
+        
+        self.initialize(*args, **kwargs)
+        
+    def get_processor(self, name):
+        return self.interaction_manager.get_processor(name)
+        
+    def _get_paint_manager(self):
+        return self.interaction_manager.paint_manager
+    paint_manager = property(_get_paint_manager)
+        
+    def set_data(self, *args, **kwargs):
+        # shortcut to paint_manager.set_data
+        return self.interaction_manager.paint_manager.set_data(*args, **kwargs)
+        
+    def set_cursor(self, cursor):
+        self.cursor = cursor
+        
+    def get_cursor(self):
+        """Return the current cursor."""
+        # if self.cursor is None:
+            # return self.base_cursor
+        # else:
+        return self.cursor
+        
+    def register(self, event, method):
+        """Register a handler for the event."""
+        self.handlers[event] = method
+        
+    def registered(self, event):
+        """Return whether the specified event has been registered by this
+        processor."""
+        return self.handlers.get(event, None) is not None
+        
+        
+    # Methods to override
+    # -------------------
+    def initialize(self, *args, **kwargs):
+        """Initialize the event processor by calling self.register to register
+        handlers for different events."""
+        pass
+        
+    def process(self, event, parameter):
+        """Process an event by calling the registered handler if there's one.
+        """
+        method = self.handlers.get(event, None)
+        if method:
+            method(parameter)
+
+    def process_none(self):
+        """Process the None event, occuring when there's no event, or when
+        an event has just finished."""
+        pass
+        
+      
 # Maximum viewbox allowed when constraining navigation.
 MAX_VIEWBOX = (-1., -1., 1., 1.)
 
-class InteractionManager(Manager):
-    """This class implements the processing of the raised interaction events.
-    
-    To be overriden.
-    
-    """
-    # current cursor and base cursor for the active interaction mode
-    cursor = None
-    base_cursor = None
-    
-    # zoom box
-    navigation_rectangle = None
-    constrain_navigation = False
-    
-    def __init__(self, parent):
-        # self.parent = parent
-        # initialize navigation
-        # self.reset()
-        super(InteractionManager, self).__init__(parent)
+class NavigationEventProcessor(EventProcessor):
+    """Handle navigation-related events."""
+    def initialize(self, constrain_navigation=False):
+        # zoom box
+        self.navigation_rectangle = None
+        self.constrain_navigation = constrain_navigation
+        
+        self.reset()
         self.set_navigation_constraints()
         self.activate_navigation_constrain()
-        self.initialize()
         
-    def initialize(self):
-        """Initialize the InteractionManager.
+        # register events processors
+        self.register('PanEvent', self.process_pan_event)
+        self.register('RotationEvent', self.process_rotation_event)
+        self.register('ZoomEvent', self.process_zoom_event)
+        self.register('ZoomBoxEvent', self.process_zoombox_event)
+        self.register('ResetEvent', self.process_reset_event)
+        self.register('ResetZoomEvent', self.process_resetzoom_event)
         
-        To be overriden.
-        """
-        pass
+    def transform_view(self):
+        """Change uniform variables to implement interactive navigation."""
+        tx, ty = self.get_translation()
+        sx, sy = self.get_scaling()
+        # scale = (np.float32(sx), np.float32(sy))
+        scale = (sx, sy)
+        # translation = (np.float32(tx), np.float32(ty))
+        translation = (tx, ty)
+        # update all non static visuals
+        for visual in self.paint_manager.get_visuals():
+            if not visual.get('is_static', False):
+                self.set_data(visual=visual['name'], 
+                              scale=scale, translation=translation)
         
         
     # Event processing methods
     # ------------------------
-    def process_none_event(self):
+    def process_none(self):
         """Process the None event, i.e. where there is no event. Useful
         to trigger an action at the end of a long-lasting event."""
         # when zoombox event finished: set_relative_viewbox
@@ -49,67 +117,40 @@ class InteractionManager(Manager):
             self.set_relative_viewbox(*self.navigation_rectangle)
             self.paint_manager.hide_navigation_rectangle()
         self.navigation_rectangle = None
-        self.cursor = None
-    
-    def process_pan_event(self, event, parameter):
-        """Process a pan-related event."""
-        if event == 'PanEvent':
-            self.pan(parameter)
-            self.cursor = cursors.ClosedHandCursor
-    
-    def process_rotation_event(self, event, parameter):
-        if event == 'RotationEvent':
-            self.rotate(parameter)
-            self.cursor = cursors.ClosedHandCursor
+        # self.set_cursor(None)
+        self.transform_view()
 
-    def process_zoom_event(self, event, parameter):
-        """Process a zoom-related event."""
-        if event == 'ZoomEvent':
-            self.zoom(parameter)
-            self.cursor = cursors.MagnifyingGlassCursor
-        if event == 'ZoomBoxEvent':
-            self.zoombox(parameter)
-            self.cursor = cursors.MagnifyingGlassCursor
+    def process_pan_event(self, parameter):
+        self.pan(parameter)
+        self.set_cursor('ClosedHandCursor')
+        self.transform_view()
     
-    def process_reset_event(self, event, parameter):
-        """Process a reset-related event."""
-        if event == 'ResetEvent':
-            self.reset()
-            self.cursor = None
-        if event == 'ResetZoomEvent':
-            self.reset_zoom()
-            self.cursor = None
+    def process_rotation_event(self, parameter):
+        self.rotate(parameter)
+        self.set_cursor('ClosedHandCursor')
+        self.transform_view()
+
+    def process_zoom_event(self, parameter):
+        self.zoom(parameter)
+        self.set_cursor('MagnifyingGlassCursor')
+        self.transform_view()
         
-    def process_fullscreen_event(self, event, parameter):
-        if event == 'ToggleFullScreenEvent':
-            self.parent.toggle_fullscreen()
+    def process_zoombox_event(self, parameter):
+        self.zoombox(parameter)
+        self.set_cursor('MagnifyingGlassCursor')
+        self.transform_view()
+    
+    def process_reset_event(self, parameter):
+        self.reset()
+        self.set_cursor(None)
+        self.transform_view()
+
+    def process_resetzoom_event(self, parameter):
+        self.reset_zoom()
+        self.set_cursor(None)
+        self.transform_view()
         
-    def process_event(self, event, parameter):
-        """Process an event.
         
-        This is the main method of this class. It is called as soon as an 
-        interaction event is raised by an user action.
-        
-        Arguments:
-          * event: the event to process, an InteractionEvent string.
-          * parameter: the parameter returned by the param_getter function
-            specified in the related binding.
-        
-        """
-        if event is None:
-            self.process_none_event()
-        self.process_fullscreen_event(event, parameter)
-        self.process_pan_event(event, parameter)
-        self.process_rotation_event(event, parameter)
-        self.process_zoom_event(event, parameter)
-        self.process_reset_event(event, parameter)
-        self.process_custom_event(event, parameter)
-        
-    def process_custom_event(self, event, parameter):
-        """Process a custom event."""
-        pass
-           
-           
     # Navigation methods
     # ------------------    
     def set_navigation_constraints(self, constraints=None, maxzoom=1e6):
@@ -313,10 +354,97 @@ class InteractionManager(Manager):
             self.activate_navigation_constrain()
         return self.sx, self.sy
 
+        
+class InteractionManager(Manager):
+    """This class implements the processing of the raised interaction events.
+    
+    To be overriden.
+    
+    """
+    
+    # Initialization methods
+    # ----------------------
+    def __init__(self, parent):
+        super(InteractionManager, self).__init__(parent)
+        self.cursor = None
+        self.prev_event = None
+        self.processors = {}
+        self.initialize_default(
+            constrain_navigation=self.parent.constrain_navigation)
+        self.initialize()
+        
+    def initialize(self):
+        """Initialize the InteractionManager.
+        
+        To be overriden.
+        """
+        pass
+        
+    def initialize_default(self, constrain_navigation=False):
+        self.add_processor(NavigationEventProcessor,
+            constrain_navigation=constrain_navigation, name='navigation')
+        
+        
+    # Processor methods
+    # -----------------
+    def get_processors(self):
+        return self.processors
+        
+    def get_processor(self, name):
+        if name is None:
+            name = 'processor0'
+        return self.processors.get(name, None)
+        
+    def add_processor(self, cls, *args, **kwargs):
+        # get the name of the visual from kwargs
+        name = kwargs.pop('name', 'processor%d' % (len(self.get_processors())))
+        if self.get_processor(name):
+            raise ValueError("Processor name '%s' already exists." % name)
+        processor = cls(self, *args, **kwargs)
+        self.processors[name] = processor
+        
+        
+    # Event processing methods
+    # ------------------------
+    def process_fullscreen_event(self, event, parameter):
+        if event == 'ToggleFullScreenEvent':
+            self.parent.toggle_fullscreen()
+        
+    def process_event(self, event, parameter):
+        """Process an event.
+        
+        This is the main method of this class. It is called as soon as an 
+        interaction event is raised by an user action.
+        
+        Arguments:
+          * event: the event to process, an InteractionEvent string.
+          * parameter: the parameter returned by the param_getter function
+            specified in the related binding.
+        
+        """
+        
+        # process None events in all processors
+        if event is None and self.prev_event is not None:
+            for name, processor in self.get_processors().iteritems():
+                processor.process_none()
+            self.cursor = None
+        
+        if event == 'ToggleFullScreenEvent':
+            self.process_fullscreen_event(event, parameter)
+            # toggle_fullscreen
+        
+        # process events in all processors
+        for name, processor in self.get_processors().iteritems():
+            if processor.registered(event):
+                processor.process(event, parameter)
+                self.cursor = processor.get_cursor()
+        
+        self.prev_event = event
+        
     def get_cursor(self):
-        """Return the current cursor."""
-        if self.cursor is None:
-            return self.base_cursor
-        else:
-            return self.cursor
-          
+        return self.cursor
+        
+        
+        
+        
+        

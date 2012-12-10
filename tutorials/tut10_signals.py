@@ -21,6 +21,18 @@ class MyPaintManager(PaintManager):
         data = np.hstack((x.reshape((-1, 1)), y.reshape((-1, 1))))
         self.add_visual(PlotVisual, position=data)
                     
+                    
+class MyEventProcessor(EventProcessor):
+    def initialize(self):
+        self.register('SynchronizePanEvent', self.synchronize_pan)
+        self.register('SynchronizeZoomEvent', self.synchronize_zoom)
+                    
+    def synchronize_pan(self, parameter):
+        self.interaction_manager.get_processor('navigation').process_pan_event(parameter)
+                    
+    def synchronize_zoom(self, parameter):
+        self.interaction_manager.get_processor('navigation').process_zoom_event(parameter)
+                    
 # A custom interaction manager processes the synchronization by calling
 # the `pan` and `zoom` methods of the InteractionManager.
 class MyInteractionManager(InteractionManager):      
@@ -28,11 +40,8 @@ class MyInteractionManager(InteractionManager):
     # We define two custom interaction events. They occur on the receiver side,
     # when widget B needs to synchronize its navigation according to widget A,
     # which triggered the event.
-    def process_custom_event(self, event, parameter):
-        if event == 'SynchronizePanEvent':
-            self.pan(parameter)
-        if event == 'SynchronizeZoomEvent':
-            self.zoom(parameter)
+    def initialize(self):
+        self.add_processor(MyEventProcessor)
 
 # In this custom widget, we just specify our two custom companion classes.
 class MyWidget(GalryWidget):

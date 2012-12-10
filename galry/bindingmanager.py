@@ -84,7 +84,7 @@ class BindingSet(object):
         # cursors, so we load (and create the cursors) here
         # if "cursors" not in globals():
             # import cursors
-        self.base_cursor = cursors.ArrowCursor
+        self.base_cursor = 'ArrowCursor'
         
         self.binding = {}
         self.set_common_bindings()
@@ -93,10 +93,13 @@ class BindingSet(object):
     def set_base_cursor(self, cursor=None):
         """Define the base cursor in this mode."""
         if cursor is None:
-            cursor = cursors.OpenHandCursor
+            cursor = 'OpenHandCursor'
         # set the base cursor
         self.base_cursor = cursor
 
+    def get_base_cursor(self):
+        return self.base_cursor
+        
     def set_common_bindings(self):
         """Set bindings that are common to any interaction mode."""
         self.set('KeyPressAction', 'SwitchInteractionModeEvent',

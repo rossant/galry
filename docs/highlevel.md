@@ -5,6 +5,7 @@ High level interface
 
 from galry.plot import *
 
+# otherwise, a figure is internally created in the namespace
 fig = figure()
 
 # plotting
