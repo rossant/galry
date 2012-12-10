@@ -1,24 +1,24 @@
 from python_qt_binding.QtCore import Qt 
-from tools import enum
+# from tools import enum
 
 __all__ = [
-'UserActions',
+# 'UserActions',
 'UserActionGenerator',
 ]
 
-# List of user actions.
-UserActions = enum(
-    "MouseMoveAction",
-    "LeftButtonClickAction",
-    "MiddleButtonClickAction",
-    "RightButtonClickAction",
-    "LeftButtonMouseMoveAction",
-    "MiddleButtonMouseMoveAction",
-    "RightButtonMouseMoveAction",
-    "DoubleClickAction",
-    "WheelAction",
-    "KeyPressAction",
-)
+# # List of user actions.
+# UserActions = enum(
+    # "MouseMoveAction",
+    # "LeftButtonClickAction",
+    # "MiddleButtonClickAction",
+    # "RightButtonClickAction",
+    # "LeftButtonMouseMoveAction",
+    # "MiddleButtonMouseMoveAction",
+    # "RightButtonMouseMoveAction",
+    # "DoubleClickAction",
+    # "WheelAction",
+    # "KeyPressAction",
+# )
 
 def get_maximum_norm(p1, p2):
     """Return the inf norm between two points."""
@@ -67,17 +67,17 @@ class UserActionGenerator(object):
         self.mouse_press_position = self.mouse_position = self.get_pos(e.pos())
         
     def mouseDoubleClickEvent(self, e):
-        self.action = UserActions.DoubleClickAction
+        self.action = 'DoubleClickAction'
         
     def mouseReleaseEvent(self, e):
         if get_maximum_norm(self.mouse_position,
                     self.mouse_press_position) < 10:
             if self.mouse_button == Qt.LeftButton:
-                self.action = UserActions.LeftButtonClickAction
+                self.action = 'LeftButtonClickAction'
             elif self.mouse_button == Qt.MiddleButton:
-                self.action = UserActions.MiddleButtonClickAction
+                self.action = 'MiddleButtonClickAction'
             elif self.mouse_button == Qt.RightButton:
-                self.action = UserActions.RightButtonClickAction
+                self.action = 'RightButtonClickAction'
         # otherwise, terminate the current action
         else:
             self.action = None
@@ -89,13 +89,13 @@ class UserActionGenerator(object):
                                     pos[1] - self.mouse_position[1])
         self.mouse_position = pos
         if self.mouse_button == Qt.LeftButton:
-            self.action = UserActions.LeftButtonMouseMoveAction
+            self.action = 'LeftButtonMouseMoveAction'
         elif self.mouse_button == Qt.MiddleButton:
-            self.action = UserActions.MiddleButtonMouseMoveAction
+            self.action = 'MiddleButtonMouseMoveAction'
         elif self.mouse_button == Qt.RightButton:
-            self.action = UserActions.RightButtonMouseMoveAction
+            self.action = 'RightButtonMouseMoveAction'
         else:
-            self.action = UserActions.MouseMoveAction
+            self.action = 'MouseMoveAction'
             
     def keyPressEvent(self, e):
         key = e.key()
@@ -103,7 +103,7 @@ class UserActionGenerator(object):
         if key in (Qt.Key_Control, Qt.Key_Shift, Qt.Key_Alt, Qt.Key_AltGr):
             self.key_modifier = key
         else:
-            self.action = UserActions.KeyPressAction
+            self.action = 'KeyPressAction'
             self.key = key
             
     def keyReleaseEvent(self, e):
@@ -114,7 +114,7 @@ class UserActionGenerator(object):
             
     def wheelEvent(self, e):
         self.wheel = e.delta()
-        self.action = UserActions.WheelAction
+        self.action = 'WheelAction'
     
     def focusOutEvent(self, e):
         # reset all actions when the focus goes out

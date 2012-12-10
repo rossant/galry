@@ -2,8 +2,8 @@ from python_qt_binding.QtCore import Qt
 import cursors
 from manager import Manager
 import numpy as np
-from interactionevents import InteractionEvents as events
-from useractions import UserActions as actions
+# from interactionevents import InteractionEvents as events
+# from useractions import UserActions as actions
 
 __all__ = ['BindingManager', 'BindingSet', 'DefaultBindingSet']
 
@@ -99,7 +99,7 @@ class BindingSet(object):
 
     def set_common_bindings(self):
         """Set bindings that are common to any interaction mode."""
-        self.set(actions.KeyPressAction, events.SwitchInteractionModeEvent,
+        self.set('KeyPressAction', 'SwitchInteractionModeEvent',
                     key=Qt.Key_I)
         
     def initialize(self):
@@ -146,36 +146,36 @@ class DefaultBindingSet(BindingSet):
     
     """
     def set_fullscreen(self):
-        self.set(actions.KeyPressAction, events.ToggleFullScreenEvent,
+        self.set('KeyPressAction', 'ToggleFullScreenEvent',
             key=Qt.Key_F)
     
     def set_panning_mouse(self):
         """Set panning bindings with the mouse."""
         # Panning: left button mouse
-        self.set(actions.LeftButtonMouseMoveAction, events.PanEvent,
+        self.set('LeftButtonMouseMoveAction', 'PanEvent',
                     param_getter=lambda p: (p["mouse_position_diff"][0],
                                             p["mouse_position_diff"][1]))
         
     def set_panning_keyboard(self):
         """Set panning bindings with the keyboard."""
         # Panning: keyboard arrows
-        self.set(actions.KeyPressAction, events.PanEvent,
+        self.set('KeyPressAction', 'PanEvent',
                     key=Qt.Key_Left,
                     param_getter=lambda p: (.24, 0))
-        self.set(actions.KeyPressAction, events.PanEvent,
+        self.set('KeyPressAction', 'PanEvent',
                     key=Qt.Key_Right,
                     param_getter=lambda p: (-.24, 0))
-        self.set(actions.KeyPressAction, events.PanEvent,
+        self.set('KeyPressAction', 'PanEvent',
                     key=Qt.Key_Up,
                     param_getter=lambda p: (0, -.24))
-        self.set(actions.KeyPressAction, events.PanEvent,
+        self.set('KeyPressAction', 'PanEvent',
                     key=Qt.Key_Down,
                     param_getter=lambda p: (0, .24))
                 
     def set_zooming_mouse(self):
         """Set zooming bindings with the mouse."""
         # Zooming: right button mouse
-        self.set(actions.RightButtonMouseMoveAction, events.ZoomEvent,
+        self.set('RightButtonMouseMoveAction', 'ZoomEvent',
                     param_getter=lambda p: (p["mouse_position_diff"][0]*2.5,
                                             p["mouse_press_position"][0],
                                             p["mouse_position_diff"][1]*2.5,
@@ -184,7 +184,7 @@ class DefaultBindingSet(BindingSet):
     def set_zoombox_mouse(self):
         """Set zoombox bindings with the mouse."""
         # Zooming: zoombox (drag and drop)
-        self.set(actions.MiddleButtonMouseMoveAction, events.ZoomBoxEvent,
+        self.set('MiddleButtonMouseMoveAction', 'ZoomBoxEvent',
                     param_getter=lambda p: (p["mouse_press_position"][0],
                                             p["mouse_press_position"][1],
                                             p["mouse_position"][0],
@@ -193,7 +193,7 @@ class DefaultBindingSet(BindingSet):
     def set_zoombox_keyboard(self):
         """Set zoombox bindings with the keyboard."""
         # Idem but with CTRL + left button mouse 
-        self.set(actions.LeftButtonMouseMoveAction, events.ZoomBoxEvent,
+        self.set('LeftButtonMouseMoveAction', 'ZoomBoxEvent',
                     key_modifier=Qt.Key_Control,
                     param_getter=lambda p: (p["mouse_press_position"][0],
                                             p["mouse_press_position"][1],
@@ -203,23 +203,23 @@ class DefaultBindingSet(BindingSet):
     def set_zooming_keyboard(self):
         """Set zooming bindings with the keyboard."""
         # Zooming: ALT + key arrows
-        self.set(actions.KeyPressAction, events.ZoomEvent,
+        self.set('KeyPressAction', 'ZoomEvent',
                     key=Qt.Key_Left, key_modifier=Qt.Key_Control, 
                     param_getter=lambda p: (-.25, 0, 0, 0))
-        self.set(actions.KeyPressAction, events.ZoomEvent,
+        self.set('KeyPressAction', 'ZoomEvent',
                     key=Qt.Key_Right, key_modifier=Qt.Key_Control, 
                     param_getter=lambda p: (.25, 0, 0, 0))
-        self.set(actions.KeyPressAction, events.ZoomEvent,
+        self.set('KeyPressAction', 'ZoomEvent',
                     key=Qt.Key_Up, key_modifier=Qt.Key_Control, 
                     param_getter=lambda p: (0, 0, .25, 0))
-        self.set(actions.KeyPressAction, events.ZoomEvent,
+        self.set('KeyPressAction', 'ZoomEvent',
                     key=Qt.Key_Down, key_modifier=Qt.Key_Control, 
                     param_getter=lambda p: (0, 0, -.25, 0))
         
     def set_zooming_wheel(self):
         """Set zooming bindings with the wheel."""
         # Zooming: wheel
-        self.set(actions.WheelAction, events.ZoomEvent,
+        self.set('WheelAction', 'ZoomEvent',
                     param_getter=lambda p: (
                                     p["wheel"]*.002, 
                                     p["mouse_position"][0],
@@ -229,9 +229,9 @@ class DefaultBindingSet(BindingSet):
     def set_reset(self):
         """Set reset bindings."""
         # Reset view
-        self.set(actions.KeyPressAction, events.ResetEvent, key=Qt.Key_R)
+        self.set('KeyPressAction', 'ResetEvent', key=Qt.Key_R)
         # Reset zoom
-        self.set(actions.DoubleClickAction, events.ResetEvent)
+        self.set('DoubleClickAction', 'ResetEvent')
         
     def initialize(self):
         """Initialize all bindings. Can be overriden."""

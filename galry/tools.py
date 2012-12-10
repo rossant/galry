@@ -17,7 +17,7 @@ except:
     numexpr = None
     
 __all__ = [
-    'enum',
+    # 'enum',
     'extend_enum',
     'get_application',
     'get_intermediate_classes',
@@ -34,15 +34,15 @@ __all__ = [
 ENUM_COUNT = 0
 MAX_ENUM_SIZE = 100
 
-def enum(*sequential, **named):
-    """Create an enumeration."""
-    global ENUM_COUNT, MAX_ENUM_SIZE
-    i = ENUM_COUNT * MAX_ENUM_SIZE
-    enums = dict(zip(sequential, range(i, i+len(sequential))), **named)
-    enums["_dict"] = enums.copy()
-    enums["__module__"] = __name__
-    ENUM_COUNT += 1
-    return type('Enum', (), enums)
+# def enum(*sequential, **named):
+    # """Create an enumeration."""
+    # global ENUM_COUNT, MAX_ENUM_SIZE
+    # i = ENUM_COUNT * MAX_ENUM_SIZE
+    # enums = dict(zip(sequential, range(i, i+len(sequential))), **named)
+    # enums["_dict"] = enums.copy()
+    # enums["__module__"] = __name__
+    # ENUM_COUNT += 1
+    # return type('Enum', (), enums)
     
 def extend_enum(enum_base, enum_new):
     """Extend an enumeration with new values.

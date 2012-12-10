@@ -1,7 +1,7 @@
 import numpy as np
 import cursors
 from manager import Manager
-from interactionevents import InteractionEvents as events
+# from interactionevents import InteractionEvents as events
 
 __all__ = ['InteractionManager']
 
@@ -38,6 +38,7 @@ class InteractionManager(Manager):
         """
         pass
         
+        
     # Event processing methods
     # ------------------------
     def process_none_event(self):
@@ -52,35 +53,35 @@ class InteractionManager(Manager):
     
     def process_pan_event(self, event, parameter):
         """Process a pan-related event."""
-        if event == events.PanEvent:
+        if event == 'PanEvent':
             self.pan(parameter)
             self.cursor = cursors.ClosedHandCursor
     
     def process_rotation_event(self, event, parameter):
-        if event == events.RotationEvent:
+        if event == 'RotationEvent':
             self.rotate(parameter)
             self.cursor = cursors.ClosedHandCursor
 
     def process_zoom_event(self, event, parameter):
         """Process a zoom-related event."""
-        if event == events.ZoomEvent:
+        if event == 'ZoomEvent':
             self.zoom(parameter)
             self.cursor = cursors.MagnifyingGlassCursor
-        if event == events.ZoomBoxEvent:
+        if event == 'ZoomBoxEvent':
             self.zoombox(parameter)
             self.cursor = cursors.MagnifyingGlassCursor
     
     def process_reset_event(self, event, parameter):
         """Process a reset-related event."""
-        if event == events.ResetEvent:
+        if event == 'ResetEvent':
             self.reset()
             self.cursor = None
-        if event == events.ResetZoomEvent:
+        if event == 'ResetZoomEvent':
             self.reset_zoom()
             self.cursor = None
         
     def process_fullscreen_event(self, event, parameter):
-        if event == events.ToggleFullScreenEvent:
+        if event == 'ToggleFullScreenEvent':
             self.parent.toggle_fullscreen()
         
     def process_event(self, event, parameter):

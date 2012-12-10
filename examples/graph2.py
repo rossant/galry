@@ -161,10 +161,10 @@ class GraphInteractionManager(InteractionManager):
     
 class GraphBinding(DefaultBindingSet):
     def extend(self):
-        self.set(UserActions.MiddleButtonMouseMoveAction, "NodeMoved",
+        self.set('MiddleButtonMouseMoveAction', "NodeMoved",
             param_getter=lambda p: p["mouse_press_position"] + p["mouse_position"])
         
-        self.set(UserActions.LeftButtonMouseMoveAction, "NodeMoved",
+        self.set('LeftButtonMouseMoveAction', "NodeMoved",
             key_modifier=QtCore.Qt.Key_Control,
             param_getter=lambda p: p["mouse_press_position"] + p["mouse_position"])
         

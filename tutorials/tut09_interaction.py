@@ -69,7 +69,7 @@ class MyBinding(DefaultBindingSet):
     def extend(self):
         # This binding associates pressing the space button with the 
         # `ChangeLawEvent`.
-        self.set(UserActions.KeyPressAction, "ChangeLawEvent",
+        self.set('KeyPressAction', "ChangeLawEvent",
                  key=QtCore.Qt.Key_Space)
 
 print "Press space!"

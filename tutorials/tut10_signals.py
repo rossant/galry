@@ -85,8 +85,8 @@ class MyWindow(AutodestructibleWindow):
         # to the `pan1` and `zoom1` QT signals. As soon as such an interaction
         # event occurs due to an user action, one of these QT signals is 
         # raised.
-        self.glwidget1.connect_events(InteractionEvents.PanEvent, self.pan1)
-        self.glwidget1.connect_events(InteractionEvents.ZoomEvent, self.zoom1)
+        self.glwidget1.connect_events('PanEvent', self.pan1)
+        self.glwidget1.connect_events('ZoomEvent', self.zoom1)
         
         # Now, in widget2, we connect these signals to our custom interaction
         # events which synchronize the views. Note that we could also have
@@ -97,8 +97,8 @@ class MyWindow(AutodestructibleWindow):
         self.glwidget2.connect_events(self.zoom1, 'SynchronizeZoomEvent')
         
         # This is the exact symmetrical of the above code snippet.
-        self.glwidget2.connect_events(InteractionEvents.PanEvent, self.pan2)
-        self.glwidget2.connect_events(InteractionEvents.ZoomEvent, self.zoom2)
+        self.glwidget2.connect_events('PanEvent', self.pan2)
+        self.glwidget2.connect_events('ZoomEvent', self.zoom2)
         
         self.glwidget1.connect_events(self.pan2, 'SynchronizePanEvent')
         self.glwidget1.connect_events(self.zoom2, 'SynchronizeZoomEvent')

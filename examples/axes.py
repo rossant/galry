@@ -326,10 +326,10 @@ class PM(PaintManager):
         
 class IM(InteractionManager):
     def process_custom_event(self, event, parameter):
-        if (event == InteractionEvents.PanEvent or 
-            event == InteractionEvents.ZoomEvent or
-            event == InteractionEvents.ZoomBoxEvent or
-            event == InteractionEvents.ResetEvent):
+        if (event == 'PanEvent' or 
+            event == 'ZoomEvent' or
+            event == 'ZoomBoxEvent' or
+            event == 'ResetEvent'):
             
             viewbox = self.get_viewbox()
             text, coordinates, n = get_ticks_text(*viewbox)

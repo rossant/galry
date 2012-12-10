@@ -2,8 +2,8 @@ from galry import *
 import OpenGL.GL as gl
 import numpy as np
 import numpy.random as rnd
-from galry import InteractionEvents as events
-from galry import UserActions as actions
+# from galry import InteractionEvents as events
+# from galry import UserActions as actions
 Qt = QtCore.Qt
 
 def create_cube(color, scale=1.):
@@ -220,14 +220,14 @@ class MyInteractionManager(InteractionManager):
 class MyBindings(DefaultBindingSet):
     def set_panning_mouse(self):
         # Panning: CTRL + left button mouse
-        self.set(actions.LeftButtonMouseMoveAction, events.PanEvent,
+        self.set('LeftButtonMouseMoveAction', 'PanEvent',
                     key_modifier=Qt.Key_Control,
                     param_getter=lambda p: (-2*p["mouse_position_diff"][0],
                                             -2*p["mouse_position_diff"][1]))
         
     def set_rotation_mouse(self):
         # Rotation: left button mouse
-        self.set(actions.LeftButtonMouseMoveAction, events.RotationEvent,
+        self.set('LeftButtonMouseMoveAction', 'RotationEvent',
                     param_getter=lambda p: (3*p["mouse_position_diff"][0],
                                             3*p["mouse_position_diff"][1]))    
              
@@ -235,16 +235,16 @@ class MyBindings(DefaultBindingSet):
     def set_rotation_keyboard(self):
         """Set zooming bindings with the keyboard."""
         # Rotation: ALT + key arrows
-        self.set(actions.KeyPressAction, events.RotationEvent,
+        self.set('KeyPressAction', 'RotationEvent',
                     key=Qt.Key_Left, key_modifier=Qt.Key_Shift, 
                     param_getter=lambda p: (-.25, 0))
-        self.set(actions.KeyPressAction, events.RotationEvent,
+        self.set('KeyPressAction', 'RotationEvent',
                     key=Qt.Key_Right, key_modifier=Qt.Key_Shift, 
                     param_getter=lambda p: (.25, 0))
-        self.set(actions.KeyPressAction, events.RotationEvent,
+        self.set('KeyPressAction', 'RotationEvent',
                     key=Qt.Key_Up, key_modifier=Qt.Key_Shift, 
                     param_getter=lambda p: (0, .25))
-        self.set(actions.KeyPressAction, events.RotationEvent,
+        self.set('KeyPressAction', 'RotationEvent',
                     key=Qt.Key_Down, key_modifier=Qt.Key_Shift, 
                     param_getter=lambda p: (0, -.25))
                     

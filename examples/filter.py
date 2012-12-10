@@ -84,27 +84,27 @@ class FilterPaintManager(PaintManager):
         self.add_visual(TextVisual, text=" " * 32, name='legend',
             coordinates=(0,.95), is_static=True)
         
-FilterEvents = enum("NextFilter",
-                    "PreviousFilter")
+# FilterEvents = enum("NextFilter",
+                    # "PreviousFilter")
         
 class FilterInteractionManager(InteractionManager):
     def process_custom_event(self, event, parameter):
         # previous filter
-        if event == FilterEvents.PreviousFilter:
+        if event == 'PreviousFilter':
             self.paint_manager.change_kernel(change_kernel(-1))
         # next filter
-        if event == FilterEvents.NextFilter:
+        if event == 'NextFilter':
             self.paint_manager.change_kernel(change_kernel(1))
         
 class FilterBinding(DefaultBindingSet):
     def extend(self):
         # left key
-        self.set(UserActions.KeyPressAction,
-                FilterEvents.PreviousFilter,
+        self.set('KeyPressAction',
+                'PreviousFilter',
                 key=QtCore.Qt.Key_Left)
         # right key
-        self.set(UserActions.KeyPressAction,
-                FilterEvents.NextFilter,
+        self.set('KeyPressAction',
+                'NextFilter',
                 key=QtCore.Qt.Key_Right)
         
 if __name__ == '__main__':

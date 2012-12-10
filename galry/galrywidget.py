@@ -8,8 +8,8 @@ import OpenGL.GL as gl
 from python_qt_binding import QtCore, QtGui
 from python_qt_binding.QtCore import Qt, pyqtSignal
 from python_qt_binding.QtOpenGL import QGLWidget, QGLFormat
-from interactionevents import InteractionEvents as events
-from useractions import UserActions as actions
+# from interactionevents import InteractionEvents as events
+# from useractions import UserActions as actions
 from useractions import UserActionGenerator
 import bindingmanager
 from debugtools import DEBUG, log_debug, log_info, log_warn
@@ -467,7 +467,7 @@ class GalryWidget(QGLWidget):
             event, args = self.get_current_event()
         
         # handle interaction mode change
-        if event == events.SwitchInteractionModeEvent:
+        if event == 'SwitchInteractionModeEvent':
             binding = self.switch_interaction_mode()
             log_info("Switching interaction mode to %s." % \
                 binding.__class__.__name__)

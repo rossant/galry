@@ -65,15 +65,15 @@ class Particle2PaintManager(PaintManager):
 class ParticleInteractionManager(InteractionManager):
     def process_custom_event(self, event, parameter):
         # process our custom event
-        if event == ParticleEvents.ChangeVelocitiesEvent:
+        if event == 'ChangeVelocitiesEvent':
             self.paint_manager.change_velocities(parameter)
         
-ParticleEvents = enum("ChangeVelocitiesEvent")
+# ParticleEvents = enum("ChangeVelocitiesEvent")
 
 class ParticleBindings(DefaultBindingSet):
     def extend(self):
         # we link the mouse move action to the change velocities event
-        self.set(UserActions.MouseMoveAction, ParticleEvents.ChangeVelocitiesEvent,
+        self.set('MouseMoveAction', 'ChangeVelocitiesEvent',
                  param_getter=lambda p: 
                     (2 * p["mouse_position"][0],
                      2 * p["mouse_position"][1]))
