@@ -91,7 +91,7 @@ class InteractionManager(Manager):
         interaction event is raised by an user action.
         
         Arguments:
-          * event: the event to process, an InteractionEvent enum value.
+          * event: the event to process, an InteractionEvent string.
           * parameter: the parameter returned by the param_getter function
             specified in the related binding.
         

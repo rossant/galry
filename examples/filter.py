@@ -101,11 +101,11 @@ class FilterBinding(DefaultBindingSet):
         # left key
         self.set('KeyPressAction',
                 'PreviousFilter',
-                key=QtCore.Qt.Key_Left)
+                key='Left')
         # right key
         self.set('KeyPressAction',
                 'NextFilter',
-                key=QtCore.Qt.Key_Right)
+                key='Right')
         
 if __name__ == '__main__':
     print "Press the left or right arrow on the keyboard to cycle through \

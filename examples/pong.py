@@ -129,15 +129,15 @@ class PongBindings(DefaultBindingSet):
         dx = .05
 
         # left player bindings
-        self.set('KeyPressAction', 'LeftPlayerMove', key=QtCore.Qt.Key_W,
+        self.set('KeyPressAction', 'LeftPlayerMove', key='W',
             param_getter=lambda p: dx)
-        self.set('KeyPressAction', 'LeftPlayerMove', key=QtCore.Qt.Key_S,
+        self.set('KeyPressAction', 'LeftPlayerMove', key='S',
             param_getter=lambda p: -dx)
         
         # right player bindings
-        self.set('KeyPressAction', 'RightPlayerMove', key=QtCore.Qt.Key_Up,
+        self.set('KeyPressAction', 'RightPlayerMove', key='Up',
             param_getter=lambda p: dx)
-        self.set('KeyPressAction', 'RightPlayerMove', key=QtCore.Qt.Key_Down,
+        self.set('KeyPressAction', 'RightPlayerMove', key='Down',
             param_getter=lambda p: -dx)
             
 if __name__ == '__main__':

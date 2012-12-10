@@ -18,7 +18,7 @@ except:
     
 __all__ = [
     # 'enum',
-    'extend_enum',
+    # 'extend_enum',
     'get_application',
     'get_intermediate_classes',
     'show_window',
@@ -31,8 +31,8 @@ __all__ = [
 # is an int. Whenever a new enumeration is created, the numbers assigned to
 # the enumeration members are increased by 100. Hence, there can be no more 
 # than 100 members per enumeration.
-ENUM_COUNT = 0
-MAX_ENUM_SIZE = 100
+# ENUM_COUNT = 0
+# MAX_ENUM_SIZE = 100
 
 # def enum(*sequential, **named):
     # """Create an enumeration."""
@@ -44,13 +44,13 @@ MAX_ENUM_SIZE = 100
     # ENUM_COUNT += 1
     # return type('Enum', (), enums)
     
-def extend_enum(enum_base, enum_new):
-    """Extend an enumeration with new values.
+# def extend_enum(enum_base, enum_new):
+    # """Extend an enumeration with new values.
     
-    The values are not changed.
-    """
-    d = dict(enum_base._dict, **enum_new._dict)
-    return type('Enum', (), d)
+    # The values are not changed.
+    # """
+    # d = dict(enum_base._dict, **enum_new._dict)
+    # return type('Enum', (), d)
     
 def get_intermediate_classes(cls, baseclass):
     """Return all intermediate classes in the OO hierarchy between a base 

@@ -165,7 +165,7 @@ class GraphBinding(DefaultBindingSet):
             param_getter=lambda p: p["mouse_press_position"] + p["mouse_position"])
         
         self.set('LeftButtonMouseMoveAction', "NodeMoved",
-            key_modifier=QtCore.Qt.Key_Control,
+            key_modifier='Control',
             param_getter=lambda p: p["mouse_press_position"] + p["mouse_position"])
         
             

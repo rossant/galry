@@ -70,7 +70,7 @@ class MyBinding(DefaultBindingSet):
         # This binding associates pressing the space button with the 
         # `ChangeLawEvent`.
         self.set('KeyPressAction', "ChangeLawEvent",
-                 key=QtCore.Qt.Key_Space)
+                 key='Space')
 
 print "Press space!"
 # We specify the custom paint manager and interaction manager, and the 

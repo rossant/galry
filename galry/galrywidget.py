@@ -366,7 +366,7 @@ class GalryWidget(QGLWidget):
         
         Arguments:
           * signal: a QT signal.
-          * event: an InteractionEvent enum value.
+          * event: an InteractionEvent string.
         
         """
         if signal is None:
@@ -381,7 +381,7 @@ class GalryWidget(QGLWidget):
         The event parameters correspond to the signal parameters.
         
         Arguments:
-          * event: an InteractionEvent enum value.
+          * event: an InteractionEvent string.
           * signal: a QT signal.
         
         """

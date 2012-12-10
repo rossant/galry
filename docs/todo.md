@@ -5,7 +5,6 @@ Galry: high-performance interactive visualization in Python
     in the renderers
 
   * window timer update: make it an event instead
-  * get rid of all enum and replace with strings
   * refactoring of interaction system, with EventProcessor objects which
     process events.
   * rename "bindings" to "mode"
