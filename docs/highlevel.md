@@ -1,6 +1,43 @@
 High level interface
 --------------------
 
+### Ideas
+
+from galry.plot import *
+
+fig = figure()
+
+# plotting
+fig.plot(x, y, '--r', name='myplot')
+fig.text(text, position)
+
+# events
+def lmm(fig, parameters):
+    # fig is an object used to update data in visuals and that contains
+    # all information related to the figure. parameters is a dict with
+    # all information related to the user actions
+    for v in fig.visuals():
+        fig.set_data(v, ...)
+        
+    fig.set_data('myplot', ...)
+    
+fig.left_mouse_move(lmm)
+fig.left_click("MyClickEvent")
+fig.event("MyClickEvent", callback)
+
+# create and show window
+fig.show()
+
+
+These commands allow to create internally a custom paint manager and 
+interaction manager, which will then be used in show when creating the
+window.
+For the plotting commands, fig.xxx(...) <==> pm.add_visual(Xxx, ...)
+
+
+
+
+
 Notes about the future high-level interface. It should be as close as possible
 from the matplotlib interface.
 
