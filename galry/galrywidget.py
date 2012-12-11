@@ -282,6 +282,10 @@ class GalryWidget(QGLWidget):
         self.process_interaction()
         
     def keyPressEvent(self, e):
+        # Close the application when pressing Q
+        if e.key() == QtCore.Qt.Key_Q:
+            if hasattr(self, 'window'):
+                self.window.close()
         self.user_action_generator.keyPressEvent(e)
         self.process_interaction()
         
@@ -496,10 +500,8 @@ class GalryWidget(QGLWidget):
         # update the OpenGL view
         if not isinstance(self, GalryTimerWidget) and (event is not None or prev_event is not None):
             self.updateGL()
-            # print self, "update"
+
             
-        # print self, event
-    
     # Miscellaneous
     # -------------
     def save_image(self, file=None):
@@ -517,6 +519,9 @@ class GalryWidget(QGLWidget):
         else:
             if hasattr(self.window, 'showNormal'):
                 self.window.showNormal()
+                
+    def close_widget(self):
+        self.window.close()
     
     
     # Focus methods

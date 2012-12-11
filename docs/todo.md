@@ -3,6 +3,8 @@ Galry: high-performance interactive visualization in Python
 
   * rename extend into initialize (and have initialize_default)
   * rename "bindings" to "mode"
+  * rename ***Event ==> ***
+  
   * way of having several visuals in a single visual
   * import galry.*** in the code instead of relative imports
   * include ony shader snippets in the scene, and include shader creation

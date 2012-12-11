@@ -77,6 +77,18 @@ class EventProcessor(object):
         an event has just finished."""
         pass
         
+        
+class WidgetEventProcessor(EventProcessor):
+    def initialize(self):
+        self.register('ToggleFullscreen', self.process_toggle_fullscreen)
+        # self.register('CloseWidget', self.process_close_widget)
+        
+    def process_toggle_fullscreen(self, parameter):
+        self.parent.toggle_fullscreen()
+        
+    # def process_close_widget(self, parameter):
+        # self.parent.close_widget()
+        
       
 # Maximum viewbox allowed when constraining navigation.
 MAX_VIEWBOX = (-1., -1., 1., 1.)
@@ -391,6 +403,7 @@ class InteractionManager(Manager):
     def initialize_default(self, constrain_navigation=False):
         self.add_processor(NavigationEventProcessor,
             constrain_navigation=constrain_navigation, name='navigation')
+        self.add_processor(WidgetEventProcessor, name='widget')
         
         
     # Processor methods
@@ -424,9 +437,9 @@ class InteractionManager(Manager):
         
     # Event processing methods
     # ------------------------
-    def process_fullscreen_event(self, event, parameter):
-        if event == 'ToggleFullScreenEvent':
-            self.parent.toggle_fullscreen()
+    # def process_fullscreen_event(self, event, parameter):
+        # if event == 'ToggleFullScreenEvent':
+            # self.parent.toggle_fullscreen()
         
     def process_event(self, event, parameter):
         """Process an event.
@@ -447,9 +460,9 @@ class InteractionManager(Manager):
                 processor.process_none()
             self.cursor = None
         
-        if event == 'ToggleFullScreenEvent':
-            self.process_fullscreen_event(event, parameter)
-            # toggle_fullscreen
+        # if event == 'ToggleFullScreenEvent':
+            # self.process_fullscreen_event(event, parameter)
+            # # toggle_fullscreen
         
         # process events in all processors
         for name, processor in self.get_processors().iteritems():

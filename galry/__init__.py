@@ -24,3 +24,4 @@ from pyplot import *
 from icons import *
 from test import *
 
+from matplotlib.pyplot import imread

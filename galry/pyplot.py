@@ -184,6 +184,12 @@ class Figure(object):
         self.add_visual(vs.RectanglesVisual, *args, **kwargs)
         
     def imshow(self, *args, **kwargs):
+        filter = kwargs.pop('filter', None)
+        if filter:
+            kwargs.update(
+                mipmap=True,
+                minfilter='LINEAR',
+                magfilter='LINEAR',)
         self.add_visual(vs.TextureVisual, *args, **kwargs)
         
         
@@ -230,7 +236,8 @@ class Figure(object):
 # ---------------------
 def figure(*args, **kwargs):
     fig = Figure(*args, **kwargs)
-    
+    global _FIGURE
+    _FIGURE = fig
     return fig
 
 # Default figure in the namespace

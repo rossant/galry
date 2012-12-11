@@ -152,9 +152,9 @@ class DefaultBindingSet(BindingSet):
     This binding set makes use of the keyboard and the mouse.
     
     """
-    def set_fullscreen(self):
-        self.set('KeyPress', 'ToggleFullScreenEvent',
-            key='F')
+    def set_widget(self):
+        self.set('KeyPress', 'ToggleFullscreen', key='F')
+        # self.set('KeyPress', 'CloseWidget', key='Q')
     
     def set_panning_mouse(self):
         """Set panning bindings with the mouse."""
@@ -243,7 +243,7 @@ class DefaultBindingSet(BindingSet):
     def initialize(self):
         """Initialize all bindings. Can be overriden."""
         self.set_base_cursor()
-        self.set_fullscreen()
+        self.set_widget()
         # panning
         self.set_panning_mouse()
         self.set_panning_keyboard()
