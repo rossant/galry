@@ -161,10 +161,10 @@ class GraphInteractionManager(InteractionManager):
     
 class GraphBinding(DefaultBindingSet):
     def extend(self):
-        self.set('MiddleButtonMouseMoveAction', "NodeMoved",
+        self.set('MiddleMove', "NodeMoved",
             param_getter=lambda p: p["mouse_press_position"] + p["mouse_position"])
         
-        self.set('LeftButtonMouseMoveAction', "NodeMoved",
+        self.set('LeftMove', "NodeMoved",
             key_modifier='Control',
             param_getter=lambda p: p["mouse_press_position"] + p["mouse_position"])
         

@@ -80,7 +80,7 @@ class MyBinding(DefaultBindingSet):
     def extend(self):
         # This binding associates pressing the space button with the 
         # `ChangeLawEvent`.
-        self.set('KeyPressAction', 'ChangeLawEvent',
+        self.set('KeyPress', 'ChangeLawEvent',
                  key='Space')
 
 print "Press space!"

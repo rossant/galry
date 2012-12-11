@@ -413,7 +413,7 @@ class GalryWidget(QGLWidget):
         # get current action
         action = self.user_action_generator.action
         
-        # get current key if the action was KeyPressAction
+        # get current key if the action was KeyPress
         key = self.user_action_generator.key
         
         # get key modifier

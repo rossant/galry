@@ -1,4 +1,5 @@
 import numpy as np
+import inspect
 # import cursors
 from manager import Manager
 
@@ -62,7 +63,14 @@ class EventProcessor(object):
         """
         method = self.handlers.get(event, None)
         if method:
-            method(parameter)
+            # if the method is a method of a class deriving from EventProcessor
+            # we pass just parameter
+            if inspect.ismethod(method) and EventProcessor in inspect.getmro(method.im_class):
+                method(parameter)
+            else:
+                # here, we are using the high level interface and figure
+                # is the Figure object we pass to this function
+                method(self.interaction_manager.figure, parameter)
 
     def process_none(self):
         """Process the None event, occuring when there's no event, or when
@@ -402,6 +410,16 @@ class InteractionManager(Manager):
             raise ValueError("Processor name '%s' already exists." % name)
         processor = cls(self, *args, **kwargs)
         self.processors[name] = processor
+        return processor
+        
+    def add_default_processor(self):
+        return self.add_processor(EventProcessor, name='default_processor')
+        
+    def register(self, event, method):
+        processor = self.get_processor('default_processor')
+        if processor is None:
+            processor = self.add_default_processor()
+        processor.register(event, method)
         
         
     # Event processing methods

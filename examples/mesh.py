@@ -120,30 +120,30 @@ class MyInteractionManager(InteractionManager):
 class MyBindings(DefaultBindingSet):
     def set_panning_mouse(self):
         # Panning: CTRL + left button mouse
-        self.set('LeftButtonMouseMoveAction', 'PanEvent',
+        self.set('LeftMove', 'PanEvent',
                     key_modifier='Control',
                     param_getter=lambda p: (-2*p["mouse_position_diff"][0],
                                             -2*p["mouse_position_diff"][1]))
         
     def set_rotation_mouse(self):
         # Rotation: left button mouse
-        self.set('LeftButtonMouseMoveAction', 'RotationEvent',
+        self.set('LeftMove', 'RotationEvent',
                     param_getter=lambda p: (3*p["mouse_position_diff"][0],
                                             3*p["mouse_position_diff"][1]))    
              
     def set_rotation_keyboard(self):
         """Set zooming bindings with the keyboard."""
         # Rotation: ALT + key arrows
-        self.set('KeyPressAction', 'RotationEvent',
+        self.set('KeyPress', 'RotationEvent',
                     key='Left', key_modifier='Shift', 
                     param_getter=lambda p: (-.25, 0))
-        self.set('KeyPressAction', 'RotationEvent',
+        self.set('KeyPress', 'RotationEvent',
                     key='Right', key_modifier='Shift', 
                     param_getter=lambda p: (.25, 0))
-        self.set('KeyPressAction', 'RotationEvent',
+        self.set('KeyPress', 'RotationEvent',
                     key='Up', key_modifier='Shift', 
                     param_getter=lambda p: (0, .25))
-        self.set('KeyPressAction', 'RotationEvent',
+        self.set('KeyPress', 'RotationEvent',
                     key='Down', key_modifier='Shift', 
                     param_getter=lambda p: (0, -.25))
                     

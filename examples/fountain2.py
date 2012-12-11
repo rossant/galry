@@ -73,7 +73,7 @@ class ParticleInteractionManager(InteractionManager):
 class ParticleBindings(DefaultBindingSet):
     def extend(self):
         # we link the mouse move action to the change velocities event
-        self.set('MouseMoveAction', 'ChangeVelocitiesEvent',
+        self.set('Move', 'ChangeVelocitiesEvent',
                  param_getter=lambda p: 
                     (2 * p["mouse_position"][0],
                      2 * p["mouse_position"][1]))

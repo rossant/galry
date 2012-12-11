@@ -11,7 +11,6 @@ from cursors import *
 from tools import *
 from galrywidget import *
 from useractions import *
-# from interactionevents import *
 from interactionmanager import *
 from bindingmanager import *
 from scene import *

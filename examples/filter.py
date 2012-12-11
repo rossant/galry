@@ -99,11 +99,11 @@ class FilterInteractionManager(InteractionManager):
 class FilterBinding(DefaultBindingSet):
     def extend(self):
         # left key
-        self.set('KeyPressAction',
+        self.set('KeyPress',
                 'PreviousFilter',
                 key='Left')
         # right key
-        self.set('KeyPressAction',
+        self.set('KeyPress',
                 'NextFilter',
                 key='Right')
         

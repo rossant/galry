@@ -129,15 +129,15 @@ class PongBindings(DefaultBindingSet):
         dx = .05
 
         # left player bindings
-        self.set('KeyPressAction', 'LeftPlayerMove', key='W',
+        self.set('KeyPress', 'LeftPlayerMove', key='W',
             param_getter=lambda p: dx)
-        self.set('KeyPressAction', 'LeftPlayerMove', key='S',
+        self.set('KeyPress', 'LeftPlayerMove', key='S',
             param_getter=lambda p: -dx)
         
         # right player bindings
-        self.set('KeyPressAction', 'RightPlayerMove', key='Up',
+        self.set('KeyPress', 'RightPlayerMove', key='Up',
             param_getter=lambda p: dx)
-        self.set('KeyPressAction', 'RightPlayerMove', key='Down',
+        self.set('KeyPress', 'RightPlayerMove', key='Down',
             param_getter=lambda p: -dx)
             
 if __name__ == '__main__':

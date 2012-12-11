@@ -11,6 +11,13 @@ X = np.random.randn(2, 1000)
 plot(X, color=['r', 'y'])
 text("Hello world!", coordinates=(.0, .9), is_static=True)
 
+def callback(figure, parameters):
+    print figure, parameters
+    
+# action('LeftClick', 'MyEvent')
+# event('MyEvent', callback)
+
+action('LeftClick', callback)
 
 show()
 

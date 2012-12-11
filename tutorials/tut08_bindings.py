@@ -40,7 +40,7 @@ class MyBinding(BindingSet):
         # to the zooming event processor are (dx, px, dy, py) where (dx, dy)
         # contain the amount of zoom in the two axes, and (px, py) are the
         # coordinates of the zoom center.
-        self.set('LeftButtonMouseMoveAction',
+        self.set('LeftMove',
                  'ZoomEvent',
                 param_getter=lambda p: (p["mouse_position_diff"][0],
                                         p["mouse_press_position"][0],
