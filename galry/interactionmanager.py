@@ -1,4 +1,5 @@
 import numpy as np
+from collections import OrderedDict as odict
 import inspect
 # import cursors
 from manager import Manager
@@ -41,6 +42,9 @@ class EventProcessor(object):
         # else:
         return self.cursor
         
+        
+    # Handlers methods
+    # ----------------
     def register(self, event, method):
         """Register a handler for the event."""
         self.handlers[event] = method
@@ -49,14 +53,6 @@ class EventProcessor(object):
         """Return whether the specified event has been registered by this
         processor."""
         return self.handlers.get(event, None) is not None
-        
-        
-    # Methods to override
-    # -------------------
-    def initialize(self, *args, **kwargs):
-        """Initialize the event processor by calling self.register to register
-        handlers for different events."""
-        pass
         
     def process(self, event, parameter):
         """Process an event by calling the registered handler if there's one.
@@ -75,7 +71,16 @@ class EventProcessor(object):
     def process_none(self):
         """Process the None event, occuring when there's no event, or when
         an event has just finished."""
+        self.process(None, None)
+        
+        
+    # Methods to override
+    # -------------------
+    def initialize(self, *args, **kwargs):
+        """Initialize the event processor by calling self.register to register
+        handlers for different events."""
         pass
+        
         
         
 class WidgetEventProcessor(EventProcessor):
@@ -388,7 +393,7 @@ class InteractionManager(Manager):
         super(InteractionManager, self).__init__(parent)
         self.cursor = None
         self.prev_event = None
-        self.processors = {}
+        self.processors = odict()
         self.initialize_default(
             constrain_navigation=self.parent.constrain_navigation)
         self.initialize()
@@ -437,10 +442,6 @@ class InteractionManager(Manager):
         
     # Event processing methods
     # ------------------------
-    # def process_fullscreen_event(self, event, parameter):
-        # if event == 'ToggleFullScreenEvent':
-            # self.parent.toggle_fullscreen()
-        
     def process_event(self, event, parameter):
         """Process an event.
         
@@ -453,22 +454,18 @@ class InteractionManager(Manager):
             specified in the related binding.
         
         """
-        
         # process None events in all processors
         if event is None and self.prev_event is not None:
             for name, processor in self.get_processors().iteritems():
                 processor.process_none()
             self.cursor = None
         
-        # if event == 'ToggleFullScreenEvent':
-            # self.process_fullscreen_event(event, parameter)
-            # # toggle_fullscreen
-        
         # process events in all processors
-        for name, processor in self.get_processors().iteritems():
-            if processor.registered(event):
-                processor.process(event, parameter)
-                self.cursor = processor.get_cursor()
+        if event is not None:
+            for name, processor in self.get_processors().iteritems():
+                if processor.registered(event):
+                    processor.process(event, parameter)
+                    self.cursor = processor.get_cursor()
         
         self.prev_event = event
         

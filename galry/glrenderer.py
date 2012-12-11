@@ -355,11 +355,21 @@ class ShaderManager(object):
     # ------------------
     def activate_shaders(self):
         """Activate shaders for the rest of the rendering call."""
+        # try:
         gl.glUseProgram(self.program)
+            # return True
+        # except Exception as e:
+            # log_info("Error while activating the shaders: " + e.message)
+            # return False
         
     def deactivate_shaders(self):
         """Deactivate shaders for the rest of the rendering call."""
+        # try:
         gl.glUseProgram(0)
+            # return True
+        # except Exception as e:
+            # log_info("Error while activating the shaders: " + e.message)
+            # return True
         
         
     # Cleanup methods
@@ -1127,8 +1137,16 @@ class GLVisualRenderer(object):
         # do not display non-visible visuals
         if not self.visual.get('visible', True):
             return
+            
         # activate the shaders
-        self.shader_manager.activate_shaders()
+        try:
+            self.shader_manager.activate_shaders()
+        # if the shaders could not be successfully activated, stop the
+        # rendering immediately
+        except Exception as e:
+            log_info("Error while activating the shaders: " + str(e))
+            return
+            
         # update all variables
         self.update_all_variables()
         # bind all texturex for that slice

@@ -303,50 +303,55 @@ class TicksTextVisual(TextVisual):
         axis = np.zeros(self.size)
         axis[self.size/2:] = 1
         self.add_attribute("axis", ndim=1, vartype="int", data=axis)
+
         
+class TicksEventProcessor(EventProcessor):
+    def initialize(self):
+        self.register('PanEvent', self.update_axes)
+        self.register('ZoomEvent', self.update_axes)
+        self.register('ResetEvent', self.update_axes)
+        self.register(None, self.update_axes)
+        
+    def update_axes(self, parameter):
+        viewbox = self.get_processor('navigation').get_viewbox()
+        text, coordinates, n = get_ticks_text(*viewbox)
+        
+        t = "".join(text)
+        n1 = len("".join(text[:n]))
+        n2 = len("".join(text[n:]))
+        
+        axis = np.zeros(n1+n2)
+        axis[n1:] = 1
+        
+        self.set_data(visual='ticks_text', text=text,
+            coordinates=coordinates,
+            axis=axis)
+            
             
 class PM(PaintManager):
     def initialize(self):
-        # axes
-        # self.add_visual(AxesVisual)
-        # ticks
+        
         self.add_visual(PlotVisual, position=np.random.randn(100000, 2) * .2,
             primitive_type='POINTS')
-        
-        
-        
-        viewbox = self.interaction_manager.get_viewbox()
-        text, coordinates, _ = get_ticks_text(*viewbox)
-        
+            
+        # add the ticks and grid visual
         self.add_visual(TicksVisual, showgrid=True)
         
+        # get the initial ticks
+        viewbox = self.interaction_manager.get_processor('navigation').get_viewbox()
+        text, coordinates, _ = get_ticks_text(*viewbox)
+        
+        # add the text visual
         self.add_visual(TicksTextVisual, text=text, coordinates=coordinates,
             fontsize=14, color=(1., 1., 1., .75), name='ticks_text',
             letter_spacing=250.)
+            
         
 class IM(InteractionManager):
-    def process_custom_event(self, event, parameter):
-        if (event == 'PanEvent' or 
-            event == 'ZoomEvent' or
-            event == 'ZoomBoxEvent' or
-            event == 'ResetEvent'):
-            
-            viewbox = self.get_viewbox()
-            text, coordinates, n = get_ticks_text(*viewbox)
-            
-            t = "".join(text)
-            n1 = len("".join(text[:n]))
-            n2 = len("".join(text[n:]))
-            
-            axis = np.zeros(n1+n2)
-            axis[n1:] = 1
-            
-            self.paint_manager.set_data(visual='ticks_text', text=text,
-                coordinates=coordinates,
-                axis=axis)
+    def initialize(self):
+        self.add_processor(TicksEventProcessor, name='ticks')
 
         
-
 show_basic_window(paint_manager=PM, 
     interaction_manager=IM)
 
