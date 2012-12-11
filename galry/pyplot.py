@@ -11,6 +11,7 @@ from bindingmanager import DefaultBindingSet
 __all__ = ['figure', 'Figure', 'get_current_figure',
            'plot', 'text', 'rectangles', 'imshow',
            'axes', 'xlim', 'ylim',
+           'grid',
            'event', 'action',
            'show']
 
@@ -69,13 +70,18 @@ class InteractionManagerCreator(object):
     @staticmethod
     def create(figure):
         handlers = figure.handlers
+        processors = figure.processors
         class MyInteractionManager(InteractionManager):
             def initialize(self):
                 # use this to pass this Figure instance to the handler function
                 # as a first argument (in EventProcessor.process)
                 self.figure = figure
+                # add all handlers
                 for event, method in handlers.iteritems():
                     self.register(event, method)
+                # add all event processors
+                for name, (args, kwargs) in processors.iteritems():
+                    self.add_processor(*args, **kwargs)
         return MyInteractionManager
 
 class BindingCreator(object):
@@ -98,6 +104,7 @@ class Figure(object):
     def __init__(self, *args, **kwargs):
         self.visuals = odict()
         self.handlers = odict()
+        self.processors = odict()
         self.bindings = []
         self.viewbox = (None, None, None, None)
         self.initialize(*args, **kwargs)
@@ -117,6 +124,13 @@ class Figure(object):
         
     def update_visual(self, name, **kwargs):
         self.visuals[name][1].update(kwargs)
+        
+        
+    # Internal interaction methods
+    # ----------------------------
+    def add_event_processor(self, *args, **kwargs):
+        name = kwargs.get('name', 'processor%d' % len(self.processors))
+        self.processors[name] = (args, kwargs)
         
         
     # Normalization methods
@@ -192,6 +206,10 @@ class Figure(object):
                 magfilter='LINEAR',)
         self.add_visual(vs.TextureVisual, *args, **kwargs)
         
+    def grid(self, *args, **kwargs):
+        self.add_visual(vs.GridVisual, *args, **kwargs)
+        self.add_event_processor(vs.GridEventProcessor)
+        
         
     # Public interaction methods
     # --------------------------
@@ -266,6 +284,10 @@ def rectangles(*args, **kwargs):
 def imshow(*args, **kwargs):
     fig = get_current_figure()
     fig.imshow(*args, **kwargs)
+    
+def grid(*args, **kwargs):
+    fig = get_current_figure()
+    fig.grid(*args, **kwargs)
     
     
 def axes(*args, **kwargs):

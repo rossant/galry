@@ -5,4 +5,5 @@ from sprite_visual import *
 from texture_visual import *
 from rectangles_visual import *
 from threedimensions_visual import *
+from grid_visual import *
 

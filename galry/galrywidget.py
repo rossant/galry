@@ -229,6 +229,9 @@ class GalryWidget(QGLWidget):
         """Initialize OpenGL parameters."""
         self.paint_manager.initializeGL()
         self.initialized = True
+        self.just_initialized = True
+        # initialize event
+        # self.process_interaction('InitializeEvent')
         
     def paintGL(self):
         """Paint the scene.
@@ -239,6 +242,10 @@ class GalryWidget(QGLWidget):
         This method calls the `paint_all` method of the PaintManager.
         
         """
+        
+        if self.just_initialized:
+            self.process_interaction('InitializeEvent', do_update=False)
+        
         # paint fps
         if self.display_fps:
             self.paint_fps()
@@ -250,6 +257,8 @@ class GalryWidget(QGLWidget):
         self.fps_counter.tick()
         if self.autosave:
             self.save_image(self.autosave)
+            
+        self.just_initialized = False
         
     def paint_fps(self):
         """Display the FPS on the top-left of the screen."""
@@ -458,7 +467,7 @@ class GalryWidget(QGLWidget):
             cursor = self.binding_manager.get().get_base_cursor()
         self.setCursor(get_cursor(cursor))
         
-    def process_interaction(self, event=None, args=None):
+    def process_interaction(self, event=None, args=None, do_update=None):
         """Process user interaction.
         
         This method is called after each user action (mouse, keyboard...).
@@ -498,7 +507,11 @@ class GalryWidget(QGLWidget):
         self.user_action_generator.clean_action()
         
         # update the OpenGL view
-        if not isinstance(self, GalryTimerWidget) and (event is not None or prev_event is not None):
+        if do_update is None:
+            do_update = ((not isinstance(self, GalryTimerWidget)) and
+                (event is not None or prev_event is not None))
+                
+        if do_update:
             self.updateGL()
 
             

@@ -197,7 +197,6 @@ class PaintManager(Manager):
             if visual in self.data_updating:
                 self.data_updating[visual] = {}
             
-      
     def update_fps(self, fps):
         """Update the FPS in the corresponding text visual."""
         self.set_data(visual='fps', text="FPS: %03d" % fps, visible=True)

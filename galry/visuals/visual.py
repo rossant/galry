@@ -2,7 +2,7 @@ import numpy as np
 import collections
 from textwrap import dedent
 
-__all__ = ['OLDGLSL', 'RefVar', 'Visual']
+__all__ = ['OLDGLSL', 'RefVar', 'Visual', 'CompoundVisual']
 
 # HACK: if True, activate the OpenGL ES syntax, which is deprecated in the
 # desktop version. However with the appropriate #version command in the shader
@@ -676,7 +676,6 @@ class Visual(object):
             self.variables[name]['data'] = value
         
     
-    
     # Option methods
     # --------------
     def add_options(self, **kwargs):
@@ -791,6 +790,7 @@ class Visual(object):
         if self.primitive_type is None:
             self.primitive_type = 'LINE_STRIP'
     
+    
     # Output methods
     # --------------
     def get_variables_list(self):
@@ -822,3 +822,16 @@ class Visual(object):
         return dic
         
     
+class CompoundVisual(object):
+    def __init__(self, *args, **kwargs):
+        self.visuals = []
+        self.initialize(*args, **kwargs)
+    
+    def add_visual(self, visual_class, *args, **kwargs):
+        self.visuals.append((visual_class, args, kwargs))
+    
+    def initialize(self):
+        pass
+        
+        
+        

@@ -1,6 +1,7 @@
 import numpy as np
 import base64
 import json
+from visuals import CompoundVisual
 
 __all__ = ['SceneCreator', 
            'encode_data', 'decode_data', 'serialize', 'deserialize', ]
@@ -81,6 +82,15 @@ class SceneCreator(object):
             the visual, and that can be used in `set_data`.
         
         """
+        
+        # handle compound visual, where we add all sub visuals
+        # as defined in CompoundVisual.initialize()
+        if issubclass(visual_class, CompoundVisual):
+            visual = visual_class(*args, **kwargs)
+            for sub_cls, sub_args, sub_kwargs in visual.visuals:
+                self.add_visual(sub_cls, *sub_args, **sub_kwargs)
+            return visual
+            
         # get the name of the visual from kwargs
         name = kwargs.pop('name', 'visual%d' % (len(self.get_visuals())))
         if self.get_visual(name):
