@@ -4,7 +4,6 @@ Galry: high-performance interactive visualization in Python
   * rename extend into initialize (and have initialize_default)
   * rename "bindings" to "mode"
   * way of having several visuals in a single visual
-  * high level interface
   * import galry.*** in the code instead of relative imports
   * include ony shader snippets in the scene, and include shader creation
     in the renderers
@@ -15,6 +14,11 @@ Galry: high-performance interactive visualization in Python
   * make unit tests work in ipython with pylab activated
   * better handling of special_keywords
   * global color module in galry
+  
+  * add GridVisual
+  * add MeshVisual
+  * add GraphVisual
+  * update tutorials and examples (high level interface mostly)
   
   
 Automation

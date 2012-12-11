@@ -19,6 +19,6 @@ from visuals import *
 from glrenderer import *
 from paintmanager import *
 from datanormalizer import *
-from plot import *
+from pyplot import *
 from icons import *
 from test import *
