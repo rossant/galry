@@ -8,8 +8,7 @@ from galry import *
 
 # We generate 10,000 points randomly according to a standard normal random
 # variable.
-x = random.randn(10000)
-y = random.randn(10000)
+x, y = random.randn(2, 10000)
 
 # We assign one color for each point, with random RGBA components.
 color = random.rand(10000, 4)
@@ -21,4 +20,3 @@ plot(x, y, '+', ms=20, color=color)
 axes(-5, 5, -5, 5)
 
 show()
-

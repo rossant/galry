@@ -30,7 +30,18 @@ class TextVisual(Visual):
             coordinates = (0., 0.)
         if type(coordinates) == tuple:
             coordinates = [coordinates]
-        position = np.repeat(np.array(coordinates), self.textsizes, axis=0)
+            # if hasattr(self.textsizes, '__len__'):
+                # coordinates *= len(self.textsizes)
+        if self.multiline:
+            if len(coordinates) == 1:
+                
+                c = coordinates[0]
+                # interline = .5
+                coordinates = [(c[0], c[1] - i * self.interline) 
+                    for i in xrange(self.multiline)]
+                
+        coordinates = np.array(coordinates)
+        position = np.repeat(coordinates, self.textsizes, axis=0)
         return dict(position=position)
     
     def text_compound(self, text):
@@ -39,11 +50,22 @@ class TextVisual(Visual):
         
         coordinates = self.coordinates
         
+        if "\n" in text:
+            text = text.split("\n")
+            self.multiline = len(text)
+            if type(coordinates) != list:
+                c = coordinates
+                # interline = .5
+                coordinates = [(c[0], c[1] - i * self.interline) 
+                    for i in xrange(len(text))]
+        else:
+            self.multiline = False
+            
         if type(text) == list:
             self.textsizes = [len(t) for t in text]
             text = "".join(text)
-            if type(self.coordinates) != list:
-                coordinates = [self.coordinates] * len(self.textsizes)
+            if type(coordinates) != list:
+                coordinates = [coordinates] * len(self.textsizes)
                 
             text_map = self.get_map(text)
             
@@ -53,17 +75,9 @@ class TextVisual(Visual):
             # for each text, the cumsum of the length of all texts strictly
             # before
             d = np.hstack(([0], np.cumsum(self.textsizes)[:-1]))
-            # d -= d[0]
-            
-            # print self.textsizes
-            # print offset
-            # print d
-            # print
             
             # compensate the offsets for the length of each text
             offset -= np.repeat(offset[d], self.textsizes)
-            
-            # print offset[-5]
             
             text_width = 0.
                 
@@ -72,7 +86,6 @@ class TextVisual(Visual):
             text_map = self.get_map(text)
             offset = np.hstack((0., np.cumsum(text_map[:, 2])[:-1]))    
             text_width = offset[-1]
-            
             
         self.size = len(text)
         
@@ -86,7 +99,7 @@ class TextVisual(Visual):
         self.texture, self.matrix, self.get_map = load_font(font, fontsize)
 
     def initialize(self, text, coordinates=(0., 0.), font='segoe', fontsize=24,
-            color=None, letter_spacing=None):
+            color=None, letter_spacing=None, interline=.1):
         """Initialize the text template."""
         
         if color is None:
@@ -94,7 +107,8 @@ class TextVisual(Visual):
         
         self.size = len(text)
         self.primitive_type = 'POINTS'
-
+        self.interline = interline
+        
         text_length = self.size
         self.initialize_font(font, fontsize)
         self.coordinates = coordinates

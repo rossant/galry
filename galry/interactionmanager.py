@@ -64,9 +64,13 @@ class EventProcessor(object):
             if inspect.ismethod(method) and EventProcessor in inspect.getmro(method.im_class):
                 method(parameter)
             else:
+                fig = self.interaction_manager.figure
+                # HACK: give access to paint_manager.set_data to the figure,
+                # so that event processors can change the data
+                fig.set_data = self.parent.paint_manager.set_data
                 # here, we are using the high level interface and figure
                 # is the Figure object we pass to this function
-                method(self.interaction_manager.figure, parameter)
+                method(fig, parameter)
 
     def process_none(self):
         """Process the None event, occuring when there's no event, or when

@@ -142,10 +142,10 @@ class Figure(object):
         self.viewbox = (x0, y0, x1, y1)
     
     def xlim(self, x0, x1):
-        self.axes(x0, None, x1, None)
+        self.axes(x0, x1, None, None)
     
     def ylim(self, y0, y1):
-        self.axes(None, y0, None, y1)
+        self.axes(None, None, y0, y1)
     
     def update_normalization(self):
         for name, visual in self.visuals.iteritems():
@@ -211,6 +211,10 @@ class Figure(object):
         self.add_event_processor(vs.GridEventProcessor)
         
         
+    def set_data(self, *args, **kwargs):
+        self.paint_manager.set_data(self, *args, **kwargs)
+        
+        
     # Public interaction methods
     # --------------------------
     def event(self, event, method):
@@ -243,12 +247,13 @@ class Figure(object):
         pm = PaintManagerCreator.create(self)
         im = InteractionManagerCreator.create(self)
         bindings = BindingCreator.create(self)
-        return show_basic_window(
+        window = show_basic_window(
             paint_manager=pm,
             interaction_manager=im,
             bindings=bindings,
             constrain_ratio=self.constrain_ratio)
-
+        return window
+            
 
 # Public figure methods
 # ---------------------
@@ -284,11 +289,11 @@ def rectangles(*args, **kwargs):
 def imshow(*args, **kwargs):
     fig = get_current_figure()
     fig.imshow(*args, **kwargs)
+
     
 def grid(*args, **kwargs):
     fig = get_current_figure()
     fig.grid(*args, **kwargs)
-    
     
 def axes(*args, **kwargs):
     fig = get_current_figure()
