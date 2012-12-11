@@ -1,16 +1,26 @@
 import numpy as np
 from visual import Visual
+from plot_visual import process_coordinates
+from ..colors import get_color
     
 class SpriteVisual(Visual):
     """Template displaying one texture in multiple positions with
     different colors."""
     
-    def initialize(self, texture=None, position=None, color=None):
+    def initialize(self, x=None, y=None, color=None,
+            texture=None, position=None, viewbox=None):
+            
+        # if position is specified, it contains x and y as column vectors
+        if position is not None:
+            position = np.array(position, dtype=np.float32)
+            # shape = (position.shape[0], 1)
+        else:
+            position, shape = process_coordinates(x=x, y=y)
+            
         texsize = float(max(texture.shape[:2]))
         shape = texture.shape
         ncomponents = texture.shape[2]
         self.size = position.shape[0]
-        # texsize = shape[:2]
         
         if shape[0] == 1:
             self.ndim = 1
@@ -19,9 +29,15 @@ class SpriteVisual(Visual):
         
         self.primitive_type = 'POINTS'
         
+        # normalize position
+        if viewbox:
+            self.add_normalizer('position', viewbox)
+            
         # default color
         if color is None:
             color = self.default_color
+        
+        color = get_color(color)
         
         # handle the case where there is a single color given as a list of
         # RGB components instead of a tuple

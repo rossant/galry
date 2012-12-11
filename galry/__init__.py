@@ -1,5 +1,7 @@
 """Galry: high-performance interactive visualization package in Python"""
 
+from numpy import *
+
 from debugtools import *
 
 # import PyQT or Pyside
@@ -21,3 +23,4 @@ from datanormalizer import *
 from pyplot import *
 from icons import *
 from test import *
+

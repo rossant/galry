@@ -1,14 +1,56 @@
+import numpy as np
+from collections import OrderedDict as odict
+
 from galrywidget import GalryWidget, show_basic_window
+from colors import get_color
 import visuals as vs
 from paintmanager import PaintManager
 from interactionmanager import InteractionManager
 from bindingmanager import DefaultBindingSet
-from collections import OrderedDict as odict
 
 __all__ = ['figure', 'Figure', 'get_current_figure',
            'plot', 'text', 'rectangles', 'imshow',
+           'axes', 'xlim', 'ylim',
            'event', 'action',
            'show']
+
+def get_marker_texture(marker, size=None):
+    """Create a marker texture."""
+    
+    if np.mod(size, 2) == 0:
+        size += 1
+        
+    if marker == '.':
+        marker = ','
+        size = 5.
+    if size is None:
+        size = 5.
+    
+    texture = np.zeros((size, size, 4))
+    
+    if marker == ',':
+        texture[:] = 1
+        
+    elif marker == '+':
+        texture[size / 2, :, :] = 1
+        texture[:, size / 2, :] = 1
+        
+    elif marker == 'x':
+        texture[range(size), range(size), :] = 1
+        texture[range(size - 1, -1, -1), range(size), :] = 1
+        
+    elif marker == 'o':
+        # fill with white
+        texture[:, :, :-1] = 1
+        x = np.linspace(-1., 1., size)
+        X, Y = np.meshgrid(x, x)
+        R = X ** 2 + Y ** 2
+        R = np.minimum(1, 3 * np.exp(-3*R))
+        # disc-shaped alpha channel
+        texture[:,:,-1] = R
+        
+    
+    return texture
 
 
 # Manager creator classes
@@ -77,19 +119,13 @@ class Figure(object):
         self.visuals[name][1].update(kwargs)
         
         
-    # # Internal interaction methods
-    # # ----------------------------
-    # def add_handler(self, event, method):
-        # self.handlers[event] = method
-        
-    # def add_binding(self, *args, **kwargs):
-        # self.bindings.add((args, kwargs))
-        
-    
     # Normalization methods
     # ---------------------
     def axes(self, *viewbox):
-        self.viewbox = viewbox
+        if len(viewbox) == 1:
+            viewbox = viewbox[0]
+        x0, x1, y0, y1 = viewbox
+        self.viewbox = (x0, y0, x1, y1)
     
     def xlim(self, x0, x1):
         self.axes(x0, None, x1, None)
@@ -99,14 +135,47 @@ class Figure(object):
     
     def update_normalization(self):
         for name, visual in self.visuals.iteritems():
-            if self.get_visual_class(name) == vs.PlotVisual:
+            if ((self.get_visual_class(name) == vs.PlotVisual) or
+                (self.get_visual_class(name) == vs.SpriteVisual)):
                 self.update_visual(name, viewbox=self.viewbox)
 
         
     # Public visual methods
     # ---------------------
     def plot(self, *args, **kwargs):
-        self.add_visual(vs.PlotVisual, *args, **kwargs)
+        
+        # deal with special string argument containing options
+        lenargs = len(args)
+        opt = ''
+        # we look for the index in args such that args[i] is a string
+        for i in xrange(lenargs):
+            if isinstance(args[i], basestring):
+                opt = args[i]
+                break
+        if opt:
+            # we remove the options from the arguments
+            l = list(args)
+            l.remove(opt)
+            args = tuple(l)
+            kwargs['options'] = opt
+        
+        # process marker type, 'o' or 'or'
+        marker = kwargs.pop('marker', kwargs.pop('m', None))
+        if marker is None:
+            if opt and opt[0] in ',.+xo':
+                marker = opt[0]
+        if marker is not None:
+            cls = vs.SpriteVisual
+            texsize = kwargs.pop('marker_size', kwargs.pop('ms', None))
+            kwargs['texture'] = get_marker_texture(marker, texsize)
+            kwargs.pop('options', None)
+            # process marker color in options
+            if 'color' not in kwargs and len(opt) == 2:
+                kwargs['color'] = get_color(opt[1])
+        else:
+            cls = vs.PlotVisual
+        
+        self.add_visual(cls, *args, **kwargs)
         
     def text(self, *args, **kwargs):
         self.add_visual(vs.TextVisual, *args, **kwargs)
@@ -191,6 +260,20 @@ def imshow(*args, **kwargs):
     fig = get_current_figure()
     fig.imshow(*args, **kwargs)
     
+    
+def axes(*args, **kwargs):
+    fig = get_current_figure()
+    fig.axes(*args, **kwargs)
+    
+def xlim(*args, **kwargs):
+    fig = get_current_figure()
+    fig.xlim(*args, **kwargs)
+    
+def ylim(*args, **kwargs):
+    fig = get_current_figure()
+    fig.ylim(*args, **kwargs)
+    
+    
 def event(*args, **kwargs):
     fig = get_current_figure()
     fig.event(*args, **kwargs)
@@ -198,6 +281,7 @@ def event(*args, **kwargs):
 def action(*args, **kwargs):
     fig = get_current_figure()
     fig.action(*args, **kwargs)
+    
     
 def show(*args, **kwargs):
     fig = get_current_figure()

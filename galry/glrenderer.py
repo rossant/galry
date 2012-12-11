@@ -780,10 +780,11 @@ class GLVisualRenderer(object):
             # normalization
             if name in self.options.get('normalizers', {}):
                 viewbox = self.options['normalizers'][name]
-                self.normalizers[name] = DataNormalizer(data)
-                # normalize data with the specified viewbox, None by default
-                # meaning that the natural bounds of the data are used.
-                data = self.normalizers[name].normalize(viewbox)
+                if viewbox:
+                    self.normalizers[name] = DataNormalizer(data)
+                    # normalize data with the specified viewbox, None by default
+                    # meaning that the natural bounds of the data are used.
+                    data = self.normalizers[name].normalize(viewbox)
             variable['sliced_attribute'].load(data)
         
     def load_index(self, name, data=None):

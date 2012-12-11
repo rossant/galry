@@ -2,55 +2,66 @@ import numpy as np
 from visual import Visual
 from ..colors import get_color
 
+__all__ = ['process_coordinates', 'PlotVisual']
+
+def process_coordinates(x=None, y=None):
+    # handle the case where x is defined and not y: create x
+    if y is None and x is not None:
+        if x.ndim == 1:
+            x = x.reshape((1, -1))
+        nplots, nsamples = x.shape
+        y = x
+        x = np.tile(np.arange(nsamples).reshape((1, -1)), (nplots, 1))
+        
+    # remove single-dimensional dimensions
+    x = np.array(x, dtype=np.float32).squeeze()
+    y = np.array(y, dtype=np.float32).squeeze()
+    
+    # x and y should have the same shape
+    assert x.shape == y.shape
+    
+    # enforce 2D for arrays
+    if x.ndim == 1:
+        x = x.reshape((1, -1))
+        y = y.reshape((1, -1))
+    
+    # create the position matrix
+    position = np.empty((x.size, 2), dtype=np.float32)
+    position[:, 0] = x.ravel()
+    position[:, 1] = y.ravel()
+    
+    return position, x.shape
+    
+
 class PlotVisual(Visual):
     def initialize(self, x=None, y=None, color=None, point_size=1.0,
             position=None, nprimitives=None, index=None,
-            color_array_index=None, viewbox=None):
-            
-        if position is None and y is None and x is not None:
-            if x.ndim == 1:
-                x = x.reshape((1, -1))
-            nplots, nsamples = x.shape
-            y = x
-            x = np.tile(np.arange(nsamples).reshape((1, -1)), (nplots, 1))
+            color_array_index=None, viewbox=None,
+            options=None):
             
         # if position is specified, it contains x and y as column vectors
         if position is not None:
-            x, y = position.T
-        
-        # remove single-dimensional dimensions
-        x = np.array(x, dtype=np.float32).squeeze()
-        y = np.array(y, dtype=np.float32).squeeze()
-        
-        # x and y should have the same shape
-        assert x.shape == y.shape
-        
-        # enforce 2D for arrays
-        if x.ndim == 1:
-            x = x.reshape((1, -1))
-            y = y.reshape((1, -1))
+            position = np.array(position, dtype=np.float32)
+            shape = (position.shape[0], 1)
+        else:
+            position, shape = process_coordinates(x=x, y=y)
         
         # register the size of the data
-        self.size = x.size
+        self.size = np.prod(shape)
         
         # there is one plot per row
         if not nprimitives:
-            nprimitives = x.shape[0]
-            nsamples = x.shape[1]
+            nprimitives = shape[0]
+            nsamples = shape[1]
         else:
-            nsamples = x.size // nprimitives
+            nsamples = self.size // nprimitives
         
         # register the bounds
-        if nsamples == 0:
-            self.bounds = [0, 0]
+        if nsamples <= 1:
+            self.bounds = [0, self.size]
         else:
             self.bounds = np.arange(0, self.size + 1, nsamples)
         
-        # create the position matrix
-        position = np.empty((self.size, 2), dtype=np.float32)
-        position[:, 0] = x.ravel()
-        position[:, 1] = y.ravel()
-
         # normalize position
         if viewbox:
             self.add_normalizer('position', viewbox)

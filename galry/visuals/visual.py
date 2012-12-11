@@ -791,7 +791,6 @@ class Visual(object):
         if self.primitive_type is None:
             self.primitive_type = 'LINE_STRIP'
     
-    
     # Output methods
     # --------------
     def get_variables_list(self):
