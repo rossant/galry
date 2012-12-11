@@ -39,6 +39,9 @@ For the plotting commands, fig.xxx(...) <==> pm.add_visual(Xxx, ...)
 
 
 
+-------
+
+
 Notes about the future high-level interface. It should be as close as possible
 from the matplotlib interface.
 

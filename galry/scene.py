@@ -6,6 +6,8 @@ __all__ = ['SceneCreator',
            'encode_data', 'decode_data', 'serialize', 'deserialize', ]
 
 
+# Scene creator
+# -------------
 class SceneCreator(object):
     """Construct a scene with `add_*` methods."""
     def __init__(self, constrain_ratio=False,):

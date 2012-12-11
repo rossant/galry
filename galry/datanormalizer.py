@@ -27,7 +27,7 @@ class DataNormalizer(object):
         
         """
         x, y = self.data[:,0], self.data[:,1]
-        if initial_viewbox is None:
+        if not initial_viewbox:
             initial_viewbox = (None, None, None, None)
         dx0, dy0, dx1, dy1 = initial_viewbox
         
@@ -49,7 +49,10 @@ class DataNormalizer(object):
             dx1 += .5
         if dy0 == dy1:
             dy0 -= .5
-            dy1 += .5        
+            dy1 += .5
+            
+            
+            
         if dx0 is None:
             self.normalize_x = self.unnormalize_x = lambda X: X
         else:

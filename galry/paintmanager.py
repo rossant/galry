@@ -197,24 +197,7 @@ class PaintManager(Manager):
             if visual in self.data_updating:
                 self.data_updating[visual] = {}
             
-            
-    # Methods related to visuals
-    # --------------------------
-    # def transform_view(self):
-        # """Change uniform variables to implement interactive navigation."""
-        # # TODO: modularize this
-        # tx, ty = self.interaction_manager.get_translation()
-        # sx, sy = self.interaction_manager.get_scaling()
-        # # scale = (np.float32(sx), np.float32(sy))
-        # scale = (sx, sy)
-        # # translation = (np.float32(tx), np.float32(ty))
-        # translation = (tx, ty)
-        # # update all non static visuals
-        # for visual in self.get_visuals():
-            # if not visual.get('is_static', False):
-                # self.set_data(visual=visual['name'], 
-                              # scale=scale, translation=translation)
-    
+      
     def update_fps(self, fps):
         """Update the FPS in the corresponding text visual."""
         self.set_data(visual='fps', text="FPS: %03d" % fps, visible=True)

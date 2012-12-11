@@ -3,6 +3,7 @@ from collections import OrderedDict
 import numpy as np
 import sys
 from tools import enforce_dtype
+from datanormalizer import DataNormalizer
 from debugtools import log_info, log_debug, log_warn
 from visuals import RefVar
 
@@ -579,6 +580,8 @@ class GLVisualRenderer(object):
         self.scene = renderer.scene
         # register the visual dictionary
         self.visual = visual
+        # options
+        self.options = visual.get('options', {})
         # hold all data changes until the next rendering pass happens
         self.data_updating = {}
         # set the primitive type from its name
@@ -610,6 +613,7 @@ class GLVisualRenderer(object):
         # log_info(self.shader_manager.fragment_shader)
                                             
         # initialize all variables
+        self.initialize_normalizers()
         self.initialize_variables()
         self.load_variables()
         
@@ -740,6 +744,12 @@ class GLVisualRenderer(object):
         pass
         
         
+    # Normalization methods
+    # ---------------------
+    def initialize_normalizers(self):
+        self.normalizers = {}
+        
+        
     # Loading methods
     # ---------------
     def load_variables(self):
@@ -755,14 +765,10 @@ class GLVisualRenderer(object):
     def load_attribute(self, name, data=None):
         """Load data for an attribute variable."""
         variable = self.get_variable(name)
-        
-        
         if variable['sliced_attribute'].location < 0:
             log_info(("Variable '%s' could not be loaded, probably because "
                       "it is not used in the shaders") % name)
             return
-        
-        
         olddata = variable.get('data', None)
         if isinstance(olddata, RefVar):
             log_info("Skipping loading data for attribute '%s' since it "
@@ -771,6 +777,13 @@ class GLVisualRenderer(object):
         if data is None:
             data = olddata
         if data is not None:
+            # normalization
+            if name in self.options.get('normalizers', {}):
+                viewbox = self.options['normalizers'][name]
+                self.normalizers[name] = DataNormalizer(data)
+                # normalize data with the specified viewbox, None by default
+                # meaning that the natural bounds of the data are used.
+                data = self.normalizers[name].normalize(viewbox)
             variable['sliced_attribute'].load(data)
         
     def load_index(self, name, data=None):
@@ -1144,7 +1157,7 @@ class GLVisualRenderer(object):
         # deactivate the shaders
         self.shader_manager.deactivate_shaders()
 
-        
+
     # Cleanup methods
     # ---------------
     def cleanup_attribute(self, name):

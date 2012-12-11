@@ -524,6 +524,7 @@ class Visual(object):
     def __init__(self, scene, *args, **kwargs):
         self.scene = scene
         self.variables = collections.OrderedDict()
+        self.options = {}
         # initialize the shader creator
         self.shader_creator = ShaderCreator()
         # default options
@@ -674,6 +675,24 @@ class Visual(object):
         for name, value in kwargs.iteritems():
             self.variables[name]['data'] = value
         
+    
+    
+    # Option methods
+    # --------------
+    def add_options(self, **kwargs):
+        self.options.update(kwargs)
+        
+    def add_normalizer(self, name, viewbox=None):
+        """Add a data normalizer for attribute 'name'."""
+        # option_name = '%s_normalizer' % name
+        # self.add_option(option_name=(name, viewbox))
+        if 'normalizers' not in self.options:
+            self.options['normalizers'] = {}
+        self.options['normalizers'][name] = viewbox
+        
+        
+    # Variable methods
+    # ----------------
     def get_variables(self, shader_type=None):
         """Return all variables defined in the visual."""
         if not shader_type:
@@ -793,6 +812,7 @@ class Visual(object):
             'bounds': self.bounds,
             'visible': self.visible,
             'is_static': self.is_static,
+            'options': self.options,
             'primitive_type': self.primitive_type,
             'constrain_ratio': self.constrain_ratio,
             'constrain_navigation': self.constrain_navigation,

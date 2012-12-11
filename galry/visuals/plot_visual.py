@@ -1,10 +1,18 @@
 import numpy as np
 from visual import Visual
+from ..colors import get_color
 
 class PlotVisual(Visual):
     def initialize(self, x=None, y=None, color=None, point_size=1.0,
             position=None, nprimitives=None, index=None,
-            color_array_index=None):
+            color_array_index=None, viewbox=None):
+            
+        if position is None and y is None and x is not None:
+            if x.ndim == 1:
+                x = x.reshape((1, -1))
+            nplots, nsamples = x.shape
+            y = x
+            x = np.tile(np.arange(nsamples).reshape((1, -1)), (nplots, 1))
             
         # if position is specified, it contains x and y as column vectors
         if position is not None:
@@ -43,10 +51,19 @@ class PlotVisual(Visual):
         position[:, 0] = x.ravel()
         position[:, 1] = y.ravel()
 
+        # normalize position
+        if viewbox:
+            self.add_normalizer('position', viewbox)
+        
         # by default, use the default color
         if color is None:
             color = self.default_color
             
+        # # handle the case where the color is a string where each character
+        # # is a color (eg. 'ry')
+        # if isinstance(color, basestring):
+            # color = list(color)
+        color = get_color(color)
         # handle the case where there is a single color given as a list of
         # RGB components instead of a tuple
         if type(color) is list:

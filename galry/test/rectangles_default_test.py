@@ -18,4 +18,5 @@ class RectanglesDefaultTest(GalryTest):
         self.show(paint_manager=PM)
 
 if __name__ == '__main__':
-    unittest.main()    
+    # unittest.main()    
+    show_basic_window(paint_manager=PM)

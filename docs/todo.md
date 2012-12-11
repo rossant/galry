@@ -28,6 +28,7 @@ Automation
 Fixes
 -----
 
+  * bug with text and constrain ratio
   * bug: linux pyside segmentation fault
       * some update (2012/11/27): I could reproduce this issue on RedHat 5
         with a Nvidia cards (nvidia drivers, OpenGL 4.3) and pyside (EPD), 
