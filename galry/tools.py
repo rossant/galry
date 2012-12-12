@@ -8,7 +8,7 @@ import collections
 import subprocess
 from python_qt_binding import QtCore, QtGui, QtOpenGL
 from functools import wraps
-from debugtools import log_debug, log_info, log_warn
+from galry import log_debug, log_info, log_warn
 
 # try importing numexpr
 try:
@@ -17,8 +17,6 @@ except:
     numexpr = None
     
 __all__ = [
-    # 'enum',
-    # 'extend_enum',
     'get_application',
     'get_intermediate_classes',
     'show_window',
@@ -26,31 +24,6 @@ __all__ = [
     'enforce_dtype',
     'FpsCounter',
 ]
-    
-# Enumerations are just like global variables where each member
-# is an int. Whenever a new enumeration is created, the numbers assigned to
-# the enumeration members are increased by 100. Hence, there can be no more 
-# than 100 members per enumeration.
-# ENUM_COUNT = 0
-# MAX_ENUM_SIZE = 100
-
-# def enum(*sequential, **named):
-    # """Create an enumeration."""
-    # global ENUM_COUNT, MAX_ENUM_SIZE
-    # i = ENUM_COUNT * MAX_ENUM_SIZE
-    # enums = dict(zip(sequential, range(i, i+len(sequential))), **named)
-    # enums["_dict"] = enums.copy()
-    # enums["__module__"] = __name__
-    # ENUM_COUNT += 1
-    # return type('Enum', (), enums)
-    
-# def extend_enum(enum_base, enum_new):
-    # """Extend an enumeration with new values.
-    
-    # The values are not changed.
-    # """
-    # d = dict(enum_base._dict, **enum_new._dict)
-    # return type('Enum', (), d)
     
 def get_intermediate_classes(cls, baseclass):
     """Return all intermediate classes in the OO hierarchy between a base 

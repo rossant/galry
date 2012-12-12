@@ -1,6 +1,6 @@
 import numpy as np
+from galry import get_color
 from visual import Visual
-from ..colors import get_color
 
 __all__ = ['process_coordinates', 'PlotVisual']
 

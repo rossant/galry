@@ -1,12 +1,9 @@
 import numpy as np
 from collections import OrderedDict as odict
 
-from galrywidget import GalryWidget, show_basic_window
-from colors import get_color
-import visuals as vs
-from paintmanager import PaintManager
-from interactionmanager import InteractionManager
-from bindingmanager import DefaultBindingSet
+from galry import GalryWidget, show_basic_window, get_color, PaintManager,\
+    InteractionManager, DefaultBindingSet
+import galry.visuals as vs
 
 __all__ = ['figure', 'Figure', 'get_current_figure',
            'plot', 'text', 'rectangles', 'imshow',
@@ -109,8 +106,9 @@ class Figure(object):
         self.viewbox = (None, None, None, None)
         self.initialize(*args, **kwargs)
         
-    def initialize(self, constrain_ratio=False):
+    def initialize(self, constrain_ratio=False, constrain_navigation=False):
         self.constrain_ratio = constrain_ratio
+        self.constrain_navigation = constrain_navigation
     
     
     # Internal visual methods
@@ -202,7 +200,7 @@ class Figure(object):
         if filter:
             kwargs.update(
                 mipmap=True,
-                minfilter='LINEAR',
+                minfilter='LINEAR_MIPMAP_NEAREST',
                 magfilter='LINEAR',)
         self.add_visual(vs.TextureVisual, *args, **kwargs)
         
@@ -251,7 +249,9 @@ class Figure(object):
             paint_manager=pm,
             interaction_manager=im,
             bindings=bindings,
-            constrain_ratio=self.constrain_ratio)
+            constrain_ratio=self.constrain_ratio,
+            constrain_navigation=self.constrain_navigation,
+            )
         return window
             
 

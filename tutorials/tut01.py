@@ -18,5 +18,9 @@ plot(x, y)
 # We set the limits for the y-axis.
 ylim(-5, 5)
 
+# Experiment with the default user actions! All actions can be changed but
+# this would be the subject of a more advanced tutorial.
+print("Press H to see all keyboard shortcuts and mouse movements!")
+
 # Finally, we show the window. Internally, the real job happens here.
 show()

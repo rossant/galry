@@ -14,7 +14,7 @@ class MandelbrotPaintManager(PaintManager):
 class MandelbrotInteractionManager(InteractionManager):
     def process_zoom_event(self, event, parameter):
         super(MandelbrotInteractionManager, self).process_zoom_event(event, parameter)
-        if event == 'ZoomEvent':
+        if event == 'Zoom':
             self.paint_manager.set_data(iterations=get_iterations(self.sx))
         
 if __name__ == '__main__':

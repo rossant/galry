@@ -4,11 +4,9 @@ Galry: high-performance interactive visualization in Python
   * rename visual= into name= in PM.set_data
   * rename extend into initialize (and have initialize_default)
   * rename "bindings" to "mode"
-  * rename ***Event ==> ***
   * in interaction manager, better way to transform into transformed coordinates
     and data coordinates
   
-  * import galry.*** in the code instead of relative imports
   * include ony shader snippets in the scene, and include shader creation
     in the renderers
   * check gl capabilities (eg mipmapping)

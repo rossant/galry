@@ -1,24 +1,7 @@
 from python_qt_binding.QtCore import Qt 
-# from tools import enum
 
-__all__ = [
-# 'UserActions',
-'UserActionGenerator',
-]
+__all__ = ['UserActionGenerator', ]
 
-# # List of user actions.
-# UserActions = enum(
-    # "Move",
-    # "LeftClick",
-    # "MiddleClick",
-    # "RightClick",
-    # "LeftMove",
-    # "MiddleMove",
-    # "RightMove",
-    # "DoubleClick",
-    # "Wheel",
-    # "KeyPress",
-# )
 
 def get_maximum_norm(p1, p2):
     """Return the inf norm between two points."""
@@ -89,11 +72,11 @@ class UserActionGenerator(object):
                                     pos[1] - self.mouse_position[1])
         self.mouse_position = pos
         if self.mouse_button == Qt.LeftButton:
-            self.action = 'LeftMove'
+            self.action = 'LeftClickMove'
         elif self.mouse_button == Qt.MiddleButton:
-            self.action = 'MiddleMove'
+            self.action = 'MiddleClickMove'
         elif self.mouse_button == Qt.RightButton:
-            self.action = 'RightMove'
+            self.action = 'RightClickMove'
         else:
             self.action = 'Move'
             

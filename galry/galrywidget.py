@@ -10,13 +10,17 @@ from python_qt_binding.QtCore import Qt, pyqtSignal
 from python_qt_binding.QtOpenGL import QGLWidget, QGLFormat
 # from interactionevents import InteractionEvents as events
 # from useractions import UserActions as actions
-from useractions import UserActionGenerator
-import bindingmanager
-from debugtools import DEBUG, log_debug, log_info, log_warn
-import interactionmanager
-import paintmanager
-from tools import FpsCounter, show_window
-from cursors import get_cursor
+# from useractions import UserActionGenerator
+# import bindingmanager
+# from debugtools import DEBUG, log_debug, log_info, log_warn
+# import interactionmanager
+# import paintmanager
+# from tools import FpsCounter, show_window
+# from cursors import get_cursor
+from galry import get_cursor, FpsCounter, show_window, PaintManager, \
+    InteractionManager, BindingManager,DEBUG, log_debug, log_info, log_warn, \
+    UserActionGenerator, DefaultBindingSet, BindingSet, FpsCounter, \
+    show_window 
 
 __all__ = [
 'GalryWidget',
@@ -45,9 +49,9 @@ DISPLAY_FPS = DEBUG == True
 
 # Default manager classes.
 DEFAULT_MANAGERS = dict(
-    paint_manager=paintmanager.PaintManager,
-    binding_manager=bindingmanager.BindingManager,
-    interaction_manager=interactionmanager.InteractionManager,
+    paint_manager=PaintManager,
+    binding_manager=BindingManager,
+    interaction_manager=InteractionManager,
 )
 
 
@@ -137,12 +141,12 @@ class GalryWidget(QGLWidget):
         """
         bindings = list(bindings)
         if not bindings:
-            bindings = [bindingmanager.DefaultBindingSet()]
+            bindings = [DefaultBindingSet()]
         # if type(bindings) is not list and type(bindings) is not tuple:
             # bindings = [bindings]
         # if binding is a class, try instanciating it
         for i in xrange(len(bindings)):
-            if not isinstance(bindings[i], bindingmanager.BindingSet):
+            if not isinstance(bindings[i], BindingSet):
                 bindings[i] = bindings[i]()
         self.bindings = bindings
         
@@ -231,7 +235,7 @@ class GalryWidget(QGLWidget):
         self.initialized = True
         self.just_initialized = True
         # initialize event
-        # self.process_interaction('InitializeEvent')
+        # self.process_interaction('Initialize')
         
     def paintGL(self):
         """Paint the scene.
@@ -244,7 +248,7 @@ class GalryWidget(QGLWidget):
         """
         
         if self.just_initialized:
-            self.process_interaction('InitializeEvent', do_update=False)
+            self.process_interaction('Initialize', do_update=False)
         
         # paint fps
         if self.display_fps:
@@ -488,7 +492,7 @@ class GalryWidget(QGLWidget):
         prev_event = self.interaction_manager.prev_event
         
         # handle interaction mode change
-        if event == 'SwitchInteractionModeEvent':
+        if event == 'SwitchInteractionMode':
             binding = self.switch_interaction_mode()
             log_info("Switching interaction mode to %s." % \
                 binding.__class__.__name__)

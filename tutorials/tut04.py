@@ -17,7 +17,12 @@ path = os.path.dirname(os.path.realpath(__file__))
 image = imread(os.path.join(path, 'images/earth.png'))
 
 # We display the image and apply linear filtering and mipmapping.
-# You can fine-tune the filtering with mipmap, minfilter, magfilter.
+# Zoom in and try filter=False to see the difference.
+# You can fine-tune the filtering with the mipmap, minfilter, magfilter
+# arguments. When filter=True, the values are:
+#   * mipmap=True,
+#   * minfilter='LINEAR_MIPMAP_NEAREST',
+#   * magfilter='LINEAR'.
 imshow(image, filter=True)
 
 show()

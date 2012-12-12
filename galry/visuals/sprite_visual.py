@@ -1,7 +1,7 @@
 import numpy as np
 from visual import Visual
 from plot_visual import process_coordinates
-from ..colors import get_color
+from galry import get_color
     
 class SpriteVisual(Visual):
     """Template displaying one texture in multiple positions with

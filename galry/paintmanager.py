@@ -1,9 +1,6 @@
 import numpy as np
-from tools import log_debug, log_info, log_warn
-from glrenderer import GLRenderer
-from manager import Manager
-from visuals import TextVisual, RectanglesVisual
-from scene import SceneCreator, serialize
+from galry import log_debug, log_info, log_warn, get_color, GLRenderer, \
+    Manager, TextVisual, RectanglesVisual, SceneCreator, serialize
 
 __all__ = ['PaintManager']
 
@@ -38,18 +35,27 @@ class PaintManager(Manager):
         
     def initialize_default(self):
         """Default visuals (FPS and navigation rectangle)."""
+        # FPS
         if self.parent.display_fps:
             self.add_visual(TextVisual, text='FPS: 000', name='fps',
                             fontsize=18,
                             coordinates=(-.80, .92),
                             visible=False,
                             is_static=True)
-                        
+                    
+        # Navigation rectangle
         self.add_visual(RectanglesVisual, coordinates=(0.,) * 4,
                         color=self.navigation_rectangle_color, 
                         is_static=True,
                         name='navigation_rectangle',
                         visible=False)
+        
+        # Help
+        self.add_visual(TextVisual, coordinates=(-.95, .95),
+                        fontsize=14, color=get_color('w'),
+                        interline=30., letter_spacing=270.,
+                        is_static=True,
+                        text='', name='help', visible=False)
         
         
     # Visual methods

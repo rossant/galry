@@ -1,6 +1,5 @@
 from visual import Visual, CompoundVisual
 from text_visual import TextVisual
-from ..interactionmanager import EventProcessor
 import numpy as np
 
 # http://books.google.co.uk/books?id=fvA7zLEFWZgC&lpg=PA61&hl=fr&pg=PA62#v=onepage&q&f=false
@@ -315,27 +314,3 @@ class GridVisual(CompoundVisual):
             letter_spacing=250.)
         
         
-class GridEventProcessor(EventProcessor):
-    def initialize(self):
-        self.register('InitializeEvent', self.update_axes)
-        self.register('PanEvent', self.update_axes)
-        self.register('ZoomEvent', self.update_axes)
-        self.register('ResetEvent', self.update_axes)
-        self.register(None, self.update_axes)
-        
-    def update_axes(self, parameter):
-        viewbox = self.get_processor('navigation').get_viewbox()
-        text, coordinates, n = get_ticks_text(*viewbox)
-        
-        t = "".join(text)
-        n1 = len("".join(text[:n]))
-        n2 = len("".join(text[n:]))
-        
-        axis = np.zeros(n1+n2)
-        axis[n1:] = 1
-        
-        self.set_data(visual='ticks_text', text=text,
-            coordinates=coordinates,
-            axis=axis)
-            
-            

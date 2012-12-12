@@ -22,6 +22,9 @@ z += arange(m).reshape((-1, 1))
 # (transparency) with an m x 4 matrix.
 color = random.rand(m, 3)
 
+# We disable zooming out more than what the figure contains.
+figure(constrain_navigation=True)
+
 # We plot all signals and specify the color.
 # Note: it is much faster to have a single plot command, rather than one plot
 # per curve, especially if there are a lot of curves (like hundreds or

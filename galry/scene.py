@@ -1,7 +1,7 @@
 import numpy as np
 import base64
 import json
-from visuals import CompoundVisual
+from galry import CompoundVisual
 
 __all__ = ['SceneCreator', 
            'encode_data', 'decode_data', 'serialize', 'deserialize', ]

@@ -1,9 +1,8 @@
+from python_qt_binding import QtCore, QtGui
 from python_qt_binding.QtCore import Qt 
-import cursors
-from manager import Manager
+from collections import OrderedDict as odict
+from galry import Manager
 import numpy as np
-# from interactionevents import InteractionEvents as events
-# from useractions import UserActions as actions
 
 __all__ = ['BindingManager', 'BindingSet', 'DefaultBindingSet']
 
@@ -85,8 +84,8 @@ class BindingSet(object):
         # if "cursors" not in globals():
             # import cursors
         self.base_cursor = 'ArrowCursor'
-        
-        self.binding = {}
+        self.text = None
+        self.binding = odict()
         self.set_common_bindings()
         self.initialize()
         
@@ -102,7 +101,7 @@ class BindingSet(object):
         
     def set_common_bindings(self):
         """Set bindings that are common to any interaction mode."""
-        self.set('KeyPress', 'SwitchInteractionModeEvent',
+        self.set('KeyPress', 'SwitchInteractionMode',
                     key='I')
         
     def initialize(self):
@@ -145,7 +144,51 @@ class BindingSet(object):
           
         """
         return self.binding.get((action, key_modifier, key), (None, None))
-     
+    
+    def generate_text(self):
+        special_keys = {
+            None: '',
+            QtCore.Qt.Key_Control: 'CTRL',
+            QtCore.Qt.Key_Shift: 'SHIFT',
+            QtCore.Qt.Key_Alt: 'ALT',
+        }
+        
+        texts = {}
+        for (action, key_modifier, key), (event, _) in self.binding.iteritems():
+            # key string
+            if key:
+                key = QtGui.QKeySequence(key).toString()
+            else:
+                key = ''
+            
+            # key modifier
+            key_modifier = special_keys[key_modifier]
+            if key_modifier:
+                key_modifier = key_modifier + ' + '
+
+            # get binding text
+            if action == 'KeyPress':
+                bstr = 'Press ' + key_modifier + key + ' : ' + event
+            else:
+                bstr = key_modifier + action + ' : ' + event
+            
+            if event not in texts:
+                texts[event] = []
+            texts[event].append(bstr)
+            
+        # sort events
+        self.text = "\n".join(["\n".join(sorted(texts[key])) for key in sorted(texts.iterkeys())])
+        
+    
+    def get_text(self):
+        if not self.text:
+            self.generate_text()
+        return self.text
+    
+    def __repr__(self):
+        return self.get_text()
+    
+    
 class DefaultBindingSet(BindingSet):
     """A default set of bindings for interactive navigation.
     
@@ -154,35 +197,36 @@ class DefaultBindingSet(BindingSet):
     """
     def set_widget(self):
         self.set('KeyPress', 'ToggleFullscreen', key='F')
+        self.set('KeyPress', 'Help', key='H')
         # self.set('KeyPress', 'CloseWidget', key='Q')
     
     def set_panning_mouse(self):
         """Set panning bindings with the mouse."""
         # Panning: left button mouse
-        self.set('LeftMove', 'PanEvent',
+        self.set('LeftClickMove', 'Pan',
                     param_getter=lambda p: (p["mouse_position_diff"][0],
                                             p["mouse_position_diff"][1]))
         
     def set_panning_keyboard(self):
         """Set panning bindings with the keyboard."""
         # Panning: keyboard arrows
-        self.set('KeyPress', 'PanEvent',
+        self.set('KeyPress', 'Pan',
                     key='Left',
                     param_getter=lambda p: (.24, 0))
-        self.set('KeyPress', 'PanEvent',
+        self.set('KeyPress', 'Pan',
                     key='Right',
                     param_getter=lambda p: (-.24, 0))
-        self.set('KeyPress', 'PanEvent',
+        self.set('KeyPress', 'Pan',
                     key='Up',
                     param_getter=lambda p: (0, -.24))
-        self.set('KeyPress', 'PanEvent',
+        self.set('KeyPress', 'Pan',
                     key='Down',
                     param_getter=lambda p: (0, .24))
                 
     def set_zooming_mouse(self):
         """Set zooming bindings with the mouse."""
         # Zooming: right button mouse
-        self.set('RightMove', 'ZoomEvent',
+        self.set('RightClickMove', 'Zoom',
                     param_getter=lambda p: (p["mouse_position_diff"][0]*2.5,
                                             p["mouse_press_position"][0],
                                             p["mouse_position_diff"][1]*2.5,
@@ -191,7 +235,7 @@ class DefaultBindingSet(BindingSet):
     def set_zoombox_mouse(self):
         """Set zoombox bindings with the mouse."""
         # Zooming: zoombox (drag and drop)
-        self.set('MiddleMove', 'ZoomBoxEvent',
+        self.set('MiddleClickMove', 'ZoomBox',
                     param_getter=lambda p: (p["mouse_press_position"][0],
                                             p["mouse_press_position"][1],
                                             p["mouse_position"][0],
@@ -200,7 +244,7 @@ class DefaultBindingSet(BindingSet):
     def set_zoombox_keyboard(self):
         """Set zoombox bindings with the keyboard."""
         # Idem but with CTRL + left button mouse 
-        self.set('LeftMove', 'ZoomBoxEvent',
+        self.set('LeftClickMove', 'ZoomBox',
                     key_modifier='Control',
                     param_getter=lambda p: (p["mouse_press_position"][0],
                                             p["mouse_press_position"][1],
@@ -210,23 +254,23 @@ class DefaultBindingSet(BindingSet):
     def set_zooming_keyboard(self):
         """Set zooming bindings with the keyboard."""
         # Zooming: ALT + key arrows
-        self.set('KeyPress', 'ZoomEvent',
+        self.set('KeyPress', 'Zoom',
                     key='Left', key_modifier='Control', 
                     param_getter=lambda p: (-.25, 0, 0, 0))
-        self.set('KeyPress', 'ZoomEvent',
+        self.set('KeyPress', 'Zoom',
                     key='Right', key_modifier='Control', 
                     param_getter=lambda p: (.25, 0, 0, 0))
-        self.set('KeyPress', 'ZoomEvent',
+        self.set('KeyPress', 'Zoom',
                     key='Up', key_modifier='Control', 
                     param_getter=lambda p: (0, 0, .25, 0))
-        self.set('KeyPress', 'ZoomEvent',
+        self.set('KeyPress', 'Zoom',
                     key='Down', key_modifier='Control', 
                     param_getter=lambda p: (0, 0, -.25, 0))
         
     def set_zooming_wheel(self):
         """Set zooming bindings with the wheel."""
         # Zooming: wheel
-        self.set('Wheel', 'ZoomEvent',
+        self.set('Wheel', 'Zoom',
                     param_getter=lambda p: (
                                     p["wheel"]*.002, 
                                     p["mouse_position"][0],
@@ -236,9 +280,9 @@ class DefaultBindingSet(BindingSet):
     def set_reset(self):
         """Set reset bindings."""
         # Reset view
-        self.set('KeyPress', 'ResetEvent', key='R')
+        self.set('KeyPress', 'Reset', key='R')
         # Reset zoom
-        self.set('DoubleClick', 'ResetEvent')
+        self.set('DoubleClick', 'Reset')
         
     def initialize(self):
         """Initialize all bindings. Can be overriden."""

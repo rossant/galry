@@ -2,10 +2,8 @@ import OpenGL.GL as gl
 from collections import OrderedDict
 import numpy as np
 import sys
-from tools import enforce_dtype
-from datanormalizer import DataNormalizer
-from debugtools import log_info, log_debug, log_warn
-from visuals import RefVar
+from galry import enforce_dtype, DataNormalizer, log_info, log_debug, \
+    log_warn, RefVar
 
     
 # GLVersion class
