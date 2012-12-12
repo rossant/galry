@@ -93,6 +93,7 @@ class GalryWidget(QGLWidget):
         super(GalryWidget, self).__init__(format)
         
         self.initialized = False
+        self.just_initialized = False
         
         # Load the QT curors here, after QT has been initialized.
         # cursors.load()
@@ -456,7 +457,7 @@ class GalryWidget(QGLWidget):
                                                   key_modifier=key_modifier)
         
         # get the parameter object by calling the param getter
-        if param_getter is not None:
+        if param_getter is not None and parameters is not None:
             args = param_getter(parameters)
         else:
             args = None

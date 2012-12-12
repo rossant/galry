@@ -4,7 +4,9 @@ from collections import OrderedDict as odict
 from galry import Manager
 import numpy as np
 
+
 __all__ = ['BindingManager', 'BindingSet', 'DefaultBindingSet']
+
 
 class BindingManager(Manager):
     """Manager several sets of bindings (or interaction modes) and allows
@@ -67,6 +69,7 @@ class BindingManager(Manager):
         """
         self.index = np.mod(self.index + 1, len(self.bindings))
         return self.get()
+  
   
 class BindingSet(object):
     """Base class for action-events bindings set.
@@ -198,7 +201,7 @@ class DefaultBindingSet(BindingSet):
     def set_widget(self):
         self.set('KeyPress', 'ToggleFullscreen', key='F')
         self.set('KeyPress', 'Help', key='H')
-        # self.set('KeyPress', 'CloseWidget', key='Q')
+        self.set('KeyPress', 'Grid', key='QuoteDbl')
     
     def set_panning_mouse(self):
         """Set panning bindings with the mouse."""

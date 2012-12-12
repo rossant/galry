@@ -1,6 +1,7 @@
 import numpy as np
 from galry import log_debug, log_info, log_warn, get_color, GLRenderer, \
-    Manager, TextVisual, RectanglesVisual, SceneCreator, serialize
+    Manager, TextVisual, RectanglesVisual, SceneCreator, serialize, \
+    GridVisual
 
 __all__ = ['PaintManager']
 
@@ -54,8 +55,11 @@ class PaintManager(Manager):
         self.add_visual(TextVisual, coordinates=(-.95, .95),
                         fontsize=14, color=get_color('w'),
                         interline=30., letter_spacing=270.,
-                        is_static=True,
+                        is_static=True, prevent_constrain=True,
                         text='', name='help', visible=False)
+        
+        # Grid
+        self.add_visual(GridVisual, name='grid', visible=False)
         
         
     # Visual methods
@@ -186,12 +190,9 @@ class PaintManager(Manager):
           * **kwargs: keyword arguments as `visual_field_name: value` pairs.
         
         """
-        
         # default name
         if visual is None:
             visual = 'visual0'
-            
-            
         # if this method is called in initialize (the renderer is then not
         # defined) we save the data to be updated later
         # print hasattr(self, 'renderer'), kwargs
@@ -223,11 +224,12 @@ class PaintManager(Manager):
             self.set_data(visual=visual, **kwargs)
  
     def paintGL(self):
-        # self.transform_view()
-        self.renderer.paint()
+        if hasattr(self, 'renderer'):
+            self.renderer.paint()
  
     def resizeGL(self, width, height):
-        self.renderer.resize(width, height)
+        if hasattr(self, 'renderer'):
+            self.renderer.resize(width, height)
         
     def updateGL(self):
         """Call updateGL in the parent widget."""
@@ -238,7 +240,8 @@ class PaintManager(Manager):
     # ---------------
     def cleanup(self):
         """Cleanup all visuals."""
-        self.renderer.cleanup()
+        if hasattr(self, 'renderer'):
+            self.renderer.cleanup()
         
         
     # Methods to be overriden

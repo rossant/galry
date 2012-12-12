@@ -1,6 +1,8 @@
 Galry: high-performance interactive visualization in Python
 ===========================================================
 
+  * no log10
+
   * rename visual= into name= in PM.set_data
   * rename extend into initialize (and have initialize_default)
   * rename "bindings" to "mode"
@@ -69,8 +71,9 @@ Tested
   * Windows 7 64 bits, nvidia GPU               OK with #version0
   * Windows 7 64 bits, Intel HD 4000            OK    
   * Ubuntu 12.04 in VM, AMD GPU                 OK
+  * Ubuntu 12.10 Nvidia Quadro GPU              OK
   * Linux with nvidia                           seg fault w PySide
-  * MacOSX with nvidia                          OK
+  * MacOSX 64 bits with Nvidia                  OK
 
   
 Later

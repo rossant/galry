@@ -6,7 +6,7 @@ from visual import Visual
 
 VS = """
 gl_Position.x += (offset - text_width / 2) * spacing.x / window_size.x;
-gl_Position.y -= textidx * spacing.y / window_size.y;
+gl_Position.y -= index * spacing.y / window_size.y;
 gl_PointSize = point_size;
 flat_text_map = text_map;
 """
@@ -53,6 +53,15 @@ class TextVisual(Visual):
     
     """
     
+    # def initialize_viewport(self):
+        # """Handle window resize in shaders."""
+        # self.add_uniform('viewport', vartype="float", ndim=2, data=(1., 1.))
+        # self.add_uniform('window_size', vartype="float", ndim=2, data=(600., 600.))
+        # if self.constrain_ratio:
+            # self.add_vertex_main("gl_Position.xy = gl_Position.xy / viewport;",
+                # position='last', name='viewport')
+                
+                
     def position_compound(self, coordinates=None):
         """Compound variable with the position of the text. All characters
         are at the exact same position, and are then shifted in the vertex
@@ -61,6 +70,24 @@ class TextVisual(Visual):
             coordinates = (0., 0.)
         if type(coordinates) == tuple:
             coordinates = [coordinates]
+            
+            
+        # ####################################################
+            # # if hasattr(self.textsizes, '__len__'):
+                # # coordinates *= len(self.textsizes)
+        # if self.multiline:
+            # if len(coordinates) == 1:
+                
+                # c = coordinates[0]
+                # # interline = .5
+                # coordinates = [(c[0], c[1] - i * self.interline) 
+                    # for i in xrange(self.multiline)]
+        # ####################################################
+            
+            
+            
+            
+            
         coordinates = np.array(coordinates)
         position = np.repeat(coordinates, self.textsizes, axis=0)
         return dict(position=position)
@@ -74,12 +101,24 @@ class TextVisual(Visual):
         if "\n" in text:
             text = text.split("\n")
             
+        # ####################################################
+            # self.multiline = len(text)
+            # if type(coordinates) != list:
+                # c = coordinates
+                # # interline = .5
+                # coordinates = [(c[0], c[1] - i * self.interline) 
+                    # for i in xrange(len(text))]
+        # else:
+            # self.multiline = False
+        # ####################################################
+            
+            
         if type(text) == list:
             self.textsizes = [len(t) for t in text]
             text = "".join(text)
             if type(coordinates) != list:
                 coordinates = [coordinates] * len(self.textsizes)
-            textidx = np.repeat(np.arange(len(self.textsizes)), self.textsizes)
+            index = np.repeat(np.arange(len(self.textsizes)), self.textsizes)
             text_map = self.get_map(text)
             
             # offset for all characters in the merging of all texts
@@ -99,12 +138,12 @@ class TextVisual(Visual):
             text_map = self.get_map(text)
             offset = np.hstack((0., np.cumsum(text_map[:, 2])[:-1]))    
             text_width = offset[-1]
-            textidx = np.zeros(len(text))
+            index = np.zeros(len(text))
             
         self.size = len(text)
         
         d = dict(text_map=text_map, offset=offset, text_width=text_width,
-            textidx=textidx)
+            index=index)
         d.update(self.position_compound(coordinates))
         
         return d
@@ -114,9 +153,12 @@ class TextVisual(Visual):
         self.texture, self.matrix, self.get_map = load_font(font, fontsize)
 
     def initialize(self, text, coordinates=(0., 0.), font='segoe', fontsize=24,
-            color=None, letter_spacing=None, interline=50.):
+            color=None, letter_spacing=None, interline=0., prevent_constrain=False):
         """Initialize the text template."""
         
+        if prevent_constrain:
+            self.constrain_ratio = False
+            
         if color is None:
             color = self.default_color
         
@@ -134,7 +176,7 @@ class TextVisual(Visual):
         self.add_attribute("position", vartype="float", ndim=2, data=np.zeros((self.size, 2)))
             
         self.add_attribute("offset", vartype="float", ndim=1)
-        self.add_attribute("textidx", vartype="float", ndim=1)
+        self.add_attribute("index", vartype="float", ndim=1)
         self.add_attribute("text_map", vartype="float", ndim=4)
         self.add_varying("flat_text_map", vartype="float", flat=True, ndim=4)
         
@@ -158,7 +200,7 @@ class TextVisual(Visual):
         self.add_compound("coordinates", fun=self.position_compound, data=coordinates)
 
         # vertex shader
-        self.add_vertex_main(VS, after='navigation')
+        self.add_vertex_main(VS, after='viewport')
 
         # fragment shader
         self.add_fragment_main(FS)

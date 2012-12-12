@@ -106,9 +106,11 @@ class Figure(object):
         self.viewbox = (None, None, None, None)
         self.initialize(*args, **kwargs)
         
-    def initialize(self, constrain_ratio=False, constrain_navigation=False):
+    def initialize(self, constrain_ratio=False, constrain_navigation=False,
+            display_fps=None):
         self.constrain_ratio = constrain_ratio
         self.constrain_navigation = constrain_navigation
+        self.display_fps = display_fps
     
     
     # Internal visual methods
@@ -251,6 +253,7 @@ class Figure(object):
             bindings=bindings,
             constrain_ratio=self.constrain_ratio,
             constrain_navigation=self.constrain_navigation,
+            display_fps=self.display_fps,
             )
         return window
             

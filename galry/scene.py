@@ -86,7 +86,7 @@ class SceneCreator(object):
         # handle compound visual, where we add all sub visuals
         # as defined in CompoundVisual.initialize()
         if issubclass(visual_class, CompoundVisual):
-            visual = visual_class(*args, **kwargs)
+            visual = visual_class(self.scene, *args, **kwargs)
             for sub_cls, sub_args, sub_kwargs in visual.visuals:
                 self.add_visual(sub_cls, *sub_args, **sub_kwargs)
             return visual
@@ -95,6 +95,7 @@ class SceneCreator(object):
         name = kwargs.pop('name', 'visual%d' % (len(self.get_visuals())))
         if self.get_visual(name):
             raise ValueError("Visual name '%s' already exists." % name)
+        
         # pass constrain_ratio to all visuals
         if 'constrain_ratio' not in kwargs:
             kwargs['constrain_ratio'] = self.constrain_ratio

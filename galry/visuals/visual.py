@@ -436,7 +436,10 @@ class ShaderCreator(object):
         for m in mains:
             if m['after']:
                 # which index for "after"?
-                index = order.index(m['after'])
+                if m['after'] in order:
+                    index = order.index(m['after'])
+                else:
+                    index = len(order) - 1
                 order.insert(index + 1, m['name'])
         # finally, get the final code
         main = ""
@@ -518,17 +521,35 @@ class RefVar(object):
     
 # Visual creator
 # --------------
-class Visual(object):
+class BaseVisual(object):
+    def __init__(self, scene, *args, **kwargs):
+        self.scene = scene
+        # default options
+        self.kwargs = self.extract_common_parameters(**kwargs)
+        
+    def extract_common_parameters(self, **kwargs):
+        self.size = kwargs.pop('size', 0)
+        self.default_color = kwargs.pop('default_color', (1., 1., 0., 1.))
+        self.bounds = kwargs.pop('bounds', None)
+        self.is_static = kwargs.pop('is_static', False)
+        self.position_attribute_name = kwargs.pop('position_attribute_name', 'position')
+        self.primitive_type = kwargs.pop('primitive_type', None)
+        self.constrain_ratio = kwargs.pop('constrain_ratio', False)
+        self.constrain_navigation = kwargs.pop('constrain_navigation', False)
+        self.visible = kwargs.pop('visible', True)
+        return kwargs
+        
+    
+class Visual(BaseVisual):
     """This class defines a visual to be displayed in the scene. It should
     be overriden."""
     def __init__(self, scene, *args, **kwargs):
-        self.scene = scene
+        super(Visual, self).__init__(scene, *args, **kwargs)
+        kwargs = self.kwargs
         self.variables = collections.OrderedDict()
         self.options = {}
         # initialize the shader creator
         self.shader_creator = ShaderCreator()
-        # default options
-        kwargs = self.extract_common_parameters(**kwargs)
         self.reinitialization = False
         kwargs = self.resolve_references(**kwargs)
         # initialize the visual
@@ -547,7 +568,7 @@ class Visual(object):
         # create the shader source codes
         self.vertex_shader, self.fragment_shader = \
             self.shader_creator.get_shader_codes()
-        
+            
     def extract_common_parameters(self, **kwargs):
         self.size = kwargs.pop('size', 0)
         self.default_color = kwargs.pop('default_color', (1., 1., 0., 1.))
@@ -822,15 +843,20 @@ class Visual(object):
         return dic
         
     
-class CompoundVisual(object):
-    def __init__(self, *args, **kwargs):
+class CompoundVisual(BaseVisual):
+    def __init__(self, scene, *args, **kwargs):
+        # super(CompoundVisual, self).__init__(scene, *args, **kwargs)
         self.visuals = []
+        self.name = kwargs.pop('name')
         self.initialize(*args, **kwargs)
     
     def add_visual(self, visual_class, *args, **kwargs):
+        name = kwargs.get('name', 'visual%d' % len(self.visuals))
+        # prefix the visual name with the compound name
+        kwargs['name'] = self.name + "_" + name
         self.visuals.append((visual_class, args, kwargs))
     
-    def initialize(self):
+    def initialize(self, *args, **kwargs):
         pass
         
         

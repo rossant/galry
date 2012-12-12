@@ -2,7 +2,7 @@ import inspect
 from collections import OrderedDict as odict
 import numpy as np
 from galry import Manager, TextVisual, get_color, NavigationEventProcessor, \
-    WidgetEventProcessor, EventProcessor
+    WidgetEventProcessor, EventProcessor, GridEventProcessor
 
 
 __all__ = ['InteractionManager']
@@ -36,6 +36,7 @@ class InteractionManager(Manager):
     def initialize_default(self, constrain_navigation=False):
         self.add_processor(NavigationEventProcessor,
             constrain_navigation=constrain_navigation, name='navigation')
+        self.add_processor(GridEventProcessor, name='grid')
         self.add_processor(WidgetEventProcessor, name='widget')
         
         

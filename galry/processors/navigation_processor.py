@@ -177,7 +177,7 @@ class NavigationEventProcessor(EventProcessor):
         self.sxl, self.syl = 1, 1
         self.navigation_rectangle = None
     
-    def get_viewbox(self):
+    def get_viewbox(self, scale=1.):
         """Return the coordinates of the current view box.
         
         Returns:
@@ -185,8 +185,8 @@ class NavigationEventProcessor(EventProcessor):
             system.
             
         """
-        x0, y0 = self.get_data_coordinates(-1, -1)
-        x1, y1 = self.get_data_coordinates(1, 1)
+        x0, y0 = self.get_data_coordinates(-scale, -scale)
+        x1, y1 = self.get_data_coordinates(scale, scale)
         return (x0, y0, x1, y1)
     
     def get_data_coordinates(self, x, y):

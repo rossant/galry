@@ -2,39 +2,6 @@ from visual import Visual, CompoundVisual
 from text_visual import TextVisual
 import numpy as np
 
-# http://books.google.co.uk/books?id=fvA7zLEFWZgC&lpg=PA61&hl=fr&pg=PA62#v=onepage&q&f=false
-def nicenum(x, round=False):
-    e = np.floor(np.log10(x))
-    f = x / 10 ** e
-    if round:
-        if f < 1.5:
-            nf = 1.
-        elif f < 3:
-            nf = 2.
-        elif f < 7.:
-            nf = 5.
-        else:
-            nf = 10.
-    else:
-        if f <= 1:
-            nf = 1.
-        elif f <= 2:
-            nf = 2.
-        elif f <= 5.:
-            nf = 5.
-        else:
-            nf = 10.
-    return nf * 10 ** e
-    
-def get_ticks(x0, x1):
-    nticks = 10
-    r = nicenum(x1 - x0, False)
-    d = nicenum(r / (nticks - 1), True)
-    g0 = np.floor(x0 / d) * d
-    g1 = np.ceil(x1 / d) * d
-    nfrac = int(max(-np.floor(np.log10(d)), 0))
-    return np.arange(g0, g1 + .5 * d, d), nfrac
-  
 
 # Axes
 # ----
@@ -70,13 +37,10 @@ class AxesVisual(Visual):
         self.add_attribute("axis", ndim=1, vartype='int', data=axis)
 
 
-# Ticks
-# ----
-
 # Shaders
 VSH = """
 float nicenum(float x, bool round) {
-    float e = floor(log10(x));
+    float e = floor(log(x) / log(10.));
     float f = x / pow(10., e);
     float nf = 0;
     if (round) {
@@ -133,6 +97,8 @@ VH = """
         position_tr.y = scale.y * (tick + translation.y);
     }
 
+    //position_tr = position_tr + vec2(.5, .5);
+    
     vtick = tick;
     gl_Position = vec4(position_tr, 0., 1.);
 """
@@ -161,35 +127,7 @@ TICKSY = {
     """
 }
 
-def format_number(x, nfrac=None):
-    if nfrac is None:
-        nfrac = 2
-    
-    if np.abs(x) < 1e-15:
-        return "0"
-        
-    elif np.abs(x) > 100.001:
-        return "%.2e" % x
-        
-    if nfrac <= 2:
-        return "%.2f" % x
-    else:
-        return ("%." + str(nfrac - 1) + "e") % x
 
-def get_ticks_text(x0, y0, x1, y1):
-    ticksx, nfracx = get_ticks(x0, x1)
-    ticksy, nfracy = get_ticks(y0, y1)
-    n = len(ticksx)
-    text = [format_number(x, nfracx) for x in ticksx]
-    text += [format_number(x, nfracy) for x in ticksy]
-    coordinates = np.zeros((len(text), 2))
-    coordinates[:n, 0] = ticksx
-    coordinates[n:, 1] = ticksy
-    coordinates[n:, 0] = -.95
-    coordinates[:n, 1] = -.95
-    return text, coordinates, n
-    
-    
 class TicksGridVisual(Visual):
     def initialize_navigation(self):
         self.add_uniform("scale", vartype="float", ndim=2, data=(1., 1.))
@@ -204,6 +142,9 @@ class TicksGridVisual(Visual):
         self.add_vertex_main(vh, position='last', name='navigation')
             
     def initialize(self, showgrid=False):
+        # prevent constraining ratio
+        # self.constrain_ratio = False
+        
         self.showgrid = showgrid
         n = 10
         
@@ -278,39 +219,61 @@ class TicksTextVisual(TextVisual):
     def text_compound(self, text):
         d = super(TicksTextVisual, self).text_compound(text)
         d["text_width"] = 0.#-.2
+        
+        # d['index'] = np.zeros(self.size)
         return d
     
     def initialize_navigation(self):
         self.add_uniform("scale", vartype="float", ndim=2, data=(1., 1.))
         self.add_uniform("translation", vartype="float", ndim=2, data=(0., 0.))
             
-        self.add_vertex_main("""
+        # self.add_vertex_main("""
         
-            gl_Position = vec4(position, 0., 1.);
+            # gl_Position = vec4(position, 0., 1.);
             
-            if (axis < .5) {
-                gl_Position.x = scale.x * (position.x + translation.x);
-            }
-            else {
-                gl_Position.y = scale.y * (position.y + translation.y);
-            }
+            # if (axis < .5) {
+                # gl_Position.x = scale.x * (position.x + translation.x);
+            # }
+            # else {
+                # gl_Position.y = scale.y * (position.y + translation.y);
+            # }
             
-            """,
-            position='last', name='navigation')
+            # """,
+            # position='last', name='navigation')
+            
+            
 
+        self.add_vertex_header(VSH)
+        
+        vh = VH
+        vh = vh.replace('%TICKSX%', TICKSX[True])
+        vh = vh.replace('%TICKSY%', TICKSY[True])
+        
+        self.add_vertex_main(vh, position='last', name='navigation')
+            
     def initialize(self, *args, **kwargs):
         super(TicksTextVisual, self).initialize(*args, **kwargs)
         axis = np.zeros(self.size)
         axis[self.size/2:] = 1
         self.add_attribute("axis", ndim=1, vartype="int", data=axis)
+        
+        # index of the tick
+        index = np.zeros(self.size)
+        # index = np.tile(np.arange(self.size), 2)
+        
+        # self.add_attribute("index", ndim=1, vartype='int', data=index)
+        self.add_varying("vaxis", ndim=1, vartype='int')
+        self.add_varying("vtick", ndim=1, vartype='float')
 
         
 class GridVisual(CompoundVisual):
-    def initialize(self):
-        self.add_visual(TicksGridVisual, showgrid=True)
+    def initialize(self, *args, **kwargs):
+        # add lines visual
+        self.add_visual(TicksGridVisual, showgrid=True, name='lines', **kwargs)
         # add the text visual
         self.add_visual(TicksTextVisual, text='',
-            fontsize=14, color=(1., 1., 1., .75), name='ticks_text',
-            letter_spacing=250.)
+            fontsize=14, color=(1., 1., 1., .75), name='text',
+            letter_spacing=250., #prevent_constrain=True,
+            **kwargs)
         
         
