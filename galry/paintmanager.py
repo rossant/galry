@@ -34,8 +34,7 @@ class PaintManager(Manager):
     def initialize(self):
         """Define the scene. To be overriden."""
         
-    def initialize_default(self):
-        """Default visuals (FPS and navigation rectangle)."""
+    def initialize_default(self, **kwargs):
         # FPS
         if self.parent.display_fps:
             self.add_visual(TextVisual, text='FPS: 000', name='fps',
@@ -43,14 +42,6 @@ class PaintManager(Manager):
                             coordinates=(-.80, .92),
                             visible=False,
                             is_static=True)
-                    
-        # Navigation rectangle
-        self.add_visual(RectanglesVisual, coordinates=(0.,) * 4,
-                        color=self.navigation_rectangle_color, 
-                        is_static=True,
-                        name='navigation_rectangle',
-                        visible=False)
-        
         # Help
         if self.parent.activate_help:
             self.add_visual(TextVisual, coordinates=(-.95, .95),
@@ -58,10 +49,6 @@ class PaintManager(Manager):
                             interline=30., letter_spacing=270.,
                             is_static=True, prevent_constrain=True,
                             text='', name='help', visible=False)
-        
-        # Grid
-        if self.parent.activate_grid:
-            self.add_visual(GridVisual, name='grid', visible=False)
         
         
     # Visual methods

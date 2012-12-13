@@ -33,10 +33,7 @@ class InteractionManager(Manager):
         """
         pass
         
-    def initialize_default(self, constrain_navigation=False):
-        self.add_processor(NavigationEventProcessor,
-            constrain_navigation=constrain_navigation, name='navigation')
-        self.add_processor(GridEventProcessor, name='grid')
+    def initialize_default(self, **kwargs):
         self.add_processor(WidgetEventProcessor, name='widget')
         
         

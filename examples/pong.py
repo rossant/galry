@@ -120,7 +120,7 @@ class PongInteractionManager(InteractionManager):
         if event == 'RightPlayerMove':
             self.paint_manager.move_player('right', parameter)
         
-class PongBindings(DefaultBindingSet):
+class PongBindings(PlotBindings):
     def initialize(self):
         self.set_fullscreen()
         self.extend()

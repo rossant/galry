@@ -19,7 +19,7 @@ from python_qt_binding.QtOpenGL import QGLWidget, QGLFormat
 # from cursors import get_cursor
 from galry import get_cursor, FpsCounter, show_window, PaintManager, \
     InteractionManager, BindingManager,DEBUG, log_debug, log_info, log_warn, \
-    UserActionGenerator, DefaultBindingSet, BindingSet, FpsCounter, \
+    UserActionGenerator, PlotBindings, BindingSet, FpsCounter, \
     show_window 
 
 __all__ = [
@@ -165,7 +165,7 @@ class GalryWidget(QGLWidget):
         """
         bindings = list(bindings)
         if not bindings:
-            bindings = [DefaultBindingSet()]
+            bindings = [PlotBindings()]
         # if type(bindings) is not list and type(bindings) is not tuple:
             # bindings = [bindings]
         # if binding is a class, try instanciating it

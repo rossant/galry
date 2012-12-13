@@ -63,16 +63,6 @@ def get_transform(translation, rotation, scale):
 class MyPaintManager(PaintManager):
     """Display a 3D cube that can be rotated, translated, and scaled."""
     
-    def transform_view(self):
-        """Upload the transformation matrices as a function of the
-        interaction variables in the InteractionManager."""
-        translation = self.interaction_manager.get_translation()
-        rotation = self.interaction_manager.get_rotation()
-        scale = self.interaction_manager.get_scaling()
-        for visual in self.get_visuals():
-            if not visual.get('is_static', False):
-                self.set_data(visual=visual['name'], 
-                              transform=get_transform(translation, rotation, scale[0]))
 
     def initialize(self):
         # Important: tells Galry to activate depth buffer
@@ -86,14 +76,13 @@ class MyPaintManager(PaintManager):
         color = np.hstack((color, np.ones((n, 1))))
         
         # render it as a set of triangles
-        self.add_visual(ThreeDimensionsVisual,
+        self.add_visual(MeshVisual,
                             primitive_type='TRIANGLES',
                             position=vertices, color=color, normal=normals,
                             index=faces.ravel())
                        
         
-class MyInteractionManager(InteractionManager):
-    """InteractionManager adapted for 3D."""
+class MeshNavigationEventProcessor(NavigationEventProcessor):
     def pan(self, parameter):
         """3D pan (only x,y)."""
         self.tx += parameter[0]
@@ -116,18 +105,34 @@ class MyInteractionManager(InteractionManager):
     def get_translation(self):
         return self.tx, self.ty, self.tz
         
+    def transform_view(self):
+        """Upload the transformation matrices as a function of the
+        interaction variables in the InteractionManager."""
+        translation = self.get_translation()
+        rotation = self.get_rotation()
+        scale = self.get_scaling()
+        for visual in self.paint_manager.get_visuals():
+            if not visual.get('is_static', False):
+                self.set_data(visual=visual['name'], 
+                              transform=get_transform(translation, rotation, scale[0]))
+                              
+                              
+class MeshInteractionManager(InteractionManager):
+    def initialize_navigation(self, constrain_navigation=False):
+        self.add_processor(MeshNavigationEventProcessor, name='navigation')
         
-class MyBindings(DefaultBindingSet):
+        
+class MeshBindings(PlotBindings):
     def set_panning_mouse(self):
         # Panning: CTRL + left button mouse
-        self.set('LeftMove', 'Pan',
-                    key_modifier='Control',
-                    param_getter=lambda p: (-2*p["mouse_position_diff"][0],
-                                            -2*p["mouse_position_diff"][1]))
+        self.set('LeftClickMove', 'Pan',
+                    # key_modifier='Control',
+                    param_getter=lambda p: (-4*p["mouse_position_diff"][0],
+                                            -4*p["mouse_position_diff"][1]))
         
     def set_rotation_mouse(self):
         # Rotation: left button mouse
-        self.set('LeftMove', 'Rotation',
+        self.set('MiddleClickMove', 'Rotation',
                     param_getter=lambda p: (3*p["mouse_position_diff"][0],
                                             3*p["mouse_position_diff"][1]))    
              
@@ -163,8 +168,8 @@ class MyBindings(DefaultBindingSet):
         
 if __name__ == '__main__':                            
     window = show_basic_window(paint_manager=MyPaintManager,
-                               interaction_manager=MyInteractionManager,
-                               bindings=MyBindings,
+                               interaction_manager=MeshInteractionManager,
+                               bindings=MeshBindings,
                                antialiasing=True,  # better for 3D rendering
                                constrain_navigation=False,
                                constrain_ratio=True,

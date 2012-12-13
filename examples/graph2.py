@@ -159,7 +159,7 @@ class GraphInteractionManager(InteractionManager):
             self.node_moved(parameter)
     
     
-class GraphBinding(DefaultBindingSet):
+class GraphBinding(PlotBindings):
     def extend(self):
         self.set('MiddleMove', "NodeMoved",
             param_getter=lambda p: p["mouse_press_position"] + p["mouse_position"])

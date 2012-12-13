@@ -96,7 +96,7 @@ class FilterInteractionManager(InteractionManager):
         if event == 'NextFilter':
             self.paint_manager.change_kernel(change_kernel(1))
         
-class FilterBinding(DefaultBindingSet):
+class FilterBinding(PlotBindings):
     def extend(self):
         # left key
         self.set('KeyPress',

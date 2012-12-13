@@ -11,7 +11,6 @@ from galry import *
 import networkx as nx
 
 # We create a complete graph.      
-# g = nx.complete_graph(50)
 g = nx.complete_graph(50)
 
 # We compute a circular layout and get an array with the positions

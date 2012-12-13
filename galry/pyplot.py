@@ -2,11 +2,12 @@ import numpy as np
 from collections import OrderedDict as odict
 
 from galry import GalryWidget, show_basic_window, get_color, PaintManager,\
-    InteractionManager, DefaultBindingSet
+    InteractionManager
+import galry.managers as mgs
 import galry.visuals as vs
 
 __all__ = ['figure', 'Figure', 'get_current_figure',
-           'plot', 'text', 'rectangles', 'imshow', 'graph',
+           'plot', 'text', 'rectangles', 'imshow', 'graph', 'mesh',
            'axes', 'xlim', 'ylim',
            'grid',
            'event', 'action',
@@ -55,9 +56,11 @@ def get_marker_texture(marker, size=None):
 # -----------------------
 class PaintManagerCreator(object):
     @staticmethod
-    def create(figure):
+    def create(figure, baseclass=None):
+        if baseclass is None:
+            baseclass = mgs.PlotPaintManager
         visuals = figure.visuals
-        class MyPaintManager(PaintManager):
+        class MyPaintManager(baseclass):
             def initialize(self):
                 for name, (args, kwargs) in visuals.iteritems():
                     self.add_visual(*args, **kwargs)
@@ -65,10 +68,12 @@ class PaintManagerCreator(object):
 
 class InteractionManagerCreator(object):
     @staticmethod
-    def create(figure):
+    def create(figure, baseclass=None):
+        if baseclass is None:
+            baseclass = mgs.PlotInteractionManager
         handlers = figure.handlers
         processors = figure.processors
-        class MyInteractionManager(InteractionManager):
+        class MyInteractionManager(baseclass):
             def initialize(self):
                 # use this to pass this Figure instance to the handler function
                 # as a first argument (in EventProcessor.process)
@@ -83,9 +88,11 @@ class InteractionManagerCreator(object):
 
 class BindingCreator(object):
     @staticmethod
-    def create(figure):
+    def create(figure, baseclass=None):
+        if baseclass is None:
+            baseclass = PlotBindings
         bindings = figure.bindings
-        class MyBindings(DefaultBindingSet):
+        class MyBindings(baseclass):
             def extend(self):
                 for (args, kwargs) in bindings:
                     self.set(*args, **kwargs)
@@ -110,6 +117,10 @@ class Figure(object):
         self.display_fps = None
         self.activate_grid = True
         self.activate_help = True
+
+        self.pmclass = mgs.PlotPaintManager
+        self.imclass = mgs.PlotInteractionManager
+        self.bindingsclass = mgs.PlotBindings
         
         self.initialize(*args, **kwargs)
         
@@ -220,12 +231,15 @@ class Figure(object):
     def graph(self, *args, **kwargs):
         self.add_visual(vs.GraphVisual, *args, **kwargs)
         
-        
+    def mesh(self, *args, **kwargs):
+        self.pmclass = mgs.MeshPaintManager
+        self.imclass = mgs.MeshInteractionManager
+        self.bindingsclass = mgs.MeshBindings
+        self.add_visual(vs.MeshVisual, *args, **kwargs)
         
     def grid(self, *args, **kwargs):
         self.add_visual(vs.GridVisual, *args, **kwargs)
         self.add_event_processor(vs.GridEventProcessor)
-        
         
     def set_data(self, *args, **kwargs):
         self.paint_manager.set_data(self, *args, **kwargs)
@@ -260,9 +274,9 @@ class Figure(object):
     # -----------------
     def show(self):
         self.update_normalization()
-        pm = PaintManagerCreator.create(self)
-        im = InteractionManagerCreator.create(self)
-        bindings = BindingCreator.create(self)
+        pm = PaintManagerCreator.create(self, self.pmclass)
+        im = InteractionManagerCreator.create(self, self.imclass)
+        bindings = BindingCreator.create(self, self.bindingsclass)
         window = show_basic_window(
             paint_manager=pm,
             interaction_manager=im,
@@ -293,7 +307,7 @@ def get_current_figure():
     return _FIGURE
 
     
-# Public methods
+# Visual methods
 # --------------
 def plot(*args, **kwargs):
     fig = get_current_figure()
@@ -315,7 +329,14 @@ def graph(*args, **kwargs):
     fig = get_current_figure()
     fig.graph(*args, **kwargs)
     
+def mesh(*args, **kwargs):
+    fig = get_current_figure()
+    fig.mesh(*args, **kwargs)
     
+
+    
+# Axes methods
+# ------------
 def grid(*args, **kwargs):
     fig = get_current_figure()
     fig.grid(*args, **kwargs)
@@ -333,6 +354,8 @@ def ylim(*args, **kwargs):
     fig.ylim(*args, **kwargs)
     
     
+# Event methods
+# -------------
 def event(*args, **kwargs):
     fig = get_current_figure()
     fig.event(*args, **kwargs)

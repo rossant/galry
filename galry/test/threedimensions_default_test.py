@@ -14,7 +14,7 @@ class PM(PaintManager):
         normal[:, 2] = -1
         color = np.ones((10, 4))
         
-        self.add_visual(ThreeDimensionsVisual, position=position,
+        self.add_visual(MeshVisual, position=position,
             normal=normal, color=color, primitive_type='TRIANGLE_STRIP')
 
 class ThreeDimensionsDefaultTest(GalryTest):

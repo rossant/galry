@@ -22,8 +22,8 @@ Galry: high-performance interactive visualization in Python
   * adding new visuals dynamically
   
   * add MeshVisual
-  * add GraphVisual
-  * update tutorials and examples (high level interface mostly)
+  * tutorials parts 2 and 3
+  * update examples with high level interface
   
   
 Automation

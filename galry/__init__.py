@@ -21,6 +21,7 @@ from bindingmanager import *
 from scene import *
 from glrenderer import *
 from paintmanager import *
+from managers import *
 from galrywidget import *
 from pyplot import *
 from test import *

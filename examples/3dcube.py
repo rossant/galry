@@ -187,7 +187,7 @@ class MyPaintManager(PaintManager):
         position, normal, color = create_cube(color)
         
         # render it as a set of triangles
-        self.add_visual(ThreeDimensionsVisual,
+        self.add_visual(MeshVisual,
                             primitive_type='TRIANGLES',
                             position=position, color=color, normal=normal)
                        
@@ -217,7 +217,7 @@ class MyInteractionManager(InteractionManager):
         return self.tx, self.ty, self.tz
         
         
-class MyBindings(DefaultBindingSet):
+class MyBindings(PlotBindings):
     def set_panning_mouse(self):
         # Panning: CTRL + left button mouse
         self.set('LeftMove', 'Pan',

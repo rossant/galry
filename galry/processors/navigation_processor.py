@@ -5,9 +5,7 @@ from processor import EventProcessor
 from galry import Manager, TextVisual, get_color
 
 
-
 __all__ = ['NavigationEventProcessor']
-
 
       
 # Maximum viewbox allowed when constraining navigation.
@@ -34,12 +32,8 @@ class NavigationEventProcessor(EventProcessor):
         
     def transform_view(self):
         """Change uniform variables to implement interactive navigation."""
-        tx, ty = self.get_translation()
-        sx, sy = self.get_scaling()
-        # scale = (np.float32(sx), np.float32(sy))
-        scale = (sx, sy)
-        # translation = (np.float32(tx), np.float32(ty))
-        translation = (tx, ty)
+        translation = self.get_translation()
+        scale = self.get_scaling()
         # update all non static visuals
         for visual in self.paint_manager.get_visuals():
             if not visual.get('is_static', False):

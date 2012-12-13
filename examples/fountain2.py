@@ -68,7 +68,7 @@ class ParticleInteractionManager(InteractionManager):
         if event == 'ChangeVelocities':
             self.paint_manager.change_velocities(parameter)
         
-class ParticleBindings(DefaultBindingSet):
+class ParticleBindings(PlotBindings):
     def extend(self):
         # we link the mouse move action to the change velocities event
         self.set('Move', 'ChangeVelocities',
