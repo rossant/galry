@@ -66,24 +66,24 @@ class GalryWidget(QGLWidget):
     BindingManager, InteractionManager).
     
     """
-    # background color as a 4-tuple (R,G,B,A)
-    bgcolor = (0, 0, 0, 0)
-    autosave = None
+    # # background color as a 4-tuple (R,G,B,A)
+    # bgcolor = (0, 0, 0, 0)
+    # autosave = None
     
-    # default window size
-    width, height = 600, 600
+    # # default window size
+    # width, height = 600, 600
     
-    # FPS counter, used for debugging
-    fps_counter = FpsCounter()
-    display_fps = DISPLAY_FPS
+    # # FPS counter, used for debugging
+    # fps_counter = FpsCounter()
+    # display_fps = DISPLAY_FPS
 
-    # widget creation parameters
-    bindings = None
-    companion_classes_initialized = False
+    # # widget creation parameters
+    # bindings = None
+    # companion_classes_initialized = False
     
-    # constrain width/height ratio when resizing of zooming
-    constrain_ratio = False
-    constrain_navigation = False
+    # # constrain width/height ratio when resizing of zooming
+    # constrain_ratio = False
+    # constrain_navigation = False
     
     # Initialization methods
     # ----------------------
@@ -94,6 +94,29 @@ class GalryWidget(QGLWidget):
         
         self.initialized = False
         self.just_initialized = False
+        
+        
+        # background color as a 4-tuple (R,G,B,A)
+        self.bgcolor = (0, 0, 0, 0)
+        self.autosave = None
+        
+        # default window size
+        self.width, self.height = 600, 600
+        
+        # FPS counter, used for debugging
+        self.fps_counter = FpsCounter()
+        self.display_fps = DISPLAY_FPS
+
+        # widget creation parameters
+        self.bindings = None
+        self.companion_classes_initialized = False
+        
+        # constrain width/height ratio when resizing of zooming
+        self.constrain_ratio = False
+        self.constrain_navigation = False
+        self.activate_help = True
+        self.activate_grid = False
+        
         
         # Load the QT curors here, after QT has been initialized.
         # cursors.load()
@@ -615,6 +638,8 @@ def create_custom_widget(bindings=None,
                          antialiasing=False,
                          constrain_ratio=False,
                          constrain_navigation=False,
+                         activate_help=True,
+                         activate_grid=False,
                          display_fps=False,
                          update_interval=None,
                          autosave=None,
@@ -664,6 +689,9 @@ def create_custom_widget(bindings=None,
             self.set_companion_classes(**companion_classes)
             self.constrain_ratio = constrain_ratio
             self.constrain_navigation = constrain_navigation
+            self.activate_help = activate_help
+            self.activate_grid = activate_grid
+            
             self.display_fps = display_fps
             self.initialize_companion_classes()
             if update_interval is not None:

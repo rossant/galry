@@ -104,13 +104,24 @@ class Figure(object):
         self.processors = odict()
         self.bindings = []
         self.viewbox = (None, None, None, None)
+        
+        self.constrain_ratio = None
+        self.constrain_navigation = None
+        self.display_fps = None
+        self.activate_grid = None
+        self.activate_help = None
+        
         self.initialize(*args, **kwargs)
         
-    def initialize(self, constrain_ratio=False, constrain_navigation=False,
-            display_fps=None):
-        self.constrain_ratio = constrain_ratio
-        self.constrain_navigation = constrain_navigation
-        self.display_fps = display_fps
+    def initialize(self, **kwargs
+            # constrain_ratio=False, constrain_navigation=False,
+            # display_fps=None
+            ):
+        # self.constrain_ratio = constrain_ratio
+        # self.constrain_navigation = constrain_navigation
+        # self.display_fps = display_fps
+        for name, value in kwargs.iteritems():
+            setattr(self, name, value)
     
     
     # Internal visual methods
@@ -243,6 +254,7 @@ class Figure(object):
     # Rendering methods
     # -----------------
     def show(self):
+        # TODO: better design of widget options
         self.update_normalization()
         pm = PaintManagerCreator.create(self)
         im = InteractionManagerCreator.create(self)
@@ -254,6 +266,8 @@ class Figure(object):
             constrain_ratio=self.constrain_ratio,
             constrain_navigation=self.constrain_navigation,
             display_fps=self.display_fps,
+            activate_grid=self.activate_grid,
+            activate_help=self.activate_help,
             )
         return window
             

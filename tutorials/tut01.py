@@ -8,6 +8,8 @@ like high-level interface.
 # like with 'from pylab import *' in Matplotlib.
 from galry import *
 
+figure(activate_grid=True)
+
 # We define a curve x -> sin(x) on [-10., 10.].
 x = linspace(-10., 10., 10000)
 y = sin(x)
