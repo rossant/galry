@@ -65,8 +65,6 @@ def get_ticks_text(x0, y0, x1, y1):
     coordinates = np.zeros((len(text), 2))
     coordinates[:n, 0] = ticksx
     coordinates[n:, 1] = ticksy
-    coordinates[n:, 0] = -.95
-    coordinates[:n, 1] = -.95
     return text, coordinates, n
     
     
@@ -82,6 +80,27 @@ class GridEventProcessor(EventProcessor):
         viewbox = self.get_processor('navigation').get_viewbox()
         text, coordinates, n = get_ticks_text(*viewbox)
         
+        # here: coordinates contains positions centered on the static
+        # xy=0 axes of the screen
+        
+        position = np.repeat(coordinates, 2, axis=0)
+        position[:2 * n:2,1] = -1
+        position[1:2 * n:2,1] = 1
+        position[2 * n::2,0] = -1
+        position[2 * n + 1::2,0] = 1
+        
+        axis = np.zeros(len(position))
+        axis[2 * n:] = 1
+        
+        # print position
+        
+        self.set_data(visual='grid_lines', position=position, axis=axis)
+        
+        
+        
+        coordinates[n:, 0] = -.95
+        coordinates[:n, 1] = -.95
+    
         t = "".join(text)
         n1 = len("".join(text[:n]))
         n2 = len("".join(text[n:]))
@@ -90,6 +109,7 @@ class GridEventProcessor(EventProcessor):
         axis[n1:] = 1
         
         self.set_data(visual='grid_text', text=text,
-            # coordinates=coordinates,
+            coordinates=coordinates,
             axis=axis)
-
+            
+            

@@ -260,14 +260,19 @@ class NavigationEventProcessor(EventProcessor):
     
     def activate_navigation_constrain(self):
         """Constrain the navigation to a bounding box."""
-        # constrain scaling
-        self.sx = np.clip(self.sx, self.sxmin, self.sxmax)
-        self.sy = np.clip(self.sy, self.symin, self.symax)
-        # constrain translation
-        self.tx = np.clip(self.tx, 1./self.sx - self.xmax,
-                                  -1./self.sx - self.xmin)
-        self.ty = np.clip(self.ty, 1./self.sy + self.ymin,
-                                  -1./self.sy + self.ymax)
+        if self.constrain_navigation:
+            # constrain scaling
+            self.sx = np.clip(self.sx, self.sxmin, self.sxmax)
+            self.sy = np.clip(self.sy, self.symin, self.symax)
+            # constrain translation
+            self.tx = np.clip(self.tx, 1./self.sx - self.xmax,
+                                      -1./self.sx - self.xmin)
+            self.ty = np.clip(self.ty, 1./self.sy + self.ymin,
+                                      -1./self.sy + self.ymax)
+        else:
+            # constrain maximum zoom anyway
+            self.sx = min(self.sx, self.sxmax)
+            self.sy = min(self.sy, self.symax)
     
     def get_translation(self):
         """Return the translation vector.
@@ -276,8 +281,7 @@ class NavigationEventProcessor(EventProcessor):
           * tx, ty: translation coordinates.
         
         """
-        if self.constrain_navigation:
-            self.activate_navigation_constrain()
+        self.activate_navigation_constrain()
         return self.tx, self.ty
     
     def get_rotation(self):
