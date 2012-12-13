@@ -1,4 +1,4 @@
-"""Tutorial 03: Plots with different markers.
+"""Tutorial 1.3: Plots with different markers.
 
 In this tutorial, we show how to plot points with custom markers.
 

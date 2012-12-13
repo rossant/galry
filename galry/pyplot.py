@@ -6,7 +6,7 @@ from galry import GalryWidget, show_basic_window, get_color, PaintManager,\
 import galry.visuals as vs
 
 __all__ = ['figure', 'Figure', 'get_current_figure',
-           'plot', 'text', 'rectangles', 'imshow',
+           'plot', 'text', 'rectangles', 'imshow', 'graph',
            'axes', 'xlim', 'ylim',
            'grid',
            'event', 'action',
@@ -108,8 +108,8 @@ class Figure(object):
         self.constrain_ratio = None
         self.constrain_navigation = None
         self.display_fps = None
-        self.activate_grid = None
-        self.activate_help = None
+        self.activate_grid = True
+        self.activate_help = True
         
         self.initialize(*args, **kwargs)
         
@@ -217,6 +217,11 @@ class Figure(object):
                 magfilter='LINEAR',)
         self.add_visual(vs.TextureVisual, *args, **kwargs)
         
+    def graph(self, *args, **kwargs):
+        self.add_visual(vs.GraphVisual, *args, **kwargs)
+        
+        
+        
     def grid(self, *args, **kwargs):
         self.add_visual(vs.GridVisual, *args, **kwargs)
         self.add_event_processor(vs.GridEventProcessor)
@@ -254,7 +259,6 @@ class Figure(object):
     # Rendering methods
     # -----------------
     def show(self):
-        # TODO: better design of widget options
         self.update_normalization()
         pm = PaintManagerCreator.create(self)
         im = InteractionManagerCreator.create(self)
@@ -307,6 +311,10 @@ def imshow(*args, **kwargs):
     fig = get_current_figure()
     fig.imshow(*args, **kwargs)
 
+def graph(*args, **kwargs):
+    fig = get_current_figure()
+    fig.graph(*args, **kwargs)
+    
     
 def grid(*args, **kwargs):
     fig = get_current_figure()

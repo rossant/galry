@@ -1,4 +1,4 @@
-"""Tutorial 05: Text and interaction.
+"""Tutorial 2.1: Text and interaction.
 
 In this tutorial, we show how to display text and we give a first example
 of the interaction system.

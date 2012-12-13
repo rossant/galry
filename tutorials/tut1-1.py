@@ -1,4 +1,4 @@
-"""Tutorial 01: Pylab-style plotting.
+"""Tutorial 1.1: Pylab-style plotting.
 
 In this tutorial, we show how to plot a basic figure with a pylab-/matlab- 
 like high-level interface.
@@ -7,8 +7,6 @@ like high-level interface.
 # With this import syntax, all variables in Galry and Numpy are imported,
 # like with 'from pylab import *' in Matplotlib.
 from galry import *
-
-figure(activate_grid=True)
 
 # We define a curve x -> sin(x) on [-10., 10.].
 x = linspace(-10., 10., 10000)

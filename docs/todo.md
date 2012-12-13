@@ -1,7 +1,8 @@
 Galry: high-performance interactive visualization in Python
 ===========================================================
 
-  * no log10
+  * grid: integrate data normalization
+  * better design for widget options (constrain ratio, activate_grid, etc)
 
   * rename visual= into name= in PM.set_data
   * rename extend into initialize (and have initialize_default)
@@ -18,6 +19,7 @@ Galry: high-performance interactive visualization in Python
   * make unit tests work in ipython with pylab activated
   * better handling of special_keywords
   * global color module in galry
+  * adding new visuals dynamically
   
   * add MeshVisual
   * add GraphVisual

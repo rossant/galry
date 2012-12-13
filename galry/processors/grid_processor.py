@@ -82,7 +82,6 @@ class GridEventProcessor(EventProcessor):
         
         # here: coordinates contains positions centered on the static
         # xy=0 axes of the screen
-        
         position = np.repeat(coordinates, 2, axis=0)
         position[:2 * n:2,1] = -1
         position[1:2 * n:2,1] = 1
@@ -92,11 +91,7 @@ class GridEventProcessor(EventProcessor):
         axis = np.zeros(len(position))
         axis[2 * n:] = 1
         
-        # print position
-        
         self.set_data(visual='grid_lines', position=position, axis=axis)
-        
-        
         
         coordinates[n:, 0] = -.95
         coordinates[:n, 1] = -.95

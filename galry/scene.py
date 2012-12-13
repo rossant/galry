@@ -83,6 +83,9 @@ class SceneCreator(object):
         
         """
         
+        if 'name' not in kwargs:
+            kwargs['name'] = 'visual%d' % (len(self.get_visuals()))
+        
         # handle compound visual, where we add all sub visuals
         # as defined in CompoundVisual.initialize()
         if issubclass(visual_class, CompoundVisual):
@@ -92,7 +95,7 @@ class SceneCreator(object):
             return visual
             
         # get the name of the visual from kwargs
-        name = kwargs.pop('name', 'visual%d' % (len(self.get_visuals())))
+        name = kwargs.pop('name')
         if self.get_visual(name):
             raise ValueError("Visual name '%s' already exists." % name)
         

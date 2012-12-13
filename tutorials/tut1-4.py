@@ -1,4 +1,4 @@
-"""Tutorial 04: Images.
+"""Tutorial 1.4: Images.
 
 In this tutorial, we show how to plot images.
 

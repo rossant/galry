@@ -138,7 +138,7 @@ class GalryWidget(QGLWidget):
                                     
         # keyword arguments without "_manager" => passed to initialize                  
         self.initialize(**kwargs)
-
+        
         # initialize companion classes if it has not been done in initialize
         if not self.companion_classes_initialized:
             self.initialize_companion_classes()

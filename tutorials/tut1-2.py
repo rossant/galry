@@ -1,4 +1,4 @@
-"""Tutorial 02: Multiple curves.
+"""Tutorial 1.2: Multiple curves.
 
 In this tutorial, we show how to plot several curves efficiently.
 
