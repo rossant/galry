@@ -1,15 +1,14 @@
 Galry: high-performance interactive visualization in Python
 ===========================================================
 
+  * update examples with high level interface
   * grid: integrate data normalization
   * better design for widget options (constrain ratio, activate_grid, etc)
-
   * rename visual= into name= in PM.set_data
   * rename extend into initialize (and have initialize_default)
   * rename "bindings" to "mode"
   * in interaction manager, better way to transform into transformed coordinates
     and data coordinates
-  
   * include ony shader snippets in the scene, and include shader creation
     in the renderers
   * check gl capabilities (eg mipmapping)
@@ -18,13 +17,11 @@ Galry: high-performance interactive visualization in Python
   * better way of switching pyside/pyqt
   * make unit tests work in ipython with pylab activated
   * better handling of special_keywords
+  * tutorials parts 2 and 3
   * global color module in galry
   * adding new visuals dynamically
-  
-  * add MeshVisual
-  * tutorials parts 2 and 3
-  * update examples with high level interface
-  
+
+
   
 Automation
 ----------

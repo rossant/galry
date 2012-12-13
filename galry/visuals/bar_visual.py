@@ -1,6 +1,5 @@
-from galry import *
+from plot_visual import PlotVisual
 import numpy as np
-import numpy.random as rdn
 
 def get_histogram_points(hist):
     """Tesselates histograms.
@@ -14,12 +13,12 @@ def get_histogram_points(hist):
       
     """
     n, nsamples = hist.shape
-    dx = 2. / nsamples
+    dx = 1. / nsamples
     
-    x0 = -1 + dx * np.arange(nsamples)
+    x0 = dx * np.arange(nsamples)
     
     x = np.zeros((n, 5 * nsamples + 1))
-    y = -np.ones((n, 5 * nsamples + 1))
+    y = np.zeros((n, 5 * nsamples + 1))
     
     x[:,0:-1:5] = x0
     x[:,1::5] = x0
@@ -34,20 +33,20 @@ def get_histogram_points(hist):
     return x, y
 
 
-class HistogramPaintManager(PaintManager):
-    def initialize(self):
-        # random histogram values
-        values = rdn.rand(1, 50)
+class BarVisual(PlotVisual):
+    def initialize(self, values=None, offset=None, **kwargs):
+    
+        if values.ndim == 1:
+            values = values.reshape((1, -1))
+            
         # compute histogram points
-        X, Y = get_histogram_points(values)
-        position = np.hstack((X.reshape((-1, 1)),
-            Y.reshape((-1, 1))))
+        x, y = get_histogram_points(values)
+        
+        if offset is not None:
+            x += offset[:,0].reshape((-1, 1))
+            y += offset[:,1].reshape((-1, 1))
+        
         # add the bar plot
-        self.add_visual(PlotVisual,
-            primitive_type='TRIANGLE_STRIP',
-            position=position)
+        super(BarVisual, self).initialize(x=x, y=y, **kwargs)
 
-if __name__ == '__main__':
-    # create window
-    window = show_basic_window(paint_manager=HistogramPaintManager,
-        constrain_navigation=True)
+        self.primitive_type='TRIANGLE_STRIP'

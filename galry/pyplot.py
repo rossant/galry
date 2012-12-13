@@ -7,7 +7,7 @@ import galry.managers as mgs
 import galry.visuals as vs
 
 __all__ = ['figure', 'Figure', 'get_current_figure',
-           'plot', 'text', 'rectangles', 'imshow', 'graph', 'mesh',
+           'plot', 'text', 'rectangles', 'imshow', 'graph', 'mesh', 'barplot',
            'axes', 'xlim', 'ylim',
            'grid',
            'event', 'action',
@@ -172,7 +172,10 @@ class Figure(object):
     def update_normalization(self):
         for name, visual in self.visuals.iteritems():
             if ((self.get_visual_class(name) == vs.PlotVisual) or
-                (self.get_visual_class(name) == vs.SpriteVisual)):
+                (self.get_visual_class(name) == vs.SpriteVisual) or
+                (self.get_visual_class(name) == vs.BarVisual)
+                
+                ):
                 self.update_visual(name, viewbox=self.viewbox)
 
         
@@ -212,6 +215,9 @@ class Figure(object):
             cls = vs.PlotVisual
         
         self.add_visual(cls, *args, **kwargs)
+        
+    def barplot(self, *args, **kwargs):
+        self.add_visual(vs.BarVisual, *args, **kwargs)
         
     def text(self, *args, **kwargs):
         self.add_visual(vs.TextVisual, *args, **kwargs)
@@ -312,6 +318,10 @@ def get_current_figure():
 def plot(*args, **kwargs):
     fig = get_current_figure()
     fig.plot(*args, **kwargs)
+    
+def barplot(*args, **kwargs):
+    fig = get_current_figure()
+    fig.barplot(*args, **kwargs)
     
 def text(*args, **kwargs):
     fig = get_current_figure()

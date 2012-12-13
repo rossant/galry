@@ -7,4 +7,5 @@ from texture_visual import *
 from rectangles_visual import *
 from mesh_visual import *
 from graph_visual import *
+from bar_visual import *
 
