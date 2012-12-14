@@ -42,13 +42,6 @@ class PaintManager(Manager):
                             coordinates=(-.80, .92),
                             visible=False,
                             is_static=True)
-        # Help
-        if self.parent.activate_help:
-            self.add_visual(TextVisual, coordinates=(-.95, .95),
-                            fontsize=14, color=get_color('w'),
-                            interline=30., letter_spacing=270.,
-                            is_static=True, prevent_constrain=True,
-                            text='', name='help', visible=False)
         
         
     # Visual methods

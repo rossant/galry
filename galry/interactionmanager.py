@@ -1,8 +1,8 @@
 import inspect
-from collections import OrderedDict as odict
+# from collections import OrderedDict as odict
 import numpy as np
 from galry import Manager, TextVisual, get_color, NavigationEventProcessor, \
-    WidgetEventProcessor, EventProcessor, GridEventProcessor
+    DefaultEventProcessor, EventProcessor, GridEventProcessor, ordict
 
 
 __all__ = ['InteractionManager']
@@ -21,7 +21,7 @@ class InteractionManager(Manager):
         super(InteractionManager, self).__init__(parent)
         self.cursor = None
         self.prev_event = None
-        self.processors = odict()
+        self.processors = ordict()
         self.initialize_default(
             constrain_navigation=self.parent.constrain_navigation)
         self.initialize()
@@ -34,7 +34,7 @@ class InteractionManager(Manager):
         pass
         
     def initialize_default(self, **kwargs):
-        self.add_processor(WidgetEventProcessor, name='widget')
+        pass
         
         
     # Processor methods

@@ -19,7 +19,7 @@ from python_qt_binding.QtOpenGL import QGLWidget, QGLFormat
 # from cursors import get_cursor
 from galry import get_cursor, FpsCounter, show_window, PaintManager, \
     InteractionManager, BindingManager,DEBUG, log_debug, log_info, log_warn, \
-    UserActionGenerator, PlotBindings, BindingSet, FpsCounter, \
+    UserActionGenerator, PlotBindings, Bindings, FpsCounter, \
     show_window 
 
 __all__ = [
@@ -160,7 +160,7 @@ class GalryWidget(QGLWidget):
         
         Arguments:
           * bindings: a list of classes instances deriving from
-            BindingSet.
+            Bindings.
             
         """
         bindings = list(bindings)
@@ -170,7 +170,7 @@ class GalryWidget(QGLWidget):
             # bindings = [bindings]
         # if binding is a class, try instanciating it
         for i in xrange(len(bindings)):
-            if not isinstance(bindings[i], BindingSet):
+            if not isinstance(bindings[i], Bindings):
                 bindings[i] = bindings[i]()
         self.bindings = bindings
         
@@ -437,8 +437,8 @@ class GalryWidget(QGLWidget):
         """Set the interaction mode.
         
         Arguments:
-          * mode: either a class deriving from `BindingSet` and which has been
-            specified in `set_bindings`, or directly a `BindingSet` instance.
+          * mode: either a class deriving from `Bindings` and which has been
+            specified in `set_bindings`, or directly a `Bindings` instance.
         
         """
         binding = self.binding_manager.set(mode)
@@ -569,9 +569,8 @@ class GalryWidget(QGLWidget):
     # -------------
     def focusOutEvent(self, event):
         self.user_action_generator.focusOutEvent(event)
-    
-    
-        
+
+
 class GalryTimerWidget(GalryWidget):
     timer = None
     

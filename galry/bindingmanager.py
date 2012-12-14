@@ -1,21 +1,16 @@
 from python_qt_binding import QtCore, QtGui
 from python_qt_binding.QtCore import Qt 
-from collections import OrderedDict as odict
-from galry import Manager
+from galry import Manager, ordict
 import numpy as np
 
 
-__all__ = ['BindingManager', 'BindingSet']
+__all__ = ['BindingManager', 'Bindings']
 
 
 class BindingManager(Manager):
     """Manager several sets of bindings (or interaction modes) and allows
     to switch between several modes.
     """
-    # def __init__(self, parent):
-        # self.parent = parent
-        # self.reset()
-    
     def reset(self):
         """Reset the modes."""
         self.bindings = []
@@ -48,7 +43,7 @@ class BindingManager(Manager):
           * binding: the current binding.
           
         """
-        if not isinstance(binding, BindingSet):
+        if not isinstance(binding, Bindings):
             # here, we assume that binding is a class, so we take the first
             # existing binding that is an instance of this class
             binding = [b for b in self.bindings if isinstance(b, binding)][0]
@@ -71,7 +66,7 @@ class BindingManager(Manager):
         return self.get()
   
   
-class BindingSet(object):
+class Bindings(object):
     """Base class for action-events bindings set.
     
     An instance of this class contains all bindings between user actions, and
@@ -82,14 +77,10 @@ class BindingSet(object):
     
     """
     def __init__(self):
-        # HACK: a QApplication needs to be constructed for creating Pixmap
-        # cursors, so we load (and create the cursors) here
-        # if "cursors" not in globals():
-            # import cursors
         self.base_cursor = 'ArrowCursor'
         self.text = None
-        self.binding = odict()
-        self.set_common_bindings()
+        self.binding = ordict()
+        self.initialize_default()
         self.initialize()
         
     def set_base_cursor(self, cursor=None):
@@ -102,13 +93,9 @@ class BindingSet(object):
     def get_base_cursor(self):
         return self.base_cursor
         
-    def set_common_bindings(self):
+    def initialize_default(self):
         """Set bindings that are common to any interaction mode."""
-        # TODO: move this in WidgetBindings in manager
-        self.set('KeyPress', 'SwitchInteractionMode',
-                    key='I')
-        self.set('KeyPress', 'ToggleFullscreen', key='F')
-        self.set('KeyPress', 'Help', key='H')
+        self.set('KeyPress', 'SwitchInteractionMode', key='I')
         
     def initialize(self):
         """Registers all bindings through commands to self.set().

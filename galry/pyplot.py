@@ -1,8 +1,8 @@
 import numpy as np
-from collections import OrderedDict as odict
+# from collections import OrderedDict as odict
 
 from galry import GalryWidget, show_basic_window, get_color, PaintManager,\
-    InteractionManager
+    InteractionManager, ordict
 import galry.managers as mgs
 import galry.visuals as vs
 
@@ -113,9 +113,9 @@ class Figure(object):
     # Initialization methods
     # ----------------------
     def __init__(self, *args, **kwargs):
-        self.visuals = odict()
-        self.handlers = odict()
-        self.processors = odict()
+        self.visuals = ordict()
+        self.handlers = ordict()
+        self.processors = ordict()
         self.bindings = []
         self.viewbox = (None, None, None, None)
         

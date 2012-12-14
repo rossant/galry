@@ -1,5 +1,4 @@
 import inspect
-from collections import OrderedDict as odict
 import numpy as np
 from galry import Manager, TextVisual, get_color
 

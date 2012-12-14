@@ -1,23 +1,15 @@
 import inspect
-from collections import OrderedDict as odict
 import numpy as np
 from processor import EventProcessor
-from galry import Manager, TextVisual, get_color
+from galry import Manager, TextVisual, get_color, ordict
 
 
-class WidgetEventProcessor(EventProcessor):
+class DefaultEventProcessor(EventProcessor):
     def initialize(self):
         self.register('ToggleFullscreen', self.process_toggle_fullscreen)
-        self.register('Grid', self.process_grid_event)
         self.register('Help', self.process_help_event)
         self.help_visible = False
-        self.grid_visible = False
         
-    def process_grid_event(self, parameter):
-        self.grid_visible = not(self.grid_visible)
-        self.set_data(visual='grid_lines', visible=self.grid_visible)
-        self.set_data(visual='grid_text', visible=self.grid_visible)
-    
     def process_toggle_fullscreen(self, parameter):
         self.parent.toggle_fullscreen()
         

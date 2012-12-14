@@ -1,5 +1,4 @@
 import inspect
-from collections import OrderedDict as odict
 import numpy as np
 from processor import EventProcessor
 from galry import Manager, TextVisual, get_color
@@ -29,6 +28,17 @@ class NavigationEventProcessor(EventProcessor):
         self.register('ZoomBox', self.process_zoombox_event)
         self.register('Reset', self.process_reset_event)
         self.register('ResetZoom', self.process_resetzoom_event)
+        
+        self.register('Grid', self.process_grid_event)
+        self.grid_visible = False
+        
+    def process_grid_event(self, parameter):
+        self.grid_visible = not(self.grid_visible)
+        self.set_data(visual='grid_lines', visible=self.grid_visible)
+        self.set_data(visual='grid_text', visible=self.grid_visible)
+    
+        
+        
         
     def transform_view(self):
         """Change uniform variables to implement interactive navigation."""

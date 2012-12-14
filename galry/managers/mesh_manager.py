@@ -2,6 +2,8 @@ from galry import NavigationEventProcessor, InteractionManager, QtCore, \
     PaintManager, \
     GridEventProcessor, scale_matrix, rotation_matrix, translation_matrix, \
     MeshNavigationEventProcessor
+from default_manager import DefaultPaintManager, DefaultInteractionManager, \
+    DefaultBindings
 from plot_manager import PlotBindings
     
 import OpenGL.GL as gl
@@ -39,14 +41,14 @@ def load_mesh(filename):
     return vertices, normals, faces
 
          
-class MeshInteractionManager(InteractionManager):
+class MeshInteractionManager(DefaultInteractionManager):
     def initialize_default(self, constrain_navigation=None):
         super(MeshInteractionManager, self).initialize_default()
         self.add_processor(MeshNavigationEventProcessor, name='navigation')
         self.add_processor(GridEventProcessor, name='grid')
         
         
-class MeshPaintManager(PaintManager):
+class MeshPaintManager(DefaultPaintManager):
     def initialize_default(self, *args, **kwargs):
         super(MeshPaintManager, self).initialize_default(*args, **kwargs)
         self.set_rendering_options(activate3D=True)

@@ -1,9 +1,10 @@
 from galry.processors import NavigationEventProcessor
-from galry import PaintManager, InteractionManager, GridEventProcessor, \
-    RectanglesVisual, GridVisual, BindingSet
+from default_manager import DefaultPaintManager, DefaultInteractionManager, \
+    DefaultBindings
+from galry import GridEventProcessor, RectanglesVisual, GridVisual, Bindings
 
 
-class PlotPaintManager(PaintManager):
+class PlotPaintManager(DefaultPaintManager):
     def initialize_default(self):
         super(PlotPaintManager, self).initialize_default()
         # Navigation rectangle
@@ -18,7 +19,7 @@ class PlotPaintManager(PaintManager):
             self.add_visual(GridVisual, name='grid', visible=False)
 
 
-class PlotInteractionManager(InteractionManager):
+class PlotInteractionManager(DefaultInteractionManager):
     def initialize_default(self, constrain_navigation=None):
         super(PlotInteractionManager, self).initialize_default()
         self.add_processor(NavigationEventProcessor,
@@ -26,7 +27,7 @@ class PlotInteractionManager(InteractionManager):
         self.add_processor(GridEventProcessor, name='grid')
         
         
-class PlotBindings(BindingSet):
+class PlotBindings(DefaultBindings):
     """A default set of bindings for interactive navigation.
     
     This binding set makes use of the keyboard and the mouse.
