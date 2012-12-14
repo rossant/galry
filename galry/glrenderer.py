@@ -103,7 +103,8 @@ class Attribute(object):
     @staticmethod
     def delete(*buffers):
         """Delete buffers."""
-        gl.glDeleteBuffers(len(buffers), buffers)
+        if buffers:
+            gl.glDeleteBuffers(len(buffers), buffers)
         
         
 class Uniform(object):
@@ -522,7 +523,8 @@ class SlicedAttribute(object):
     def load(self, data):
         """Load data on all sliced buffers."""
         for buffer, (pos, size) in zip(self.buffers, self.slicer.slices):
-            Attribute.bind(buffer, self.location)
+            # WARNING: putting self.location instead of None ==> SEGFAULT on Linux with Nvidia drivers
+            Attribute.bind(buffer, None)
             Attribute.load(data[pos:pos + size,...])
 
     def bind(self, slice=None):

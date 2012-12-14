@@ -36,7 +36,8 @@ class PlotBindings(DefaultBindings):
     def set_widget(self):
         # self.set('KeyPress', 'ToggleFullscreen', key='F')
         # self.set('KeyPress', 'Help', key='H')
-        self.set('KeyPress', 'Grid', key='QuoteDbl')
+        # self.set('KeyPress', 'Grid', key='QuoteDbl')
+        self.set('KeyPress', 'Grid', key='G')
     
     def set_panning_mouse(self):
         """Set panning bindings with the mouse."""
