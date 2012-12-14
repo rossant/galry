@@ -8,6 +8,7 @@ import galry.visuals as vs
 
 __all__ = ['figure', 'Figure', 'get_current_figure',
            'plot', 'text', 'rectangles', 'imshow', 'graph', 'mesh', 'barplot',
+           'visual',
            'axes', 'xlim', 'ylim',
            'grid',
            'event', 'action',
@@ -56,14 +57,20 @@ def get_marker_texture(marker, size=None):
 # -----------------------
 class PaintManagerCreator(object):
     @staticmethod
-    def create(figure, baseclass=None):
+    def create(figure, baseclass=None, update=None):
         if baseclass is None:
             baseclass = mgs.PlotPaintManager
         visuals = figure.visuals
-        class MyPaintManager(baseclass):
-            def initialize(self):
-                for name, (args, kwargs) in visuals.iteritems():
-                    self.add_visual(*args, **kwargs)
+        if not update:
+            class MyPaintManager(baseclass):
+                def initialize(self):
+                    for name, (args, kwargs) in visuals.iteritems():
+                        self.add_visual(*args, **kwargs)
+        else:
+            class MyPaintManager(baseclass):
+                def initialize(self):
+                    for name, (args, kwargs) in visuals.iteritems():
+                        self.add_visual(*args, **kwargs)
         return MyPaintManager
 
 class InteractionManagerCreator(object):
@@ -115,8 +122,10 @@ class Figure(object):
         self.constrain_ratio = None
         self.constrain_navigation = None
         self.display_fps = None
+        self.antialiasing = None
         self.activate_grid = True
         self.activate_help = True
+        self.figsize = (600, 600)
 
         self.pmclass = mgs.PlotPaintManager
         self.imclass = mgs.PlotInteractionManager
@@ -240,8 +249,12 @@ class Figure(object):
     def mesh(self, *args, **kwargs):
         self.pmclass = mgs.MeshPaintManager
         self.imclass = mgs.MeshInteractionManager
+        self.antialiasing = True
         self.bindingsclass = mgs.MeshBindings
         self.add_visual(vs.MeshVisual, *args, **kwargs)
+        
+    def visual(self, visualcls, *args, **kwargs):
+        self.add_visual(visualcls, *args, **kwargs)
         
     def grid(self, *args, **kwargs):
         self.add_visual(vs.GridVisual, *args, **kwargs)
@@ -267,7 +280,9 @@ class Figure(object):
             # we bind the action to that event
             # we also pass the full User Action Parameters object to the
             # callback
-            self.action(action, event, param_getter=lambda p: p)
+            if 'param_getter' not in kwargs:
+                kwargs['param_getter'] = lambda p: p
+            self.action(action, event, *args, **kwargs)
             # and we bind that event to the specified callback
             self.event(event, callback)
         else:
@@ -290,8 +305,10 @@ class Figure(object):
             constrain_ratio=self.constrain_ratio,
             constrain_navigation=self.constrain_navigation,
             display_fps=self.display_fps,
+            antialiasing=self.antialiasing,
             activate_grid=self.activate_grid,
             activate_help=self.activate_help,
+            size=self.figsize,
             )
         return window
             
@@ -342,6 +359,10 @@ def graph(*args, **kwargs):
 def mesh(*args, **kwargs):
     fig = get_current_figure()
     fig.mesh(*args, **kwargs)
+    
+def visual(*args, **kwargs):
+    fig = get_current_figure()
+    fig.visual(*args, **kwargs)
     
 
     

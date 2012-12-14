@@ -104,8 +104,11 @@ class BindingSet(object):
         
     def set_common_bindings(self):
         """Set bindings that are common to any interaction mode."""
+        # TODO: move this in WidgetBindings in manager
         self.set('KeyPress', 'SwitchInteractionMode',
                     key='I')
+        self.set('KeyPress', 'ToggleFullscreen', key='F')
+        self.set('KeyPress', 'Help', key='H')
         
     def initialize(self):
         """Registers all bindings through commands to self.set().
@@ -134,6 +137,11 @@ class BindingSet(object):
             key = getattr(Qt, 'Key_' + key)
         if isinstance(key_modifier, basestring):
             key_modifier = getattr(Qt, 'Key_' + key_modifier)
+        # if param_getter is a value and not a function, we convert it
+        # to a constant function
+        if not hasattr(param_getter, '__call__'):
+            param = param_getter
+            param_getter = lambda p: param
         self.binding[(action, key_modifier, key)] = (event, param_getter)
         
     def get(self, action, key_modifier=None, key=None):
@@ -148,6 +156,9 @@ class BindingSet(object):
         """
         return self.binding.get((action, key_modifier, key), (None, None))
     
+    
+    # Help methods
+    # ------------
     def generate_text(self):
         special_keys = {
             None: '',
@@ -182,7 +193,6 @@ class BindingSet(object):
         # sort events
         self.text = "\n".join(["\n".join(sorted(texts[key])) for key in sorted(texts.iterkeys())])
         
-    
     def get_text(self):
         if not self.text:
             self.generate_text()

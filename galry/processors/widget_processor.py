@@ -13,14 +13,14 @@ class WidgetEventProcessor(EventProcessor):
         self.help_visible = False
         self.grid_visible = False
         
-    def process_toggle_fullscreen(self, parameter):
-        self.parent.toggle_fullscreen()
-        
     def process_grid_event(self, parameter):
         self.grid_visible = not(self.grid_visible)
         self.set_data(visual='grid_lines', visible=self.grid_visible)
         self.set_data(visual='grid_text', visible=self.grid_visible)
     
+    def process_toggle_fullscreen(self, parameter):
+        self.parent.toggle_fullscreen()
+        
     def process_help_event(self, parameter):
         self.help_visible = not(self.help_visible)
         text = self.parent.binding_manager.get().get_text()

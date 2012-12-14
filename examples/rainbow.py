@@ -25,17 +25,15 @@ def colormap(x):
     
     return hsv_to_rgb(col0 + (col1 - col0) * x)
     
-class CorrelationMatrixPaintManager(PaintManager):
-    def initialize(self):
-        n = 256
-        # create linear values as 2D texture
-        data = np.linspace(0., 1., n * n).reshape((n, n))
-        # colorize the texture
-        texture = colormap(data)
-        # show the texture
-        self.add_visual(TextureVisual, texture=texture)
-    
-if __name__ == '__main__':
-    show_basic_window(paint_manager=CorrelationMatrixPaintManager,
-        constrain_ratio=True, constrain_navigation=True)
-    
+figure(constrain_ratio=True, constrain_navigation=True)
+
+
+n = 256
+# create linear values as 2D texture
+data = np.linspace(0., 1., n * n).reshape((n, n))
+# colorize the texture
+texture = colormap(data)
+imshow(texture)
+
+
+show()

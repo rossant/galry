@@ -9,6 +9,7 @@ import subprocess
 from python_qt_binding import QtCore, QtGui, QtOpenGL
 from functools import wraps
 from galry import log_debug, log_info, log_warn
+from collections import OrderedDict as ordict
 
 # try importing numexpr
 try:
@@ -23,6 +24,7 @@ __all__ = [
     'run_all_scripts',
     'enforce_dtype',
     'FpsCounter',
+    'ordict',
 ]
     
 def get_intermediate_classes(cls, baseclass):
