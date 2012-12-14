@@ -12,15 +12,12 @@ Galry: high-performance interactive visualization in Python
   * include ony shader snippets in the scene, and include shader creation
     in the renderers
   * check gl capabilities (eg mipmapping)
-  * check gl version in glrenderer and adapt the shader code to it
   * window timer update: make it an event instead
   * better way of switching pyside/pyqt
   * make unit tests work in ipython with pylab activated
-  * better handling of special_keywords
   * tutorials parts 2 and 3
   * global color module in galry
   * adding new visuals dynamically
-
 
   
 Automation
@@ -34,28 +31,6 @@ Automation
 Fixes
 -----
 
-  * bug with text and constrain ratio
-  * bug: linux pyside segmentation fault
-      * some update (2012/11/27): I could reproduce this issue on RedHat 5
-        with a Nvidia cards (nvidia drivers, OpenGL 4.3) and pyside (EPD), 
-        a PyQt4 package appearing not to be available on redhat. I could find
-        two issues:
-          * segmentation fault with pyside due to cursors, deactivating cursors
-            does the trick but this should be investigated properly
-          * another segmentation fault with OpenGL when a textured 
-            primitive is drawn *after* a non-textured one. This happens with
-            FPS for instance. Reversing the order of the visuals (texture first,
-            non-texture then) does also the trick, but the precise reason is
-            still unknown. It might due to the fact that the linux nvidia
-            OpenGL driver does not like when a texture is bound (which
-            happens upon visual creation) and a non-textured primitive is
-            drawn right afterwards (there are no such bugs on windows). 
-            Unbounding the texture does not appear to solve the problem. To be
-            continued...
-            TODO: simple minimalistic script which reproduces the bug
-        Appart from that, everything appears to work correctly (tutorials
-        and examples).
-  
   * try to reproduce bug with violation memory access when there are several
     widgets within a main window (concurrency issue in pyopengl?)
   
@@ -71,10 +46,10 @@ Tested
   * Windows 7 64 bits, Intel HD 4000            OK    
   * Ubuntu 12.04 in VM, AMD GPU                 OK
   * Ubuntu 12.10 Nvidia Quadro GPU              OK
-  * Linux with nvidia                           seg fault w PySide
+  * Ubuntu 12.10 64 bits Nvidia GPU             OK
   * MacOSX 64 bits with Nvidia                  OK
 
-  
+
 Later
 -----
 
@@ -88,8 +63,7 @@ Later
   * better error messages when template is not correct (eg data is missing,
     size is missing, etc)
   * opencl buffers and opencl/gl interop buffers
-  * handle more complete data type (int 8/16/32 bits, floats, etc)
-  
+  * handle more complete data type (int 8/16/32 bits, floats, etc)  
   * several plots (like subplot) with different widgets, linking possible
   * colormaps
   * new example: raster plot with sprites
