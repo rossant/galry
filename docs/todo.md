@@ -1,6 +1,9 @@
 Galry: high-performance interactive visualization in Python
 ===========================================================
 
+  * fix bug with cursor
+  * remove compound variables, replace by methods in visual which take
+    arguments as inputs and call set_data. the variables are then recorded
   * update examples with high level interface
   * grid: integrate data normalization
   * better design for widget options (constrain ratio, activate_grid, etc)

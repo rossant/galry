@@ -64,8 +64,14 @@ class PaintManagerCreator(object):
         if not update:
             class MyPaintManager(baseclass):
                 def initialize(self):
+                    self.figure = figure
                     for name, (args, kwargs) in visuals.iteritems():
                         self.add_visual(*args, **kwargs)
+                        
+                def resizeGL(self, w, h):
+                    super(MyPaintManager, self).resizeGL(w, h)
+                    self.figure.size = w, h
+                    
         else:
             class MyPaintManager(baseclass):
                 def initialize(self):
@@ -261,9 +267,6 @@ class Figure(object):
         # TODO: do not add new grid visual but activate the existing one
         self.add_visual(vs.GridVisual, *args, **kwargs)
         self.add_event_processor(vs.GridEventProcessor)
-        
-    def set_data(self, *args, **kwargs):
-        self.paint_manager.set_data(self, *args, **kwargs)
         
         
     # Public interaction methods

@@ -80,7 +80,11 @@ class EventProcessor(object):
                 fig = self.interaction_manager.figure
                 # HACK: give access to paint_manager.set_data to the figure,
                 # so that event processors can change the data
+                # fig.paint_manager = self.parent.paint_manager#.set_data
+                # BAD SMELL HERE :(
                 fig.set_data = self.parent.paint_manager.set_data
+                fig.set_rendering_options = self.parent.paint_manager.set_rendering_options
+                fig.resizeGL = self.parent.paint_manager.resizeGL
                 # here, we are using the high level interface and figure
                 # is the Figure object we pass to this function
                 method(fig, parameter)

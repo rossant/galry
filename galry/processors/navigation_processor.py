@@ -36,9 +36,6 @@ class NavigationEventProcessor(EventProcessor):
         self.grid_visible = not(self.grid_visible)
         self.set_data(visual='grid_lines', visible=self.grid_visible)
         self.set_data(visual='grid_text', visible=self.grid_visible)
-    
-        
-        
         
     def transform_view(self):
         """Change uniform variables to implement interactive navigation."""

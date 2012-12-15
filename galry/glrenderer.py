@@ -268,7 +268,7 @@ class Texture(object):
             gl.glTexSubImage1D(textype, 0, 0, shape[1],
                                component_type, gl.GL_UNSIGNED_BYTE, data)
         elif ndim == 2:
-            gl.glTexSubImage2D(textype, 0, 0, 0, shape[0], shape[1],
+            gl.glTexSubImage2D(textype, 0, 0, 0, shape[1], shape[0],
                                component_type, gl.GL_UNSIGNED_BYTE, data)
 
     @staticmethod
@@ -1348,15 +1348,18 @@ class GLRenderer(object):
         # paint within the whole window
         gl.glViewport(0, 0, width, height)
         # compute the constrained viewport
-        vx = vy = 1.0
+        x = y = 1.0
         if self.get_renderer_option('constrain_ratio'):
             if height > 0:
-                a = float(width) / height
-                if a > 1:
-                    vx = a
+                aw = float(width) / height
+                ar = self.get_renderer_option('constrain_ratio')
+                if ar is True:
+                    ar = 1.
+                if ar < aw:
+                    x, y = aw / ar, 1.
                 else:
-                    vy = 1. / a
-        self.viewport = vx, vy
+                    x, y = 1., ar / aw
+        self.viewport = x, y
         width = float(width)
         height = float(height)
         # update the viewport and window size for all visuals
