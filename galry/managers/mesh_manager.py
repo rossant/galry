@@ -5,8 +5,6 @@ from galry import NavigationEventProcessor, InteractionManager, QtCore, \
 from default_manager import DefaultPaintManager, DefaultInteractionManager, \
     DefaultBindings
 from plot_manager import PlotBindings
-    
-import OpenGL.GL as gl
 import numpy as np
 
 

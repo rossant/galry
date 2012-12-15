@@ -1,4 +1,5 @@
 import numpy as np
+import OpenGL.GL as gl
 from galry import log_debug, log_info, log_warn, get_color, GLRenderer, \
     Manager, TextVisual, RectanglesVisual, SceneCreator, serialize, \
     GridVisual
@@ -208,6 +209,7 @@ class PaintManager(Manager):
     def paintGL(self):
         if hasattr(self, 'renderer'):
             self.renderer.paint()
+        gl.glFlush()
  
     def resizeGL(self, width, height):
         if hasattr(self, 'renderer'):

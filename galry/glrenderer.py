@@ -1,4 +1,15 @@
-import OpenGL.GL as gl
+try:
+    import OpenGL.GL as gl
+except:
+    from galry import log_warn
+    log_warn(("PyOpenGL is not available and Galry won't be"
+        " able to render plots."))
+    class _gl(object):
+        def mock(*args, **kwargs):
+            return None
+        def __getattr__(self, name):
+            return self.mock
+    gl = _gl()
 from collections import OrderedDict
 import numpy as np
 import sys
@@ -308,9 +319,10 @@ class ShaderManager(object):
         if infolog:
             infolog = "\n" + infolog.strip()
         # check compilation error
-        if not(result):
+        if not(result) and infolog:
             msg = "Compilation error for %s." % str(shader_type)
-            msg += infolog
+            if infolog is not None:
+                msg += infolog
             msg += source
             raise RuntimeError(msg)
         else:
@@ -335,8 +347,10 @@ class ShaderManager(object):
         # check linking error
         if not(result):
             msg = "Shader program linking error:"
-            msg += gl.glGetProgramInfoLog(program)
-            raise RuntimeError(msg)
+            info = gl.glGetProgramInfoLog(program)
+            if info:
+                msg += info
+                raise RuntimeError(msg)
         
         self.program = program
         return program
@@ -1303,7 +1317,8 @@ class GLRenderer(object):
         """Initialize the renderer."""
         # print the renderer information
         for key, value in GLVersion.get_renderer_info().iteritems():
-            log_info(key + ": " + value)
+            if key is not None and value is not None:
+                log_info(key + ": " + value)
         # initialize the renderer options using the options set in the Scene
         self.set_renderer_options()
         # create the VisualRenderer objects

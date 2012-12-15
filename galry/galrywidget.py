@@ -3,22 +3,27 @@ import time
 import timeit
 import numpy as np
 import numpy.random as rdn
-import OpenGL.GL as gl
-# import OpenGL.GLUT as glut
 from python_qt_binding import QtCore, QtGui
 from python_qt_binding.QtCore import Qt, pyqtSignal
-from python_qt_binding.QtOpenGL import QGLWidget, QGLFormat
-# from interactionevents import InteractionEvents as events
-# from useractions import UserActions as actions
-# from useractions import UserActionGenerator
-# import bindingmanager
-# from debugtools import DEBUG, log_debug, log_info, log_warn
-# import interactionmanager
-# import paintmanager
-# from tools import FpsCounter, show_window
-# from cursors import get_cursor
+from galry import DEBUG, log_debug, log_info, log_warn
+try:
+    from python_qt_binding.QtOpenGL import QGLWidget, QGLFormat
+except Exception as e:
+    log_warn(("The QT-OpenGL bindings are not available and Galry won't be"
+        " able to render plots."))
+    # mock QGLWidget
+    class QGLWidget(QtGui.QWidget):
+        def initializeGL(self):
+            pass
+        def paintGL(self):
+            pass
+        def updateGL(self):
+            pass
+        def resizeGL(self):
+            pass
+    QGLFormat = None
 from galry import get_cursor, FpsCounter, show_window, PaintManager, \
-    InteractionManager, BindingManager,DEBUG, log_debug, log_info, log_warn, \
+    InteractionManager, BindingManager, \
     UserActionGenerator, PlotBindings, Bindings, FpsCounter, \
     show_window 
 
@@ -66,31 +71,19 @@ class GalryWidget(QGLWidget):
     BindingManager, InteractionManager).
     
     """
-    # # background color as a 4-tuple (R,G,B,A)
-    # bgcolor = (0, 0, 0, 0)
-    # autosave = None
     
-    # # default window size
-    # width, height = 600, 600
-    
-    # # FPS counter, used for debugging
-    # fps_counter = FpsCounter()
-    # display_fps = DISPLAY_FPS
-
-    # # widget creation parameters
-    # bindings = None
-    # companion_classes_initialized = False
-    
-    # # constrain width/height ratio when resizing of zooming
-    # constrain_ratio = False
-    # constrain_navigation = False
+    width = 600.
+    height = 600.
     
     # Initialization methods
     # ----------------------
     def __init__(self, format=None, autosave=None, getfocus=True, **kwargs):
         """Constructor. Call `initialize` and initialize the companion classes
         as well."""
-        super(GalryWidget, self).__init__(format)
+        if format is not None:
+            super(GalryWidget, self).__init__(format)
+        else:
+            super(GalryWidget, self).__init__()
         
         self.initialized = False
         self.just_initialized = False
@@ -101,7 +94,7 @@ class GalryWidget(QGLWidget):
         self.autosave = None
         
         # default window size
-        self.width, self.height = 600, 600
+        # self.width, self.height = 600, 600
         
         # FPS counter, used for debugging
         self.fps_counter = FpsCounter()
@@ -258,8 +251,6 @@ class GalryWidget(QGLWidget):
         self.paint_manager.initializeGL()
         self.initialized = True
         self.just_initialized = True
-        # initialize event
-        # self.process_interaction('Initialize')
         
     def paintGL(self):
         """Paint the scene.
@@ -270,17 +261,13 @@ class GalryWidget(QGLWidget):
         This method calls the `paint_all` method of the PaintManager.
         
         """
-        
         if self.just_initialized:
             self.process_interaction('Initialize', do_update=False)
-        
         # paint fps
         if self.display_fps:
             self.paint_fps()
         # paint everything
         self.paint_manager.paintGL()
-        # flush GL commands
-        gl.glFlush()
         # compute FPS
         self.fps_counter.tick()
         if self.autosave:
@@ -319,12 +306,13 @@ class GalryWidget(QGLWidget):
         self.process_interaction()
         
     def keyPressEvent(self, e):
+        self.user_action_generator.keyPressEvent(e)
+        self.process_interaction()
         # Close the application when pressing Q
         if e.key() == QtCore.Qt.Key_Q:
             if hasattr(self, 'window'):
-                self.window.close()
-        self.user_action_generator.keyPressEvent(e)
-        self.process_interaction()
+                self.close_widget()
+        
         
     def keyReleaseEvent(self, e):
         self.user_action_generator.keyReleaseEvent(e)
@@ -339,7 +327,7 @@ class GalryWidget(QGLWidget):
     def normalize_position(self, x, y):
         """Window coordinates ==> world coordinates."""
         if not hasattr(self.paint_manager, 'renderer'):
-            return None
+            return (0, 0)
         vx, vy = self.paint_manager.renderer.viewport
         x = -vx + 2 * vx * x / float(self.width)
         y = -(-vy + 2 * vy * y / float(self.height))
@@ -350,7 +338,7 @@ class GalryWidget(QGLWidget):
         points.
         """
         if not hasattr(self.paint_manager, 'renderer'):
-            return None
+            return (0, 0)
         vx, vy = self.paint_manager.renderer.viewport
         x = 2 * vx * x/float(self.width)
         y = -2 * vy * y/float(self.height)
@@ -463,7 +451,6 @@ class GalryWidget(QGLWidget):
         # retrieve action parameters and normalize using the window size
         parameters = self.normalize_action_parameters(
                         self.user_action_generator.get_action_parameters())
-            
         return action, key, key_modifier, parameters
         
     def get_current_event(self):
@@ -536,7 +523,8 @@ class GalryWidget(QGLWidget):
         
         # update the OpenGL view
         if do_update is None:
-            do_update = ((not isinstance(self, GalryTimerWidget)) and
+            do_update = (
+                # (not isinstance(self, GalryTimerWidget)) and
                 (event is not None or prev_event is not None))
                 
         if do_update:
@@ -603,10 +591,7 @@ class GalryTimerWidget(GalryWidget):
         
         """
         self.t = timeit.default_timer() - self.t0
-        if hasattr(self.paint_manager, 'update_callback'):
-            self.paint_manager.t = self.t
-            self.paint_manager.update_callback()
-            self.updateGL()
+        self.process_interaction('Animate', (self.t,))
         
     def start_timer(self):
         """Start the timer."""
@@ -640,7 +625,7 @@ def create_custom_widget(bindings=None,
                          activate_help=True,
                          activate_grid=False,
                          display_fps=False,
-                         update_interval=None,
+                         animation_interval=None,
                          autosave=None,
                          getfocus=True,
                         **companion_classes):
@@ -655,14 +640,14 @@ def create_custom_widget(bindings=None,
         than [-1,1]^2 by default (but it can be customized in 
         interactionmanager.MAX_VIEWBOX).
       * display_fps=False: whether to display the FPS.
-      * update_interval=None: if not None, a special widget with automatic
+      * animation_interval=None: if not None, a special widget with automatic
         timer update is created. This variable then refers to the time interval
         between two successive updates (in seconds).
       * **companion_classes: keyword arguments with the companion classes.
     
     """
-    # use the GalryTimerWidget if update_interval is not None
-    if update_interval is not None:
+    # use the GalryTimerWidget if animation_interval is not None
+    if animation_interval is not None:
         baseclass = GalryTimerWidget
     else:
         baseclass = GalryWidget
@@ -677,9 +662,13 @@ def create_custom_widget(bindings=None,
         """Automatically-created Galry widget."""
         def __init__(self):
             # antialiasing
-            format = QGLFormat()
+            if QGLFormat is not None:
+                format = QGLFormat()
+            else:
+                format = None
             if antialiasing:
-                format.setSampleBuffers(True)
+                if hasattr(format, 'setSampleBuffers'):
+                    format.setSampleBuffers(True)
             super(MyWidget, self).__init__(format=format, autosave=autosave,
                 getfocus=getfocus)
         
@@ -693,8 +682,8 @@ def create_custom_widget(bindings=None,
             
             self.display_fps = display_fps
             self.initialize_companion_classes()
-            if update_interval is not None:
-                self.initialize_timer(dt=update_interval)
+            if animation_interval is not None:
+                self.initialize_timer(dt=animation_interval)
 
     return MyWidget
     
@@ -794,6 +783,7 @@ def create_basic_window(widget=None, size=None, position=(100, 100),
         def closeEvent(self, e):
             """Clean up memory upon closing."""
             self.widget.paint_manager.cleanup()
+            super(BasicWindow, self).closeEvent(e)
             
     return BasicWindow
     

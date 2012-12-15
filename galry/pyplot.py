@@ -10,7 +10,7 @@ __all__ = ['figure', 'Figure', 'get_current_figure',
            'plot', 'text', 'rectangles', 'imshow', 'graph', 'mesh', 'barplot',
            'visual',
            'axes', 'xlim', 'ylim',
-           'grid',
+           'grid', 'animate',
            'event', 'action',
            'show']
 
@@ -125,7 +125,8 @@ class Figure(object):
         self.antialiasing = None
         self.activate_grid = True
         self.activate_help = True
-        self.figsize = (600, 600)
+        self.animation_interval = None
+        self.figsize = (GalryWidget.width, GalryWidget.height)
 
         self.pmclass = mgs.PlotPaintManager
         self.imclass = mgs.PlotInteractionManager
@@ -257,6 +258,7 @@ class Figure(object):
         self.add_visual(visualcls, *args, **kwargs)
         
     def grid(self, *args, **kwargs):
+        # TODO: do not add new grid visual but activate the existing one
         self.add_visual(vs.GridVisual, *args, **kwargs)
         self.add_event_processor(vs.GridEventProcessor)
         
@@ -290,6 +292,12 @@ class Figure(object):
             # self.add_binding(event, method)
             self.bindings.append((args, kwargs))
         
+    def animate(self, method, dt=None):
+        if dt is None:
+            dt = .02
+        self.animation_interval = dt
+        self.event('Animate', method)
+        
         
     # Rendering methods
     # -----------------
@@ -308,6 +316,7 @@ class Figure(object):
             antialiasing=self.antialiasing,
             activate_grid=self.activate_grid,
             activate_help=self.activate_help,
+            animation_interval=self.animation_interval,
             size=self.figsize,
             )
         return window
@@ -394,6 +403,10 @@ def event(*args, **kwargs):
 def action(*args, **kwargs):
     fig = get_current_figure()
     fig.action(*args, **kwargs)
+    
+def animate(*args, **kwargs):
+    fig = get_current_figure()
+    fig.animate(*args, **kwargs)
     
     
 def show(*args, **kwargs):

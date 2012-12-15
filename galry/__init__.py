@@ -5,7 +5,7 @@ from numpy import *
 from debugtools import *
 
 # import PyQT or Pyside
-from python_qt_binding import QtCore, QtDeclarative, QtGui, QtOpenGL
+from python_qt_binding import QtCore, QtDeclarative, QtGui#, QtOpenGL
     
 from colors import *
 from manager import *

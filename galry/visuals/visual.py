@@ -751,7 +751,7 @@ class Visual(BaseVisual):
     def initialize_viewport(self):
         """Handle window resize in shaders."""
         self.add_uniform('viewport', vartype="float", ndim=2, data=(1., 1.))
-        self.add_uniform('window_size', vartype="float", ndim=2, data=(600., 600.))
+        self.add_uniform('window_size', vartype="float", ndim=2)#, data=(600., 600.))
         if self.constrain_ratio:
             self.add_vertex_main("gl_Position.xy = gl_Position.xy / viewport;",
                 position='last', name='viewport')

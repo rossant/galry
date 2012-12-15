@@ -1,7 +1,5 @@
 from galry import *
-import OpenGL.GL as gl
 import numpy as np
-import numpy.random as rnd
 
 # cube creation function
 def create_cube(color, scale=1.):

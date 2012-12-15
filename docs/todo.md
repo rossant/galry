@@ -12,7 +12,6 @@ Galry: high-performance interactive visualization in Python
   * include ony shader snippets in the scene, and include shader creation
     in the renderers
   * check gl capabilities (eg mipmapping)
-  * window timer update: make it an event instead
   * better way of switching pyside/pyqt
   * make unit tests work in ipython with pylab activated
   * tutorials parts 2 and 3

@@ -34,12 +34,22 @@ class UserActionGenerator(object):
         
     def get_action_parameters(self):
         """Return an action parameter object."""
-        return dict(mouse_position=self.mouse_position,
-                    mouse_position_diff=self.mouse_position_diff,
-                    mouse_press_position=self.mouse_press_position,
-                    wheel=self.wheel,
-                    key_modifier=self.key_modifier,
-                    key=self.key)
+        mp = self.mouse_position
+        mpd = self.mouse_position_diff
+        mpp = self.mouse_press_position
+        if not mp:
+            mp = (0, 0)
+        if not mpd:
+            mpd = (0, 0)
+        if not mpp:
+            mpp = (0, 0)
+        parameters = dict(mouse_position=mp,
+                            mouse_position_diff=mpd,
+                            mouse_press_position=mpp,
+                            wheel=self.wheel,
+                            key_modifier=self.key_modifier,
+                            key=self.key)
+        return parameters
                     
     def clean_action(self):
         """Reset the current action."""
