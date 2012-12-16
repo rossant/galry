@@ -8,6 +8,7 @@ import galry.visuals as vs
 
 __all__ = ['figure', 'Figure', 'get_current_figure',
            'plot', 'text', 'rectangles', 'imshow', 'graph', 'mesh', 'barplot',
+           'sprites',
            'visual',
            'axes', 'xlim', 'ylim',
            'grid', 'animate',
@@ -240,7 +241,10 @@ class Figure(object):
         
     def rectangles(self, *args, **kwargs):
         self.add_visual(vs.RectanglesVisual, *args, **kwargs)
-        
+    
+    def sprites(self, *args, **kwargs):
+        self.add_visual(vs.SpriteVisual, *args, **kwargs)
+       
     def imshow(self, *args, **kwargs):
         filter = kwargs.pop('filter', None)
         if filter:
@@ -259,10 +263,10 @@ class Figure(object):
         self.antialiasing = True
         self.bindingsclass = mgs.MeshBindings
         self.add_visual(vs.MeshVisual, *args, **kwargs)
-        
+    
     def visual(self, visualcls, *args, **kwargs):
         self.add_visual(visualcls, *args, **kwargs)
-        
+    
     def grid(self, *args, **kwargs):
         # TODO: do not add new grid visual but activate the existing one
         self.add_visual(vs.GridVisual, *args, **kwargs)
@@ -323,7 +327,7 @@ class Figure(object):
             size=self.figsize,
             )
         return window
-            
+
 
 # Public figure methods
 # ---------------------
@@ -359,6 +363,10 @@ def text(*args, **kwargs):
 def rectangles(*args, **kwargs):
     fig = get_current_figure()
     fig.rectangles(*args, **kwargs)
+    
+def sprites(*args, **kwargs):
+    fig = get_current_figure()
+    fig.sprites(*args, **kwargs)
     
 def imshow(*args, **kwargs):
     fig = get_current_figure()
