@@ -1,8 +1,8 @@
 import inspect
 import numpy as np
 from galry import Manager, TextVisual, get_color
-
-
+# from galry import InteractionManager
+import galry
 
 __all__ = ['EventProcessor']
 
@@ -17,6 +17,8 @@ class EventProcessor(object):
         # current cursor and base cursor for the active interaction mode
         self.cursor = None
         # self.base_cursor = None
+        
+        self.activate()
         
         self.initialize(*args, **kwargs)
         
@@ -50,10 +52,16 @@ class EventProcessor(object):
         
     def get_cursor(self):
         """Return the current cursor."""
-        # if self.cursor is None:
-            # return self.base_cursor
-        # else:
         return self.cursor
+
+
+    # Activation methods
+    # ------------------
+    def activate(self, boo=True):
+        self.activated = boo
+        
+    def deactivate(self):
+        self.activated = False
         
         
     # Handlers methods
@@ -74,7 +82,9 @@ class EventProcessor(object):
         if method:
             # if the method is a method of a class deriving from EventProcessor
             # we pass just parameter
-            if inspect.ismethod(method) and EventProcessor in inspect.getmro(method.im_class):
+            if (inspect.ismethod(method) and 
+                (EventProcessor in inspect.getmro(method.im_class) or
+                 galry.InteractionManager in inspect.getmro(method.im_class))):
                 method(parameter)
             else:
                 fig = self.interaction_manager.figure

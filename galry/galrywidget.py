@@ -550,7 +550,9 @@ class GalryWidget(QGLWidget):
                 self.window.showNormal()
                 
     def close_widget(self):
-        self.window.close()
+        if hasattr(self, 'window'):
+            if hasattr(self.window, 'close'):
+                self.window.close()
     
     
     # Focus methods

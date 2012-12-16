@@ -24,7 +24,7 @@ class PlotInteractionManager(DefaultInteractionManager):
         super(PlotInteractionManager, self).initialize_default()
         self.add_processor(NavigationEventProcessor,
             constrain_navigation=constrain_navigation, name='navigation')
-        self.add_processor(GridEventProcessor, name='grid')
+        self.add_processor(GridEventProcessor, name='grid', activated=False)
         
         
 class PlotBindings(DefaultBindings):
@@ -34,9 +34,6 @@ class PlotBindings(DefaultBindings):
     
     """
     def set_widget(self):
-        # self.set('KeyPress', 'ToggleFullscreen', key='F')
-        # self.set('KeyPress', 'Help', key='H')
-        # self.set('KeyPress', 'Grid', key='QuoteDbl')
         self.set('KeyPress', 'Grid', key='G')
     
     def set_panning_mouse(self):
@@ -123,7 +120,8 @@ class PlotBindings(DefaultBindings):
         # Reset zoom
         self.set('DoubleClick', 'Reset')
         
-    def initialize(self):
+    def initialize_default(self):
+        super(PlotBindings, self).initialize_default()
         """Initialize all bindings. Can be overriden."""
         self.set_base_cursor()
         self.set_widget()
@@ -139,10 +137,10 @@ class PlotBindings(DefaultBindings):
         # reset
         self.set_reset()
         # Extended bindings
-        self.extend()
+        # self.extend()
         
-    def extend(self):
-        """Initialize custom bindings. Can be overriden."""
-        pass
+    # def extend(self):
+        # """Initialize custom bindings. Can be overriden."""
+        # pass
         
         

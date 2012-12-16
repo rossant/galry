@@ -115,7 +115,8 @@ class BindingCreator(object):
             baseclass = PlotBindings
         bindings = figure.bindings
         class MyBindings(baseclass):
-            def extend(self):
+            def initialize(self):
+                super(MyBindings, self).initialize()
                 for (args, kwargs) in bindings:
                     self.set(*args, **kwargs)
         return MyBindings
@@ -293,7 +294,7 @@ class Figure(object):
         if not isinstance(event, basestring):
             callback = event
             # we create a custom event
-            event = 'MyEvent%d' % len(self.bindings)
+            event = getattr(callback, '__name__', 'CustomEvent%d' % len(self.bindings))
             # we bind the action to that event
             # we also pass the full User Action Parameters object to the
             # callback

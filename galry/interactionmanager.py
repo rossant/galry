@@ -2,7 +2,8 @@ import inspect
 # from collections import OrderedDict as odict
 import numpy as np
 from galry import Manager, TextVisual, get_color, NavigationEventProcessor, \
-    DefaultEventProcessor, EventProcessor, GridEventProcessor, ordict
+    DefaultEventProcessor, EventProcessor, GridEventProcessor, ordict, \
+    log_debug, log_info, log_warn
 
 
 __all__ = ['InteractionManager']
@@ -52,8 +53,10 @@ class InteractionManager(Manager):
         name = kwargs.pop('name', 'processor%d' % (len(self.get_processors())))
         if self.get_processor(name):
             raise ValueError("Processor name '%s' already exists." % name)
+        activated = kwargs.pop('activated', True)
         processor = cls(self, *args, **kwargs)
         self.processors[name] = processor
+        processor.activate(activated)
         return processor
         
     def add_default_processor(self):
@@ -89,10 +92,12 @@ class InteractionManager(Manager):
         # process events in all processors
         if event is not None:
             for name, processor in self.get_processors().iteritems():
-                if processor.registered(event):
+                if processor.activated and processor.registered(event):
+                    # print name, event
                     processor.process(event, parameter)
-                    self.cursor = processor.get_cursor()
-        
+                    cursor = processor.get_cursor()
+                    if self.cursor is None:
+                        self.cursor = cursor
         self.prev_event = event
         
     def get_cursor(self):
