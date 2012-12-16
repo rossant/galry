@@ -1256,7 +1256,12 @@ class GLRenderer(object):
         # enable transparency
         if options.get('transparency', True):
             gl.glEnable(gl.GL_BLEND)
-            gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
+            blendfunc = options.get('transparency_blendfunc',
+                ('SRC_ALPHA', 'ONE_MINUS_SRC_ALPHA')
+                # ('ONE_MINUS_DST_ALPHA', 'ONE')
+                )
+            blendfunc = [getattr(gl, 'GL_' + x) for x in blendfunc]
+            gl.glBlendFunc(*blendfunc)
             
         # enable depth buffer, necessary for 3D rendering
         if options.get('activate3D', None):

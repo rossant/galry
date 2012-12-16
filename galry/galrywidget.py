@@ -99,6 +99,7 @@ class GalryWidget(QGLWidget):
         # FPS counter, used for debugging
         self.fps_counter = FpsCounter()
         self.display_fps = DISPLAY_FPS
+        self.activate3D = None
 
         # widget creation parameters
         self.bindings = None
@@ -139,6 +140,7 @@ class GalryWidget(QGLWidget):
         
         # update rendering options
         self.paint_manager.set_rendering_options(
+                        activate3D=self.activate3D,
                         constrain_ratio=self.constrain_ratio,
                         )
         # self.interaction_manager.constrain_navigation = self.constrain_navigation
@@ -627,6 +629,7 @@ def create_custom_widget(bindings=None,
                          activate_help=True,
                          activate_grid=False,
                          display_fps=False,
+                         activate3D=False,
                          animation_interval=None,
                          autosave=None,
                          getfocus=True,
@@ -681,7 +684,7 @@ def create_custom_widget(bindings=None,
             self.constrain_navigation = constrain_navigation
             self.activate_help = activate_help
             self.activate_grid = activate_grid
-            
+            self.activate3D = activate3D
             self.display_fps = display_fps
             self.initialize_companion_classes()
             if animation_interval is not None:

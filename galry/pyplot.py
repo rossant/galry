@@ -138,6 +138,7 @@ class Figure(object):
         self.constrain_ratio = None
         self.constrain_navigation = None
         self.display_fps = None
+        self.activate3D = None
         self.antialiasing = None
         self.activate_grid = True
         self.activate_help = True
@@ -150,13 +151,7 @@ class Figure(object):
         
         self.initialize(*args, **kwargs)
         
-    def initialize(self, **kwargs
-            # constrain_ratio=False, constrain_navigation=False,
-            # display_fps=None
-            ):
-        # self.constrain_ratio = constrain_ratio
-        # self.constrain_navigation = constrain_navigation
-        # self.display_fps = display_fps
+    def initialize(self, **kwargs):
         for name, value in kwargs.iteritems():
             setattr(self, name, value)
     
@@ -329,6 +324,7 @@ class Figure(object):
             constrain_ratio=self.constrain_ratio,
             constrain_navigation=self.constrain_navigation,
             display_fps=self.display_fps,
+            activate3D=self.activate3D,
             antialiasing=self.antialiasing,
             activate_grid=self.activate_grid,
             activate_help=self.activate_help,
