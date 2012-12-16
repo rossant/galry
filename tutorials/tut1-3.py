@@ -1,22 +1,31 @@
-"""Tutorial 1.3: Plots with different markers.
-
-In this tutorial, we show how to plot points with custom markers.
-
-"""
-
+"""Raster plot example."""
+import numpy as np
 from galry import *
 
-# We generate 10,000 points randomly according to a standard normal random
-# variable.
-x, y = random.randn(2, 10000)
+# Total number of spikes.
+spikecount = 20000
 
-# We assign one color for each point, with random RGBA components.
-color = random.rand(10000, 4)
+# Total number of neurons.
+n = 100
 
-# We plot x wrt. y, with a '+' marker of size 20 (in pixels).
-plot(x, y, '+', ms=20, color=color)
+# Random neuron index for each spike.
+neurons = np.random.randint(low=0, high=n, size=spikecount)
 
-# We specify the axes as (x0, x1, y0, y1).
-axes(-5, 5, -5, 5)
+# One Poisson spike train with all spikes.
+spiketimes = np.cumsum(np.random.exponential(scale=.01, size=spikecount))
 
+# Neurons colors.
+colors = np.random.rand(n, 3)
+
+# New figure.
+figure(constrain_navigation=True)
+
+# We plot the neuron index wrt. spike times, with a | marker and the specified
+# color.
+plot(spiketimes, neurons, '|', ms = 5., color=colors[neurons, :])
+
+# We specify the y axis limits.
+ylim(-1, n)
+
+# We plot the figure.
 show()

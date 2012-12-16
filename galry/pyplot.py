@@ -17,6 +17,8 @@ __all__ = ['figure', 'Figure', 'get_current_figure',
 
 def get_marker_texture(marker, size=None):
     """Create a marker texture."""
+    if size is None:
+        size = 10.
     
     if np.mod(size, 2) == 0:
         size += 1
@@ -39,6 +41,12 @@ def get_marker_texture(marker, size=None):
     elif marker == 'x':
         texture[range(size), range(size), :] = 1
         texture[range(size - 1, -1, -1), range(size), :] = 1
+        
+    elif marker == '-':
+        texture[size / 2, :, :] = 1
+        
+    elif marker == '|':
+        texture[:, size / 2, :] = 1
         
     elif marker == 'o':
         # fill with white
@@ -218,7 +226,7 @@ class Figure(object):
         # process marker type, 'o' or 'or'
         marker = kwargs.pop('marker', kwargs.pop('m', None))
         if marker is None:
-            if opt and opt[0] in ',.+xo':
+            if opt and opt[0] in ',.+-|xo':
                 marker = opt[0]
         if marker is not None:
             cls = vs.SpriteVisual

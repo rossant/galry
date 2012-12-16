@@ -1,11 +1,19 @@
 Galry: high-performance interactive visualization in Python
 ===========================================================
 
+Urgent
+------
+
+  * update doc
+  * update spiky
+  * master branch  
   * fix bug with cursor
-  * remove compound variables, replace by methods in visual which take
-    arguments as inputs and call set_data. the variables are then recorded
-  * update examples with high level interface
-  * grid: integrate data normalization
+  
+  
+Refactoring
+-----------
+
+  * global color module in galry
   * better design for widget options (constrain ratio, activate_grid, etc)
   * rename visual= into name= in PM.set_data
   * rename extend into initialize (and have initialize_default)
@@ -16,12 +24,17 @@ Galry: high-performance interactive visualization in Python
     in the renderers
   * check gl capabilities (eg mipmapping)
   * better way of switching pyside/pyqt
-  * make unit tests work in ipython with pylab activated
-  * tutorials parts 2 and 3
-  * global color module in galry
+  * remove compound variables, replace by methods in visual which take
+    arguments as inputs and call set_data. the variables are then recorded
+
+
+Features
+--------
+
+  * grid: integrate data normalization
   * adding new visuals dynamically
 
-  
+
 Automation
 ----------
   
@@ -33,9 +46,9 @@ Automation
 Fixes
 -----
 
+  * make unit tests work in ipython with pylab activated
   * try to reproduce bug with violation memory access when there are several
-    widgets within a main window (concurrency issue in pyopengl?)
-  
+    widgets within a main window (concurrency issue in pyopengl?)  
   * fix bug in ipython notebook with empty arrays when loading a script
     for the first time
     
@@ -55,8 +68,7 @@ Tested
 Later
 -----
 
-  * process_action(action, parameters) in interaction manager for quick 
-    interactivity
+  * tutorials parts 2 and 3
   * HDF5 viewer for long signals: use stride to implement a dynamic 
     multi-resolution undersampling method.
     Refinement: thread to update data on the GPU only when no action is occurring,
@@ -68,7 +80,6 @@ Later
   * handle more complete data type (int 8/16/32 bits, floats, etc)  
   * several plots (like subplot) with different widgets, linking possible
   * colormaps
-  * new example: raster plot with sprites
   
   
 Doc
