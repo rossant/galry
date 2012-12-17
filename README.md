@@ -6,7 +6,7 @@ may change without notice.**
 
 ### Quick links
 
-  * [What's new?](https://raw.github.com/rossant/galry/master/CHANGES.md)
+  * [What's new?](https://github.com/rossant/galry/blob/master/CHANGES.md)
   * [Installation wiki](https://github.com/rossant/galry/wiki/Installation)
   * [Galry Users Google Group](https://groups.google.com/forum/?fromgroups#!forum/galry-users)
   * [Benchmarks wiki](https://github.com/rossant/galry/wiki/Benchmarks)
