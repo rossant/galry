@@ -548,7 +548,8 @@ class Visual(BaseVisual):
         kwargs = self.kwargs
         self.variables = collections.OrderedDict()
         self.options = {}
-        self.depth_enabled = False
+        self.is_position_3D = False
+        self.depth = None
         # initialize the shader creator
         self.shader_creator = ShaderCreator()
         self.reinitialization = False
@@ -772,30 +773,19 @@ class Visual(BaseVisual):
                 }
             """)
             
-        # add transformation only if there is something to display
-        # if self.get_variables('attribute'):
-        
-            # self.add_vertex_main("""
-                # gl_Position = vec4(transform_position(%s, scale, translation), 
-                               # 0., 1.);""" % self.position_attribute_name,
-                               # position='last', name='navigation')
-        # # static
-            # self.add_vertex_main("""
-                # gl_Position = vec4(%s, 0., 1.);""" % ,
-                                # position='last', name='navigation')
-        
-        
         if not self.is_static:            
             pos = "transform_position(%s.xy, scale, translation)" % self.position_attribute_name
         else:
             pos = "%s.xy" % self.position_attribute_name
         
-        if self.depth_enabled:
+        if self.is_position_3D:
             vs = """gl_Position = vec4(%s, %s.z, 1.);""" % (pos,
                 self.position_attribute_name)
         else:
             vs = """gl_Position = vec4(%s, 0., 1.);""" % (pos)
         
+        if self.depth is not None:
+            vs += """gl_Position.z = %.4f;""" % self.depth
         
         self.add_vertex_main(vs, position='last', name='navigation')
         

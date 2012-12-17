@@ -36,7 +36,6 @@ else
 """
 
 
-
 class TextVisual(Visual):
     """Template for displaying short text on a single line.
     
@@ -146,7 +145,8 @@ class TextVisual(Visual):
         self.texture, self.matrix, self.get_map = load_font(font, fontsize)
 
     def initialize(self, text, coordinates=(0., 0.), font='segoe', fontsize=24,
-            color=None, letter_spacing=None, interline=0., prevent_constrain=False):
+            color=None, letter_spacing=None, interline=0.,
+            prevent_constrain=False, depth=None):
         """Initialize the text template."""
         
         if prevent_constrain:
@@ -198,4 +198,4 @@ class TextVisual(Visual):
         # fragment shader
         self.add_fragment_main(FS)
         
-        
+        self.depth = depth

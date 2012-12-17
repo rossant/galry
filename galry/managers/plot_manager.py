@@ -9,6 +9,7 @@ class PlotPaintManager(DefaultPaintManager):
         super(PlotPaintManager, self).initialize_default()
         # Navigation rectangle
         self.add_visual(RectanglesVisual, coordinates=(0.,) * 4,
+                        # depth=1.,
                         color=self.navigation_rectangle_color, 
                         is_static=True,
                         name='navigation_rectangle',

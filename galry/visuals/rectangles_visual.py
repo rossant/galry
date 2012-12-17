@@ -40,7 +40,7 @@ class RectanglesVisual(PlotVisual):
         
         return dict(position=position)
     
-    def initialize(self, coordinates=None, color=None):
+    def initialize(self, coordinates=None, color=None):#, depth=None):
         
         if type(coordinates) is tuple:
             coordinates = np.array(coordinates, dtype=np.float32).reshape((1, -1))
@@ -57,11 +57,8 @@ class RectanglesVisual(PlotVisual):
 
         position = self.coordinates_compound(coordinates)['position']
         
-        # print position
-        # print color
-        
         super(RectanglesVisual, self).initialize(position=position, 
-            color=color, nprimitives=nprimitives)
+            color=color, nprimitives=nprimitives,)# depth=depth)
             
         self.add_compound("coordinates", fun=self.coordinates_compound, 
             data=coordinates)

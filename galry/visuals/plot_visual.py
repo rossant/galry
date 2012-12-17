@@ -171,4 +171,9 @@ class PlotVisual(Visual):
         self.add_uniform("point_size", data=point_size)
         self.add_vertex_main("""gl_PointSize = point_size;""")
         
+        # self.add_vertex_main("""
+            # gl_Position.z = %.4f;
+            # gl_PointSize = point_size;""" % (depth),
+            # after='navigation')
+            
         # print self.bounds
