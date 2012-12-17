@@ -21,17 +21,17 @@ This user manual gives a wide, high-level introduction to both interfaces.
 High-level interface
 --------------------
 
-This interface is not done yet. *It is currently not the highest priority*.
-
-The long-term goal is to have an interface highly similar to the one offered
-by matplotlib. One should be able to replace `import matplotlib.pyplot as plt`
-by `import galry.plot as plt` in order to use Galry instead of matplotlib
-to plot a figure. At first, only the most common commands will be available,
-like `figure`, `plot`, `imshow`, etc.
+This interface is similar to the one offered by matplotlib. Only a very small
+portion of matplotlib's features are currently implemented, but it's fine
+since Galry focuses on interactive visualization and not publication-ready
+figure plotting.
 
 A GL backend for matplotlib might also be an idea, but the current internal
 architecture of matplotlib is not adapted for high-performance interactive
 rendering for now.
+
+
+
 
 
 Low-level interface
@@ -293,10 +293,15 @@ Currently, available visuals are:
     options and mipmapping. Non power-of-two and non-square textures are
     supported if the graphics card support them.
   
-  * `ThreeDimensionsVisual`: visual example for 3D rendering, implementing
+  * `MeshVisual`: visual example for 3D rendering, implementing
     3D/4D transformation matrices, basic lighting, etc. The developer
     interested in 3D rendering should take this visual as an example and
-    customize it.
+    customize it. This visual is well adapted for displaying a 3D mesh and
+    move it around in 3D.
+    
+  * `GraphVisual`: a planar graph.
+  
+  * `BarVisual`: a set of bar plots/histograms.
 
     
 ##### Vertex shader example: particle system
@@ -373,25 +378,25 @@ moving the mouse while pressing the right button.
 
 The implemented user actions are for now:
 
- * `MouseMoveAction`
- * `LeftButtonClickAction`
- * `MiddleButtonClickAction`
- * `RightButtonClickAction`
- * `LeftButtonMouseMoveAction`
- * `MiddleButtonMouseMoveAction`
- * `RightButtonMouseMoveAction`
- * `DoubleClickAction`
- * `WheelAction`
- * `KeyPressAction`
+ * `Move`
+ * `LeftClick`
+ * `MiddleClick`
+ * `RightClick`
+ * `LeftClickMove`
+ * `MiddleClickMove`
+ * `RightClickMove`
+ * `DoubleClick
+ * `Wheel`
+ * `KeyPress`
  
 At any time, an user action comes with some associated parameters, like the
-relative displacement of the mouse for `MouseMoveAction`, or the pressed key
-for `KeyPressAction`. In addition, all those actions can be modified by
+relative displacement of the mouse for `Move`, or the pressed key
+for `KeyPress`. In addition, all those actions can be modified by
 a keyboard modifier such as Control, Shift or Alt.
 
 A **binding** is a link between one user action and one interaction event.
 More precisely, it links a pair (action, key modifier) to an interaction
-event (there's also the pressed key for `KeyPressAction`). In addition,
+event (there's also the pressed key for `KeyPress`). In addition,
 a binding comes with a function that returns the action parameters (such as the
 displacement of the mouse or the position of the cursor) that are relevant to
 the associated interaction event. The result of this function is passed
@@ -404,12 +409,12 @@ the *selection mode*.
 
 The implemented interaction events are:
 
-  * `SwitchInteractionModeEvent`
-  * `PanEvent`
-  * `ZoomEvent`
-  * `ZoomBoxEvent`
-  * `ResetEvent`
-  * `ResetZoomEvent`
+  * `SwitchInteractionMode`
+  * `Pan`
+  * `Zoom`
+  * `ZoomBox`
+  * `Reset`
+  * `ResetZoom`
 
 New interaction events can be defined.
   
@@ -417,15 +422,16 @@ As soon as an user action happens during the lifetime of the widget,
 galry finds the associated interaction event according to the
 current interaction mode. Then, that interaction event and the relevant
 action parameters (returned by the function specified in the binding)
-are passed to the interaction processor that is implemented in the 
-`InteractionManager`. This processor handles this event and makes the
-relevant changes to the different companion objects (such as the 
-`PaintManager`) in order to implement the logic of the event. The processor
-is implemented in the `process_event` and `process_extended_event` methods
-of the `InteractionManager`. The former method processes exising events
-(related to navigation essentially), whereas the latter can be overriden
-in order to handle new, custom interaction events that are not part of
-galry.
+are passed to the `InteractionManager`. This manager contains one or several
+`EventProcessor`, which define handlers for different events. A handler
+for an event is a method of the processor, which takes a parameter as an input
+and perform some action in response to that event. Possible actions only
+include changing the parameters of visuals for now, which already captures
+most scenarios.
+
+Processors can be reused in an a modular fashion. Each processor has access
+to all other processors (every processor has a name, unique within a given
+InteractionManager).
 
 
 ### The `BindingManager` companion class

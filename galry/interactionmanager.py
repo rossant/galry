@@ -41,14 +41,20 @@ class InteractionManager(Manager):
     # Processor methods
     # -----------------
     def get_processors(self):
+        """Return all processors."""
         return self.processors
         
     def get_processor(self, name):
+        """Return a processor from its name."""
         if name is None:
             name = 'processor0'
         return self.processors.get(name, None)
         
     def add_processor(self, cls, *args, **kwargs):
+        """Add a new processor, which handles processing of interaction events.
+        Several processors can be defined in an InteractionManager instance.
+        One event can be handled by several processors.
+        """
         # get the name of the visual from kwargs
         name = kwargs.pop('name', 'processor%d' % (len(self.get_processors())))
         if self.get_processor(name):
@@ -60,9 +66,14 @@ class InteractionManager(Manager):
         return processor
         
     def add_default_processor(self):
+        """Add a default processor, useful to add handlers for events
+        in the InteractionManager without explicitely creating a new
+        processor."""
         return self.add_processor(EventProcessor, name='default_processor')
         
     def register(self, event, method):
+        """Register a new handler for an event, using the manager's default
+        processor."""
         processor = self.get_processor('default_processor')
         if processor is None:
             processor = self.add_default_processor()

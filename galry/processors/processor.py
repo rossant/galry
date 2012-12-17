@@ -23,6 +23,7 @@ class EventProcessor(object):
         self.initialize(*args, **kwargs)
         
     def get_processor(self, name):
+        """Return a processor in the Manager from its name."""
         return self.interaction_manager.get_processor(name)
         
         
@@ -33,13 +34,16 @@ class EventProcessor(object):
     paint_manager = property(_get_paint_manager)
         
     def set_data(self, *args, **kwargs):
+        """PaintManager.set_data."""
         # shortcut to paint_manager.set_data
         return self.parent.paint_manager.set_data(*args, **kwargs)
         
     def get_visual(self, name):
+        """Get a visual in the PaintManager from its name."""
         return self.parent.paint_manager.get_visual(name)
         
     def add_visual(self, *args, **kwargs):
+        """Add a new visual in the paint manager."""
         name = kwargs.get('name')
         if not self.get_visual(name):
             self.parent.paint_manager.add_visual(*args, **kwargs)
@@ -58,9 +62,11 @@ class EventProcessor(object):
     # Activation methods
     # ------------------
     def activate(self, boo=True):
+        """Activate or deactivate a processor."""
         self.activated = boo
         
     def deactivate(self):
+        """Deactive the processor."""
         self.activated = False
         
         

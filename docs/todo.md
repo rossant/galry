@@ -1,15 +1,6 @@
 Galry: high-performance interactive visualization in Python
 ===========================================================
 
-Urgent
-------
-
-  * update doc
-  * update spiky
-  * master branch  
-  * fix bug with cursor
-  
-  
 Refactoring
 -----------
 
