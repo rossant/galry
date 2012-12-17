@@ -96,7 +96,7 @@ Galry is licensed under the BSD license.
 I want to see a demo!
 ---------------------
 
-[![Galry's Demo](https://raw.github.com/rossant/galry/master/images/youtube.png)](http://www.youtube.com/watch?v=jYNJJ4O3pXo)
+[![Galry's Demo](https://raw.github.com/rossant/galry/master/images/youtube.png)](http://www.youtube.com/watch?v=Nv4aNR4Gi6w)
 
 
 Why Galry?

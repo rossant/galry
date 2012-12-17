@@ -111,10 +111,6 @@ class GalryWidget(QGLWidget):
         self.activate_help = True
         self.activate_grid = False
         
-        
-        # Load the QT curors here, after QT has been initialized.
-        # cursors.load()
-        
         # Capture keyboard events.
         if getfocus:
             self.setFocusPolicy(Qt.WheelFocus)
@@ -128,8 +124,7 @@ class GalryWidget(QGLWidget):
         self.is_fullscreen = False
         
         self.events_to_signals = {}
-        # self.prev_event = None
-                                    
+        
         # keyword arguments without "_manager" => passed to initialize                  
         self.initialize(**kwargs)
         
@@ -143,7 +138,6 @@ class GalryWidget(QGLWidget):
                         activate3D=self.activate3D,
                         constrain_ratio=self.constrain_ratio,
                         )
-        # self.interaction_manager.constrain_navigation = self.constrain_navigation
         
         self.autosave = autosave
         
