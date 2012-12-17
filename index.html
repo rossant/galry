@@ -44,56 +44,69 @@ may change without notice.</strong></p>
 <h3>Quick links</h3>
 
 <ul>
+<li><a href="https://raw.github.com/rossant/galry/master/CHANGES.md">What's new?</a></li>
 <li><a href="https://github.com/rossant/galry/wiki/Installation">Installation wiki</a></li>
 <li><a href="https://groups.google.com/forum/?fromgroups#!forum/galry-users">Galry Users Google Group</a></li>
 <li><a href="https://github.com/rossant/galry/wiki/Benchmarks">Benchmarks wiki</a></li>
 <li><a href="https://github.com/rossant/galry/blob/master/docs/manual.md">User Manual</a></li>
 <li><a href="https://github.com/rossant/galry/tree/master/tutorials">Tutorials</a></li>
 <li><a href="https://github.com/rossant/galry">Source code</a></li>
-</ul><h2>What's new? [2012-12-02]</h2>
+</ul><h2>What's new? [2012-12-17]</h2>
 
 <ul>
-<li>The rendering engine has been entirely rewritten in order to increase
-the separation between the scene creation logic, and the actual GL 
-rendering.</li>
-<li>This new architecture will make it easier to integrate Galry into the
-<strong>IPython notebook</strong>. A highly experimental proof of concept has been
-implemented and gives encouraging results (see the <code>experimental</code> folder).</li>
-<li>A <strong>high-level interface</strong>, much similar to the pylab interface of
-matplotlib,
-will be available later. Using Galry for high-performance interactive 
-visualization with a given plotting script using matplotlib will just be
-a matter of replacing <code>import pylab as plt</code> with
-<code>import galry.plot as plt</code>.</li>
-<li>It will be possible to automatically convert a Python plotting
-script using Galry to <strong>WebGL/Javascript code</strong> for integration within a
-standalone webpage. No Python required for running the webpage, just
-a WebGL-enabled browser.</li>
-<li>The interaction system will be improved soon and the interface will
-probably change.</li>
-<li>New features:
+<li>
+<strong>High-level interface</strong>: this new interface is a thin wrapper to the
+low-level interface. It provides a matplotlib-like interface which allows
+to easily add plots or any visuals on the scene, as well as defining
+custom handlers for events, and defining new events associated to 
+user actions.</li>
+<li>All <strong>tutorials</strong> and <strong>examples</strong> have been updated to use this new
+high-level interface.</li>
+<li>The <strong>interaction system</strong> has been refined and is now more modular.
+One can define standalone EventProcessors which register handlers
+for different events. Processors are then added in the InteractionManager.
+A given processor can be used separately in different managers and 
+widgets.</li>
+<li>
+<strong>New visuals</strong>:
 
 <ul>
-<li>More efficient data updating system: before, the data could be changed
-at the condition that the size of all attributes and textures were kept
-unchanged. This limitation has fortunately disappeared.</li>
-<li>Support for <strong>texture filtering</strong> options (including mipmapping).</li>
-<li>Support for 1D and non-square textures.</li>
-<li>Support for reference buffers: the same memory buffer on the GPU
-can now be used for several visuals in order to save memory
-(useful for graph rendering, where edges and nodes share the same
-memory buffer on the GPU).</li>
-<li>Support for indexed rendering (index buffers). Useful for graph
-rendering where the edges are specified with indices targetting
-node positions.</li>
-<li>New example: dynamic planar <strong>graph rendering</strong> with a simple CPU-based
-physics engine.</li>
-<li>New example: <strong>3D mesh</strong> viewer (adapted from an example in Glumpy).</li>
-<li>New example: <strong>Pong video game</strong>.</li>
+<li>
+<strong>GridVisual</strong> (with grid, axes, ticks) but does not support
+automatic data normalization yet,</li>
+<li>
+<strong>BarVisual</strong> (barplots, histograms) has been promoted from an example
+to a built-in, standalone visual,</li>
+<li>
+<strong>GraphVisual</strong>, to plot graphs with colored nodes and edges (with
+reference buffer and indexed arrays for maximum memory efficiency),</li>
+<li>
+<strong>MeshVisual</strong> to display a 3D mesh (along with a Python function to
+load a .OBJ ASCII object).</li>
 </ul>
 </li>
-<li>The 
-<a href="http://cyrille.rossant.net/galrys-story-or-the-quest-of-multi-million-plots/">context of the development of Galry can be found on this blog post</a>.</li>
+<li>New Help option (H keyboard shortcut) to automatically display all bindings
+between user actions (mouse, keyboard, etc.) and events. It is quite
+convenient because it is dynamically and automatically generated
+as a function of the bindings in the current interaction mode.</li>
+<li>Removed obsolete examples and restructured completely the tutorials.
+There will be three parts in the tutorials:
+
+<ul>
+<li>high-level interface for plotting and custom visuals,</li>
+<li>high-level interface for custom interaction management,</li>
+<li>low-level interface.
+Only the first half of the tutorials are done for now.</li>
+</ul>
+</li>
+<li>New tutorials/examples: raster plot with spikes as sprites, photo gallery:
+provide a folder with JPG images as argument and you can visualize all
+your photos in fullscreen.</li>
+<li>Fixed segmentation fault on Linux with NVidia drivers which occurred
+when non-textured visuals where rendered before a textured visual.</li>
+<li>Got rid of all enumerations, which added complexity and harmed readibility.
+It was not such a good idea to use them in the first place.
+Python ain't C#.</li>
 </ul><h2>What is Galry?</h2>
 
 <p>Galry is a <strong>high performance interactive visualization package in 
@@ -128,9 +141,7 @@ not currently used but may be in the future).</p>
 
 <h2>I want to see a demo!</h2>
 
-<!--<p><a href="http://www.youtube.com/watch?v=jYNJJ4O3pXo"><img src="https://raw.github.com/rossant/galry/master/images/youtube.png" alt="Galry's Demo"></a></p>-->
-
-<iframe width="640" height="480" src="http://www.youtube.com/embed/jYNJJ4O3pXo?rel=0" frameborder="0" allowfullscreen></iframe>
+<p><a href="http://www.youtube.com/watch?v=jYNJJ4O3pXo"><img src="https://raw.github.com/rossant/galry/master/images/youtube.png" alt="Galry's Demo"></a></p>
 
 <h2>Why Galry?</h2>
 
@@ -256,30 +267,17 @@ The development of Galry will be done in parallel.</p>
       </section>
 
     </div>
-<!--[if !IE]><script>fixScale(document);</script><![endif]-->
-<script type="text/javascript">
-var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
-document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
-</script>
-<script type="text/javascript">
-try {
-var pageTracker = _gat._getTracker("UA-6774000-3");
-pageTracker._trackPageview();
-} catch(err) {}
-</script>
-<script type="text/javascript">
-var sc_project=8405204; 
-var sc_invisible=1; 
-var sc_security="c13aafcf"; 
-var scJsHost = (("https:" == document.location.protocol) ?
-"https://secure." : "http://www.");
-document.write("<sc"+"ript type='text/javascript' src='" +
-scJsHost +
-"statcounter.com/counter/counter.js'></"+"script>");</script>
-<noscript><div class="statcounter"><a title="web analytics"
-href="http://statcounter.com/" target="_blank"><img
-class="statcounter"
-src="https://c.statcounter.com/8405204/0/c13aafcf/1/"
-alt="web analytics"></a></div></noscript>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+              <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-6774000-3");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
   </body>
 </html>
