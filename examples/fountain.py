@@ -89,45 +89,50 @@ class ParticleVisual(Visual):
     def initialize(self, **kwargs):
         self.base_fountain(**kwargs)
     
-        
-class ParticlePaintManager(PaintManager):
-    def initialize(self):
-        
-        # number of particles
-        n = 50000
-        
-        # initial positions
-        positions = .02 * rdn.randn(n, 2)
-        
-        # initial velocities
-        velocities = np.zeros((n, 2))
-        v = 1.5 + .5 * rdn.rand(n)
-        angles = .1 * rdn.randn(n) + np.pi / 2
-        velocities[:,0] = v * np.cos(angles)
-        velocities[:,1] = v * np.sin(angles)
-        
-        # transparency
-        alpha = .2 * rdn.rand(n)
-        
-        # color
-        color = (0.70,0.75,.98,1.)
-        
-        # random delays
-        delays = 10 * rdn.rand(n)
-        
-        # create the dataset
-        self.add_visual(ParticleVisual, 
-            initial_positions=positions,
-            velocities=velocities,
-            alpha=alpha,
-            color=color,
-            delays=delays
-            )
-        
-    def update_callback(self):
-        # update the t uniform value
-        self.set_data(t=self.t)
 
-if __name__ == '__main__':
-    window = show_basic_window(paint_manager=ParticlePaintManager,
-                               update_interval=.02)
+def update(figure, parameter):
+    t = parameter[0]
+    figure.set_data(t=t)
+
+if __name__ == '__main__':        
+    figure()
+
+    # number of particles
+    n = 50000
+
+    # initial positions
+    positions = .02 * rdn.randn(n, 2)
+
+    # initial velocities
+    velocities = np.zeros((n, 2))
+    v = 1.5 + .5 * rdn.rand(n)
+    angles = .1 * rdn.randn(n) + np.pi / 2
+    velocities[:,0] = v * np.cos(angles)
+    velocities[:,1] = v * np.sin(angles)
+
+    # transparency
+    alpha = .2 * rdn.rand(n)
+
+    # color
+    color = (0.70,0.75,.98,1.)
+
+    # random delays
+    delays = 10 * rdn.rand(n)
+
+
+    figure(constrain_navigation=True)
+
+    # create the visual
+    visual(ParticleVisual, 
+        initial_positions=positions,
+        velocities=velocities,
+        alpha=alpha,
+        color=color,
+        delays=delays
+        )
+
+
+    animate(update, dt=.02)
+
+    show()
+

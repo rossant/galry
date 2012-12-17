@@ -4,7 +4,7 @@ from visual import Visual
 __all__ = ['normalize',
            'projection_matrix', 'rotation_matrix', 'scale_matrix',
            'translation_matrix', 'camera_matrix',
-           'ThreeDimensionsVisual']
+           'MeshVisual']
 
 def normalize(x):
     """Normalize a vector or a set of vectors.
@@ -116,10 +116,8 @@ def camera_matrix(eye, target=None, up=None):
  
     return np.dot(translation, orientation)
     
-    
-    
-    
-class ThreeDimensionsVisual(Visual):
+
+class MeshVisual(Visual):
     """Template for basic 3D rendering.
     
     This template allows to render 3D vertices with 3D perspective and basic
@@ -142,13 +140,6 @@ class ThreeDimensionsVisual(Visual):
             self.add_vertex_main("""
                 gl_Position = projection * camera * gl_Position;""")
         
-    # def initialize_viewport(self, constrain_ratio=False):
-        # """Add viewport-related code."""
-        # self.add_uniform("viewport", vartype="float", ndim=2)
-        # self.add_uniform("window_size", vartype="float", ndim=2)
-        # if constrain_ratio:
-            # self.add_vertex_main("gl_Position = gl_Position / viewport;")
-
     def initialize_default(self, is_static=False, constrain_ratio=False, **kwargs): 
         """Default initialization with navigation-related code."""
         self.is_static = is_static

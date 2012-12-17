@@ -1,11 +1,14 @@
 import numpy as np
 import base64
 import json
+from galry import CompoundVisual
 
 __all__ = ['SceneCreator', 
            'encode_data', 'decode_data', 'serialize', 'deserialize', ]
 
 
+# Scene creator
+# -------------
 class SceneCreator(object):
     """Construct a scene with `add_*` methods."""
     def __init__(self, constrain_ratio=False,):
@@ -79,10 +82,23 @@ class SceneCreator(object):
             the visual, and that can be used in `set_data`.
         
         """
+        
+        if 'name' not in kwargs:
+            kwargs['name'] = 'visual%d' % (len(self.get_visuals()))
+        
+        # handle compound visual, where we add all sub visuals
+        # as defined in CompoundVisual.initialize()
+        if issubclass(visual_class, CompoundVisual):
+            visual = visual_class(self.scene, *args, **kwargs)
+            for sub_cls, sub_args, sub_kwargs in visual.visuals:
+                self.add_visual(sub_cls, *sub_args, **sub_kwargs)
+            return visual
+            
         # get the name of the visual from kwargs
-        name = kwargs.pop('name', 'visual%d' % (len(self.get_visuals())))
+        name = kwargs.pop('name')
         if self.get_visual(name):
             raise ValueError("Visual name '%s' already exists." % name)
+        
         # pass constrain_ratio to all visuals
         if 'constrain_ratio' not in kwargs:
             kwargs['constrain_ratio'] = self.constrain_ratio

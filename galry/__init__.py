@@ -1,23 +1,29 @@
 """Galry: high-performance interactive visualization package in Python"""
 
+from numpy import *
+
 from debugtools import *
 
 # import PyQT or Pyside
-from python_qt_binding import QtCore, QtDeclarative, QtGui, QtOpenGL
+from python_qt_binding import QtCore, QtDeclarative, QtGui#, QtOpenGL
     
+from colors import *
 from manager import *
 from cursors import *
+from icons import *
 from tools import *
-from galrywidget import *
+from datanormalizer import *
 from useractions import *
-from interactionevents import *
+from visuals import *
+from processors import *
 from interactionmanager import *
 from bindingmanager import *
 from scene import *
-from visuals import *
 from glrenderer import *
 from paintmanager import *
-from datanormalizer import *
-from plot import *
-from icons import *
+from managers import *
+from galrywidget import *
+from pyplot import *
 from test import *
+
+from matplotlib.pyplot import imread

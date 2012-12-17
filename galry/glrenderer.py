@@ -1,10 +1,20 @@
-import OpenGL.GL as gl
+try:
+    import OpenGL.GL as gl
+except:
+    from galry import log_warn
+    log_warn(("PyOpenGL is not available and Galry won't be"
+        " able to render plots."))
+    class _gl(object):
+        def mock(*args, **kwargs):
+            return None
+        def __getattr__(self, name):
+            return self.mock
+    gl = _gl()
 from collections import OrderedDict
 import numpy as np
 import sys
-from tools import enforce_dtype
-from debugtools import log_info, log_debug, log_warn
-from visuals import RefVar
+from galry import enforce_dtype, DataNormalizer, log_info, log_debug, \
+    log_warn, RefVar
 
     
 # GLVersion class
@@ -104,7 +114,8 @@ class Attribute(object):
     @staticmethod
     def delete(*buffers):
         """Delete buffers."""
-        gl.glDeleteBuffers(len(buffers), buffers)
+        if buffers:
+            gl.glDeleteBuffers(len(buffers), buffers)
         
         
 class Uniform(object):
@@ -257,7 +268,7 @@ class Texture(object):
             gl.glTexSubImage1D(textype, 0, 0, shape[1],
                                component_type, gl.GL_UNSIGNED_BYTE, data)
         elif ndim == 2:
-            gl.glTexSubImage2D(textype, 0, 0, 0, shape[0], shape[1],
+            gl.glTexSubImage2D(textype, 0, 0, 0, shape[1], shape[0],
                                component_type, gl.GL_UNSIGNED_BYTE, data)
 
     @staticmethod
@@ -308,9 +319,10 @@ class ShaderManager(object):
         if infolog:
             infolog = "\n" + infolog.strip()
         # check compilation error
-        if not(result):
+        if not(result) and infolog:
             msg = "Compilation error for %s." % str(shader_type)
-            msg += infolog
+            if infolog is not None:
+                msg += infolog
             msg += source
             raise RuntimeError(msg)
         else:
@@ -335,8 +347,10 @@ class ShaderManager(object):
         # check linking error
         if not(result):
             msg = "Shader program linking error:"
-            msg += gl.glGetProgramInfoLog(program)
-            raise RuntimeError(msg)
+            info = gl.glGetProgramInfoLog(program)
+            if info:
+                msg += info
+                raise RuntimeError(msg)
         
         self.program = program
         return program
@@ -354,11 +368,21 @@ class ShaderManager(object):
     # ------------------
     def activate_shaders(self):
         """Activate shaders for the rest of the rendering call."""
+        # try:
         gl.glUseProgram(self.program)
+            # return True
+        # except Exception as e:
+            # log_info("Error while activating the shaders: " + e.message)
+            # return False
         
     def deactivate_shaders(self):
         """Deactivate shaders for the rest of the rendering call."""
+        # try:
         gl.glUseProgram(0)
+            # return True
+        # except Exception as e:
+            # log_info("Error while activating the shaders: " + e.message)
+            # return True
         
         
     # Cleanup methods
@@ -513,7 +537,8 @@ class SlicedAttribute(object):
     def load(self, data):
         """Load data on all sliced buffers."""
         for buffer, (pos, size) in zip(self.buffers, self.slicer.slices):
-            Attribute.bind(buffer, self.location)
+            # WARNING: putting self.location instead of None ==> SEGFAULT on Linux with Nvidia drivers
+            Attribute.bind(buffer, None)
             Attribute.load(data[pos:pos + size,...])
 
     def bind(self, slice=None):
@@ -579,6 +604,8 @@ class GLVisualRenderer(object):
         self.scene = renderer.scene
         # register the visual dictionary
         self.visual = visual
+        # options
+        self.options = visual.get('options', {})
         # hold all data changes until the next rendering pass happens
         self.data_updating = {}
         # set the primitive type from its name
@@ -610,6 +637,7 @@ class GLVisualRenderer(object):
         # log_info(self.shader_manager.fragment_shader)
                                             
         # initialize all variables
+        self.initialize_normalizers()
         self.initialize_variables()
         self.load_variables()
         
@@ -740,6 +768,12 @@ class GLVisualRenderer(object):
         pass
         
         
+    # Normalization methods
+    # ---------------------
+    def initialize_normalizers(self):
+        self.normalizers = {}
+        
+        
     # Loading methods
     # ---------------
     def load_variables(self):
@@ -755,14 +789,10 @@ class GLVisualRenderer(object):
     def load_attribute(self, name, data=None):
         """Load data for an attribute variable."""
         variable = self.get_variable(name)
-        
-        
         if variable['sliced_attribute'].location < 0:
             log_info(("Variable '%s' could not be loaded, probably because "
                       "it is not used in the shaders") % name)
             return
-        
-        
         olddata = variable.get('data', None)
         if isinstance(olddata, RefVar):
             log_info("Skipping loading data for attribute '%s' since it "
@@ -771,6 +801,14 @@ class GLVisualRenderer(object):
         if data is None:
             data = olddata
         if data is not None:
+            # normalization
+            if name in self.options.get('normalizers', {}):
+                viewbox = self.options['normalizers'][name]
+                if viewbox:
+                    self.normalizers[name] = DataNormalizer(data)
+                    # normalize data with the specified viewbox, None by default
+                    # meaning that the natural bounds of the data are used.
+                    data = self.normalizers[name].normalize(viewbox)
             variable['sliced_attribute'].load(data)
         
     def load_index(self, name, data=None):
@@ -1113,8 +1151,16 @@ class GLVisualRenderer(object):
         # do not display non-visible visuals
         if not self.visual.get('visible', True):
             return
+            
         # activate the shaders
-        self.shader_manager.activate_shaders()
+        try:
+            self.shader_manager.activate_shaders()
+        # if the shaders could not be successfully activated, stop the
+        # rendering immediately
+        except Exception as e:
+            log_info("Error while activating the shaders: " + str(e))
+            return
+            
         # update all variables
         self.update_all_variables()
         # bind all texturex for that slice
@@ -1144,7 +1190,7 @@ class GLVisualRenderer(object):
         # deactivate the shaders
         self.shader_manager.deactivate_shaders()
 
-        
+
     # Cleanup methods
     # ---------------
     def cleanup_attribute(self, name):
@@ -1210,7 +1256,12 @@ class GLRenderer(object):
         # enable transparency
         if options.get('transparency', True):
             gl.glEnable(gl.GL_BLEND)
-            gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
+            blendfunc = options.get('transparency_blendfunc',
+                ('SRC_ALPHA', 'ONE_MINUS_SRC_ALPHA')
+                # ('ONE_MINUS_DST_ALPHA', 'ONE')
+                )
+            blendfunc = [getattr(gl, 'GL_' + x) for x in blendfunc]
+            gl.glBlendFunc(*blendfunc)
             
         # enable depth buffer, necessary for 3D rendering
         if options.get('activate3D', None):
@@ -1271,7 +1322,8 @@ class GLRenderer(object):
         """Initialize the renderer."""
         # print the renderer information
         for key, value in GLVersion.get_renderer_info().iteritems():
-            log_info(key + ": " + value)
+            if key is not None and value is not None:
+                log_info(key + ": " + value)
         # initialize the renderer options using the options set in the Scene
         self.set_renderer_options()
         # create the VisualRenderer objects
@@ -1301,15 +1353,18 @@ class GLRenderer(object):
         # paint within the whole window
         gl.glViewport(0, 0, width, height)
         # compute the constrained viewport
-        vx = vy = 1.0
+        x = y = 1.0
         if self.get_renderer_option('constrain_ratio'):
             if height > 0:
-                a = float(width) / height
-                if a > 1:
-                    vx = a
+                aw = float(width) / height
+                ar = self.get_renderer_option('constrain_ratio')
+                if ar is True:
+                    ar = 1.
+                if ar < aw:
+                    x, y = aw / ar, 1.
                 else:
-                    vy = 1. / a
-        self.viewport = vx, vy
+                    x, y = 1., ar / aw
+        self.viewport = x, y
         width = float(width)
         height = float(height)
         # update the viewport and window size for all visuals

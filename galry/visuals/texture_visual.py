@@ -40,8 +40,12 @@ class TextureVisual(Visual):
     def initialize(self, texture=None, points=None,
             mipmap=None, minfilter=None, magfilter=None):
         
-        shape = texture.shape[:2]
-        ncomponents = texture.shape[2]
+        if texture is not None:
+            shape = texture.shape[:2]
+            ncomponents = texture.shape[2]
+        else:
+            shape = (2, 2)
+            ncomponents = 3
         if shape[0] == 1:
             ndim = 1
         elif shape[0] > 1:
@@ -84,16 +88,17 @@ class TextureVisual(Visual):
             data=tex_coords)
         self.add_varying("varying_tex_coords", vartype="float", ndim=ndim)
         
-        self.add_texture("tex_sampler", size=shape, ndim=ndim,
-            ncomponents=ncomponents,
-            mipmap=mipmap,
-            minfilter=minfilter,
-            magfilter=magfilter,
-            )
-        # HACK: to avoid conflict in GLSL shader with the "texture" function
-        # we redirect the "texture" variable here to "tex_sampler" which
-        # is the real name of the variable in the shader
-        self.add_compound("texture", fun=self.texture_compound, data=texture)
+        if texture is not None:
+            self.add_texture("tex_sampler", size=shape, ndim=ndim,
+                ncomponents=ncomponents,
+                mipmap=mipmap,
+                minfilter=minfilter,
+                magfilter=magfilter,
+                )
+            # HACK: to avoid conflict in GLSL shader with the "texture" function
+            # we redirect the "texture" variable here to "tex_sampler" which
+            # is the real name of the variable in the shader
+            self.add_compound("texture", fun=self.texture_compound, data=texture)
 
         # pass the texture coordinates to the varying variable
         self.add_vertex_main("""

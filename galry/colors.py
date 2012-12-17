@@ -63,7 +63,7 @@ def get_color(color):
       * a list of colors
     
     """
-    if type(color) is str:
+    if isinstance(color, basestring):
         color = color.lower()
         for pattern, fun in PATTERNS.iteritems():
             r = re.match(pattern, color)
@@ -81,6 +81,8 @@ def get_color(color):
         if color and (type(color[0]) != tuple) and (3 <= len(color) <= 4):
             color = tuple(color)
         return map(get_color, color)
+    else:
+        return color
 
 if __name__ == '__main__':
     

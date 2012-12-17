@@ -1,24 +1,7 @@
 from python_qt_binding.QtCore import Qt 
-# from tools import enum
 
-__all__ = [
-# 'UserActions',
-'UserActionGenerator',
-]
+__all__ = ['UserActionGenerator', ]
 
-# # List of user actions.
-# UserActions = enum(
-    # "MouseMoveAction",
-    # "LeftButtonClickAction",
-    # "MiddleButtonClickAction",
-    # "RightButtonClickAction",
-    # "LeftButtonMouseMoveAction",
-    # "MiddleButtonMouseMoveAction",
-    # "RightButtonMouseMoveAction",
-    # "DoubleClickAction",
-    # "WheelAction",
-    # "KeyPressAction",
-# )
 
 def get_maximum_norm(p1, p2):
     """Return the inf norm between two points."""
@@ -51,12 +34,22 @@ class UserActionGenerator(object):
         
     def get_action_parameters(self):
         """Return an action parameter object."""
-        return dict(mouse_position=self.mouse_position,
-                    mouse_position_diff=self.mouse_position_diff,
-                    mouse_press_position=self.mouse_press_position,
-                    wheel=self.wheel,
-                    key_modifier=self.key_modifier,
-                    key=self.key)
+        mp = self.mouse_position
+        mpd = self.mouse_position_diff
+        mpp = self.mouse_press_position
+        if not mp:
+            mp = (0, 0)
+        if not mpd:
+            mpd = (0, 0)
+        if not mpp:
+            mpp = (0, 0)
+        parameters = dict(mouse_position=mp,
+                            mouse_position_diff=mpd,
+                            mouse_press_position=mpp,
+                            wheel=self.wheel,
+                            key_modifier=self.key_modifier,
+                            key=self.key)
+        return parameters
                     
     def clean_action(self):
         """Reset the current action."""
@@ -67,17 +60,17 @@ class UserActionGenerator(object):
         self.mouse_press_position = self.mouse_position = self.get_pos(e.pos())
         
     def mouseDoubleClickEvent(self, e):
-        self.action = 'DoubleClickAction'
+        self.action = 'DoubleClick'
         
     def mouseReleaseEvent(self, e):
         if get_maximum_norm(self.mouse_position,
                     self.mouse_press_position) < 10:
             if self.mouse_button == Qt.LeftButton:
-                self.action = 'LeftButtonClickAction'
+                self.action = 'LeftClick'
             elif self.mouse_button == Qt.MiddleButton:
-                self.action = 'MiddleButtonClickAction'
+                self.action = 'MiddleClick'
             elif self.mouse_button == Qt.RightButton:
-                self.action = 'RightButtonClickAction'
+                self.action = 'RightClick'
         # otherwise, terminate the current action
         else:
             self.action = None
@@ -89,13 +82,13 @@ class UserActionGenerator(object):
                                     pos[1] - self.mouse_position[1])
         self.mouse_position = pos
         if self.mouse_button == Qt.LeftButton:
-            self.action = 'LeftButtonMouseMoveAction'
+            self.action = 'LeftClickMove'
         elif self.mouse_button == Qt.MiddleButton:
-            self.action = 'MiddleButtonMouseMoveAction'
+            self.action = 'MiddleClickMove'
         elif self.mouse_button == Qt.RightButton:
-            self.action = 'RightButtonMouseMoveAction'
+            self.action = 'RightClickMove'
         else:
-            self.action = 'MouseMoveAction'
+            self.action = 'Move'
             
     def keyPressEvent(self, e):
         key = e.key()
@@ -103,7 +96,7 @@ class UserActionGenerator(object):
         if key in (Qt.Key_Control, Qt.Key_Shift, Qt.Key_Alt, Qt.Key_AltGr):
             self.key_modifier = key
         else:
-            self.action = 'KeyPressAction'
+            self.action = 'KeyPress'
             self.key = key
             
     def keyReleaseEvent(self, e):
@@ -114,7 +107,7 @@ class UserActionGenerator(object):
             
     def wheelEvent(self, e):
         self.wheel = e.delta()
-        self.action = 'WheelAction'
+        self.action = 'Wheel'
     
     def focusOutEvent(self, e):
         # reset all actions when the focus goes out

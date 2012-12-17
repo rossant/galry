@@ -21,130 +21,135 @@ def get_tex(n):
     R = np.minimum(1, 3 * np.exp(-5*R))
     tex[:,:,-1] = R
     return tex
-
-class PongPaintManager(PaintManager):
-    def get_score_text(self):
-        """Return the score text."""
-        return "%d - %d" % (self.score_left, self.score_right)
     
-    def initialize(self):
-        self.dt = DT
         
-        # player positions
-        self.pos = {}
-        
-        # scores
-        self.score_left = 0
-        self.score_right = 0
-        
-        # text visual
-        self.add_visual(TextVisual, coordinates=(0., .9), text='',
-            fontsize=32, name='score', color=(1.,) * 4)
-            
-        # initialize game
-        self.new_game()
-            
-        # visuals
-        self.add_visual(RectanglesVisual, coordinates=self.pos['left'],
-            color=(1.,) * 4, name='left')
-        self.add_visual(RectanglesVisual, coordinates=self.pos['right'],
-            color=(1.,) * 4, name='right')
-        self.add_visual(SpriteVisual, position=self.ball_pos, texture=get_tex(32),
-            color=(1.,) * 4, name='ball')
-            
-    def get_player_pos(self, who):
-        return (self.pos[who][0,1] + self.pos[who][0,3]) / 2.
+def get_player_pos(who):
+    return (pos[who][0,1] + pos[who][0,3]) / 2.
 
-    def move_player(self, who, dy):
-        if np.abs(self.get_player_pos(who) + dy) > .95:
-            return
-        self.pos[who][0,[1,3]] += dy
-        self.set_data(visual=who, coordinates=self.pos[who])
-        
-    def new_game(self):
-        self.pos['left'] = np.array([[-.9, -DL, -.85, DL]])
-        self.pos['right'] = np.array([[.9, -DL, .85, DL]])
-        
-        # ball position and velocity
-        self.ball_pos = np.array([[0., 0.]])
-        self.ball_v = np.array([[V, 0.]])  
+def move_player(fig, who, dy):
+    if np.abs(get_player_pos(who) + dy) > .95:
+        return
+    pos[who][0,[1,3]] += dy
+    fig.set_data(visual=who, coordinates=pos[who])
+    
+def move_player_right(fig, dy):
+    move_player(fig, 'right', dy)
+def move_player_left(fig, dy):
+    move_player(fig, 'left', dy)
+    
+def new_game(figure, parameter=None):
+    pos['left'] = np.array([[-.9, -DL, -.85, DL]])
+    pos['right'] = np.array([[.9, -DL, .85, DL]])
+    
+    # ball position and velocity
+    
+    global ball_pos, ball_v
+    
+    ball_pos = np.array([[0., 0.]])
+    ball_v = np.array([[V, 0.]])  
 
-        self.set_data(visual='left', coordinates=self.pos['left'])
-        self.set_data(visual='right', coordinates=self.pos['right'])
-        self.set_data(visual='score', text=self.get_score_text())
-    
-    def move_ball(self):
-        x, y = self.ball_pos[0,:]
-        v = self.ball_v
-        
-        # top/bottom collision
-        if np.abs(y) >= .95:
-            self.ball_v[0,1] *= -1
-        
-        # right collision
-        py = None
-        if x >= .82:
-            py = self.get_player_pos('right')
-            
-        # left collision
-        if x <= -.82:
-            py = self.get_player_pos('left')
-            
-        if py is not None:
-            # update ball velocity
-            if np.abs(y - py) <= DL:
-                self.ball_v[0,0] *= -1
-                # rebound angle depending on the position of the rebound on 
-                # the racket
-                self.ball_v[0,1] = 3 * (y - py)
-        
-        # one player wins, next game
-        if x >= .95:
-            self.score_left += 1
-            self.new_game()
-        if x <= -.95:
-            self.score_right += 1
-            self.new_game()
-        
-        # ball position update
-        self.ball_pos += self.ball_v * self.dt
-            
-    def update_callback(self):
-        self.move_ball()
-        self.set_data(visual='ball', position=self.ball_pos)
-            
-class PongInteractionManager(InteractionManager):
-    def process_custom_event(self, event, parameter):
-        if event == 'LeftPlayerMove':
-            self.paint_manager.move_player('left', parameter)
-        if event == 'RightPlayerMove':
-            self.paint_manager.move_player('right', parameter)
-        
-class PongBindings(DefaultBindingSet):
-    def initialize(self):
-        self.set_fullscreen()
-        self.extend()
-    
-    def extend(self):
-        dx = .05
+    figure.set_data(visual='left', coordinates=pos['left'])
+    figure.set_data(visual='right', coordinates=pos['right'])
+    figure.set_data(visual='score', text="%d - %d" % (score_left, score_right))
 
-        # left player bindings
-        self.set('KeyPressAction', 'LeftPlayerMove', key='W',
-            param_getter=lambda p: dx)
-        self.set('KeyPressAction', 'LeftPlayerMove', key='S',
-            param_getter=lambda p: -dx)
-        
-        # right player bindings
-        self.set('KeyPressAction', 'RightPlayerMove', key='Up',
-            param_getter=lambda p: dx)
-        self.set('KeyPressAction', 'RightPlayerMove', key='Down',
-            param_getter=lambda p: -dx)
-            
-if __name__ == '__main__':
-    print "Left player: Z/S keys\nRight player: Up/Down arrows\nF for fullscreen"
+def move_ball(figure):
+    global ball_pos, ball_v
+    global score_left, score_right
     
-    # create window
-    window = show_basic_window(paint_manager=PongPaintManager,
-                               interaction_manager=PongInteractionManager,
-                               bindings=PongBindings,
-                               update_interval=DT)
+    x, y = ball_pos[0,:]
+    v = ball_v
+    
+    # top/bottom collision
+    if np.abs(y) >= .95:
+        ball_v[0,1] *= -1
+    
+    # right collision
+    py = None
+    if x >= .82:
+        py = get_player_pos('right')
+        
+    # left collision
+    if x <= -.82:
+        py = get_player_pos('left')
+        
+    if py is not None:
+        # update ball velocity
+        if np.abs(y - py) <= DL:
+            ball_v[0,0] *= -1
+            # rebound angle depending on the position of the rebound on 
+            # the racket
+            ball_v[0,1] = 3 * (y - py)
+    
+    # one player wins, next game
+    if x >= .95:
+        score_left += 1
+        new_game(figure)
+    if x <= -.95:
+        score_right += 1
+        new_game(figure)
+    
+    # ball position update
+    ball_pos += ball_v * DT
+        
+def update(figure, parameter):
+    t = parameter[0]
+    move_ball(figure)
+    figure.set_data(visual='ball', position=ball_pos)
+        
+        
+    
+fig = figure()
+
+
+ball_pos = np.array([[0., 0.]])
+ball_v = np.array([[0, 0.]])  
+
+
+
+# player positions
+pos = {}
+
+# scores
+score_left = 0
+score_right = 0
+
+# text visual
+visual(TextVisual, coordinates=(0., .9), text='',
+    fontsize=32, name='score', color=(1.,) * 4)
+    
+
+# visuals
+rectangles(coordinates=(0.,) * 4,
+    color=(1.,) * 4, name='left')
+rectangles(coordinates=(0.,) * 4,
+    color=(1.,) * 4, name='right')
+sprites(position=np.zeros((1, 2)), texture=get_tex(32),
+    color=(1.,) * 4, name='ball')
+
+
+
+
+dx = .05
+
+# left player bindings
+action('KeyPress', 'LeftPlayerMove', key='W',
+    param_getter=lambda p: dx)
+action('KeyPress', 'LeftPlayerMove', key='S',
+    param_getter=lambda p: -dx)
+
+# right player bindings
+action('KeyPress', 'RightPlayerMove', key='Up',
+    param_getter=lambda p: dx)
+action('KeyPress', 'RightPlayerMove', key='Down',
+    param_getter=lambda p: -dx)
+
+event('RightPlayerMove', move_player_right)
+event('LeftPlayerMove', move_player_left)
+
+event('NewGame', new_game)
+event('Initialize', new_game)
+
+animate(update, dt=DT)
+
+print "Left player: Z/S keys\nRight player: Up/Down arrows\nF for fullscreen"
+show()

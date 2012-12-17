@@ -1,6 +1,7 @@
+# Necessary for future Python 3 compatibility
+from __future__ import print_function
 import os
 from galry import *
-import pylab as plt
 try:
     from PIL import Image
 except Exception as e:
@@ -9,24 +10,22 @@ import urllib, cStringIO
 
 def load_image(url):
     """Download an image from an URL."""
-    print "Downloading image... ",
+    print("Downloading image... ", end="")
     file = cStringIO.StringIO(urllib.urlopen(url).read())
-    print "Done!"
+    print("Done!")
     return Image.open(file)
    
-class EarthPaintManager(PaintManager):
-    def initialize(self):
-        url = "http://earthobservatory.nasa.gov/blogs/elegantfigures/files/2011/10/globe_west_2048.jpg"
-        texture = np.array(load_image(url))
-        self.add_visual(TextureVisual, texture=texture,
-            mipmap=True,  # use mipmapping, i.e. multiresolution texture 
-            minfilter='LINEAR_MIPMAP_NEAREST',  # bilinear + mipmap filtering for
-                                                # minification
-            magfilter='LINEAR'  # bilinear filtering for magnification
-            )       
+# new figure with ration constraining
+figure(constrain_ratio=True, constrain_navigation=False,)
 
-if __name__ == '__main__':
-    # create window
-    window = show_basic_window(paint_manager=EarthPaintManager,
-                               constrain_ratio=True,
-                               constrain_navigation=False,)
+# download the image and convert it into a Numpy array
+url = "http://earthobservatory.nasa.gov/blogs/elegantfigures/files/2011/10/globe_west_2048.jpg"
+image = np.array(load_image(url))
+
+# display the image
+imshow(image, filter=True)
+
+# show the image
+show()
+
+

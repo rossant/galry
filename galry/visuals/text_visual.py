@@ -1,8 +1,39 @@
 import numpy as np
 import os
-from visual import Visual
+from galry import log_debug, log_info, log_warn
 from fontmaps import load_font
-from ..debugtools import log_debug, log_info, log_warn
+from visual import Visual
+
+VS = """
+gl_Position.x += (offset - text_width / 2) * spacing.x / window_size.x;
+gl_Position.y -= index * spacing.y / window_size.y;
+gl_PointSize = point_size;
+flat_text_map = text_map;
+"""
+
+FS = """
+// relative coordinates of the pixel within the sprite (in [0,1])
+float x = gl_PointCoord.x;
+float y = gl_PointCoord.y;
+
+// size of the corresponding character
+float w = flat_text_map.z;
+float h = flat_text_map.w;
+
+// display the character at the left of the sprite
+float delta = h / w;
+x = delta * x;
+if ((x >= 0) && (x <= 1))
+{
+    // coordinates of the character in the font atlas
+    vec2 coord = flat_text_map.xy + vec2(w * x, h * y);
+    out_color = texture2D(tex_sampler, coord) * color;
+}
+else
+    out_color = vec4(0, 0, 0, 0);
+"""
+
+
 
 class TextVisual(Visual):
     """Template for displaying short text on a single line.
@@ -21,7 +52,7 @@ class TextVisual(Visual):
     For now, there is only the Segoe font.
     
     """
-    
+                
     def position_compound(self, coordinates=None):
         """Compound variable with the position of the text. All characters
         are at the exact same position, and are then shifted in the vertex
@@ -30,7 +61,26 @@ class TextVisual(Visual):
             coordinates = (0., 0.)
         if type(coordinates) == tuple:
             coordinates = [coordinates]
-        position = np.repeat(np.array(coordinates), self.textsizes, axis=0)
+            
+            
+        # ####################################################
+            # # if hasattr(self.textsizes, '__len__'):
+                # # coordinates *= len(self.textsizes)
+        # if self.multiline:
+            # if len(coordinates) == 1:
+                
+                # c = coordinates[0]
+                # # interline = .5
+                # coordinates = [(c[0], c[1] - i * self.interline) 
+                    # for i in xrange(self.multiline)]
+        # ####################################################
+            
+            
+            
+            
+            
+        coordinates = np.array(coordinates)
+        position = np.repeat(coordinates, self.textsizes, axis=0)
         return dict(position=position)
     
     def text_compound(self, text):
@@ -39,12 +89,27 @@ class TextVisual(Visual):
         
         coordinates = self.coordinates
         
+        if "\n" in text:
+            text = text.split("\n")
+            
+        # ####################################################
+            # self.multiline = len(text)
+            # if type(coordinates) != list:
+                # c = coordinates
+                # # interline = .5
+                # coordinates = [(c[0], c[1] - i * self.interline) 
+                    # for i in xrange(len(text))]
+        # else:
+            # self.multiline = False
+        # ####################################################
+            
+            
         if type(text) == list:
             self.textsizes = [len(t) for t in text]
             text = "".join(text)
-            if type(self.coordinates) != list:
-                coordinates = [self.coordinates] * len(self.textsizes)
-                
+            if type(coordinates) != list:
+                coordinates = [coordinates] * len(self.textsizes)
+            index = np.repeat(np.arange(len(self.textsizes)), self.textsizes)
             text_map = self.get_map(text)
             
             # offset for all characters in the merging of all texts
@@ -53,17 +118,9 @@ class TextVisual(Visual):
             # for each text, the cumsum of the length of all texts strictly
             # before
             d = np.hstack(([0], np.cumsum(self.textsizes)[:-1]))
-            # d -= d[0]
-            
-            # print self.textsizes
-            # print offset
-            # print d
-            # print
             
             # compensate the offsets for the length of each text
             offset -= np.repeat(offset[d], self.textsizes)
-            
-            # print offset[-5]
             
             text_width = 0.
                 
@@ -72,11 +129,12 @@ class TextVisual(Visual):
             text_map = self.get_map(text)
             offset = np.hstack((0., np.cumsum(text_map[:, 2])[:-1]))    
             text_width = offset[-1]
-            
+            index = np.zeros(len(text))
             
         self.size = len(text)
         
-        d = dict(text_map=text_map, offset=offset, text_width=text_width)
+        d = dict(text_map=text_map, offset=offset, text_width=text_width,
+            index=index)
         d.update(self.position_compound(coordinates))
         
         return d
@@ -86,15 +144,19 @@ class TextVisual(Visual):
         self.texture, self.matrix, self.get_map = load_font(font, fontsize)
 
     def initialize(self, text, coordinates=(0., 0.), font='segoe', fontsize=24,
-            color=None, letter_spacing=None):
+            color=None, letter_spacing=None, interline=0., prevent_constrain=False):
         """Initialize the text template."""
         
+        if prevent_constrain:
+            self.constrain_ratio = False
+            
         if color is None:
             color = self.default_color
         
         self.size = len(text)
         self.primitive_type = 'POINTS'
-
+        self.interline = interline
+        
         text_length = self.size
         self.initialize_font(font, fontsize)
         self.coordinates = coordinates
@@ -105,6 +167,7 @@ class TextVisual(Visual):
         self.add_attribute("position", vartype="float", ndim=2, data=np.zeros((self.size, 2)))
             
         self.add_attribute("offset", vartype="float", ndim=1)
+        self.add_attribute("index", vartype="float", ndim=1)
         self.add_attribute("text_map", vartype="float", ndim=4)
         self.add_varying("flat_text_map", vartype="float", flat=True, ndim=4)
         
@@ -116,8 +179,8 @@ class TextVisual(Visual):
         # pure heuristic (probably bogus)
         if letter_spacing is None:
             letter_spacing = (100 + 17. * fontsize)
-        self.add_uniform("letter_spacing", vartype="float", ndim=1,
-                            data=letter_spacing)
+        self.add_uniform("spacing", vartype="float", ndim=2,
+                            data=(letter_spacing, interline))
         self.add_uniform("point_size", vartype="float", ndim=1,
                             data=point_size)
         self.add_uniform("color", vartype="float", ndim=4, data=color)
@@ -128,35 +191,9 @@ class TextVisual(Visual):
         self.add_compound("coordinates", fun=self.position_compound, data=coordinates)
 
         # vertex shader
-        self.add_vertex_main("""
-            gl_Position.x += (offset - text_width / 2) * letter_spacing / window_size.x;
-            gl_PointSize = point_size;
-            flat_text_map = text_map;
-        """, after='navigation')
+        self.add_vertex_main(VS, after='viewport')
 
         # fragment shader
-        fragment = """
-            // relative coordinates of the pixel within the sprite (in [0,1])
-            float x = gl_PointCoord.x;
-            float y = gl_PointCoord.y;
-            
-            // size of the corresponding character
-            float w = flat_text_map.z;
-            float h = flat_text_map.w;
-            
-            // display the character at the left of the sprite
-            float delta = h / w;
-            x = delta * x;
-            if ((x >= 0) && (x <= 1))
-            {
-                // coordinates of the character in the font atlas
-                vec2 coord = flat_text_map.xy + vec2(w * x, h * y);
-                out_color = texture2D(tex_sampler, coord) * color;
-            }
-            else
-                out_color = vec4(0, 0, 0, 0);
-        """
-        
-        self.add_fragment_main(fragment)
+        self.add_fragment_main(FS)
         
         

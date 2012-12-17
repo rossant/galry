@@ -2,7 +2,7 @@ import numpy as np
 import collections
 from textwrap import dedent
 
-__all__ = ['OLDGLSL', 'RefVar', 'Visual']
+__all__ = ['OLDGLSL', 'RefVar', 'Visual', 'CompoundVisual']
 
 # HACK: if True, activate the OpenGL ES syntax, which is deprecated in the
 # desktop version. However with the appropriate #version command in the shader
@@ -436,7 +436,10 @@ class ShaderCreator(object):
         for m in mains:
             if m['after']:
                 # which index for "after"?
-                index = order.index(m['after'])
+                if m['after'] in order:
+                    index = order.index(m['after'])
+                else:
+                    index = len(order) - 1
                 order.insert(index + 1, m['name'])
         # finally, get the final code
         main = ""
@@ -518,16 +521,36 @@ class RefVar(object):
     
 # Visual creator
 # --------------
-class Visual(object):
+class BaseVisual(object):
+    def __init__(self, scene, *args, **kwargs):
+        self.scene = scene
+        # default options
+        self.kwargs = self.extract_common_parameters(**kwargs)
+        
+    def extract_common_parameters(self, **kwargs):
+        self.size = kwargs.pop('size', 0)
+        self.default_color = kwargs.pop('default_color', (1., 1., 0., 1.))
+        self.bounds = kwargs.pop('bounds', None)
+        self.is_static = kwargs.pop('is_static', False)
+        self.position_attribute_name = kwargs.pop('position_attribute_name', 'position')
+        self.primitive_type = kwargs.pop('primitive_type', None)
+        self.constrain_ratio = kwargs.pop('constrain_ratio', False)
+        self.constrain_navigation = kwargs.pop('constrain_navigation', False)
+        self.visible = kwargs.pop('visible', True)
+        return kwargs
+        
+    
+class Visual(BaseVisual):
     """This class defines a visual to be displayed in the scene. It should
     be overriden."""
     def __init__(self, scene, *args, **kwargs):
-        self.scene = scene
+        super(Visual, self).__init__(scene, *args, **kwargs)
+        kwargs = self.kwargs
         self.variables = collections.OrderedDict()
+        self.options = {}
+        self.depth_enabled = False
         # initialize the shader creator
         self.shader_creator = ShaderCreator()
-        # default options
-        kwargs = self.extract_common_parameters(**kwargs)
         self.reinitialization = False
         kwargs = self.resolve_references(**kwargs)
         # initialize the visual
@@ -546,7 +569,7 @@ class Visual(object):
         # create the shader source codes
         self.vertex_shader, self.fragment_shader = \
             self.shader_creator.get_shader_codes()
-        
+            
     def extract_common_parameters(self, **kwargs):
         self.size = kwargs.pop('size', 0)
         self.default_color = kwargs.pop('default_color', (1., 1., 0., 1.))
@@ -674,6 +697,23 @@ class Visual(object):
         for name, value in kwargs.iteritems():
             self.variables[name]['data'] = value
         
+    
+    # Option methods
+    # --------------
+    def add_options(self, **kwargs):
+        self.options.update(kwargs)
+        
+    def add_normalizer(self, name, viewbox=None):
+        """Add a data normalizer for attribute 'name'."""
+        # option_name = '%s_normalizer' % name
+        # self.add_option(option_name=(name, viewbox))
+        if 'normalizers' not in self.options:
+            self.options['normalizers'] = {}
+        self.options['normalizers'][name] = viewbox
+        
+        
+    # Variable methods
+    # ----------------
     def get_variables(self, shader_type=None):
         """Return all variables defined in the visual."""
         if not shader_type:
@@ -712,7 +752,7 @@ class Visual(object):
     def initialize_viewport(self):
         """Handle window resize in shaders."""
         self.add_uniform('viewport', vartype="float", ndim=2, data=(1., 1.))
-        self.add_uniform('window_size', vartype="float", ndim=2, data=(600., 600.))
+        self.add_uniform('window_size', vartype="float", ndim=2)#, data=(600., 600.))
         if self.constrain_ratio:
             self.add_vertex_main("gl_Position.xy = gl_Position.xy / viewport;",
                 position='last', name='viewport')
@@ -735,16 +775,29 @@ class Visual(object):
         # add transformation only if there is something to display
         # if self.get_variables('attribute'):
         
-        if not self.is_static:
-            self.add_vertex_main("""
-                gl_Position = vec4(transform_position(%s, scale, translation), 
-                               0., 1.);""" % self.position_attribute_name,
-                               position='last', name='navigation')
-        # static
+            # self.add_vertex_main("""
+                # gl_Position = vec4(transform_position(%s, scale, translation), 
+                               # 0., 1.);""" % self.position_attribute_name,
+                               # position='last', name='navigation')
+        # # static
+            # self.add_vertex_main("""
+                # gl_Position = vec4(%s, 0., 1.);""" % ,
+                                # position='last', name='navigation')
+        
+        
+        if not self.is_static:            
+            pos = "transform_position(%s.xy, scale, translation)" % self.position_attribute_name
         else:
-            self.add_vertex_main("""
-                gl_Position = vec4(%s, 0., 1.);""" % self.position_attribute_name,
-                                position='last', name='navigation')
+            pos = "%s.xy" % self.position_attribute_name
+        
+        if self.depth_enabled:
+            vs = """gl_Position = vec4(%s, %s.z, 1.);""" % (pos,
+                self.position_attribute_name)
+        else:
+            vs = """gl_Position = vec4(%s, 0., 1.);""" % (pos)
+        
+        
+        self.add_vertex_main(vs, position='last', name='navigation')
         
         
     # Initialization methods
@@ -793,6 +846,7 @@ class Visual(object):
             'bounds': self.bounds,
             'visible': self.visible,
             'is_static': self.is_static,
+            'options': self.options,
             'primitive_type': self.primitive_type,
             'constrain_ratio': self.constrain_ratio,
             'constrain_navigation': self.constrain_navigation,
@@ -803,3 +857,21 @@ class Visual(object):
         return dic
         
     
+class CompoundVisual(BaseVisual):
+    def __init__(self, scene, *args, **kwargs):
+        # super(CompoundVisual, self).__init__(scene, *args, **kwargs)
+        self.visuals = []
+        self.name = kwargs.pop('name')
+        self.initialize(*args, **kwargs)
+    
+    def add_visual(self, visual_class, *args, **kwargs):
+        name = kwargs.get('name', 'visual%d' % len(self.visuals))
+        # prefix the visual name with the compound name
+        kwargs['name'] = self.name + "_" + name
+        self.visuals.append((visual_class, args, kwargs))
+    
+    def initialize(self, *args, **kwargs):
+        pass
+        
+        
+        

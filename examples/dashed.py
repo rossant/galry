@@ -1,19 +1,18 @@
 from galry import *
 import numpy as np
 
-class SinusPaintManager(PaintManager):
-    def initialize(self):
-        x = np.linspace(-1., 1., 1000)
-        y = 0.5 * np.sin(20 * x)
+# sin(x) function
+x = np.linspace(-10., 10., 1000)
+y = np.sin(x)
 
-        color = np.array(get_color(['w', 'k']))
-        index = np.zeros(len(x))
-        index[::2] = 1
-        
-        self.add_visual(PlotVisual,
-            x=x, y=y, color_array_index=index, color=color,)
+# to make dashes, we use a 1D texture with B&W colors...
+color = np.array(get_color(['k', 'w']))
 
-if __name__ == '__main__':
-    # create window
-    window = show_basic_window(paint_manager=SinusPaintManager)
-    
+# and a lookup colormap index with alternating 0 and 1
+index = np.zeros(len(x))
+index[::2] = 1
+
+# we then plot the graph and specify the texture and the colormap
+plot(x=x, y=y, color_array_index=index, color=color,)
+
+show()

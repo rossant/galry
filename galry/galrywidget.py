@@ -3,20 +3,29 @@ import time
 import timeit
 import numpy as np
 import numpy.random as rdn
-import OpenGL.GL as gl
-# import OpenGL.GLUT as glut
 from python_qt_binding import QtCore, QtGui
 from python_qt_binding.QtCore import Qt, pyqtSignal
-from python_qt_binding.QtOpenGL import QGLWidget, QGLFormat
-# from interactionevents import InteractionEvents as events
-# from useractions import UserActions as actions
-from useractions import UserActionGenerator
-import bindingmanager
-from debugtools import DEBUG, log_debug, log_info, log_warn
-import interactionmanager
-import paintmanager
-from tools import FpsCounter, show_window
-import cursors
+from galry import DEBUG, log_debug, log_info, log_warn
+try:
+    from python_qt_binding.QtOpenGL import QGLWidget, QGLFormat
+except Exception as e:
+    log_warn(("The QT-OpenGL bindings are not available and Galry won't be"
+        " able to render plots."))
+    # mock QGLWidget
+    class QGLWidget(QtGui.QWidget):
+        def initializeGL(self):
+            pass
+        def paintGL(self):
+            pass
+        def updateGL(self):
+            pass
+        def resizeGL(self):
+            pass
+    QGLFormat = None
+from galry import get_cursor, FpsCounter, show_window, PaintManager, \
+    InteractionManager, BindingManager, \
+    UserActionGenerator, PlotBindings, Bindings, FpsCounter, \
+    show_window 
 
 __all__ = [
 'GalryWidget',
@@ -45,9 +54,9 @@ DISPLAY_FPS = DEBUG == True
 
 # Default manager classes.
 DEFAULT_MANAGERS = dict(
-    paint_manager=paintmanager.PaintManager,
-    binding_manager=bindingmanager.BindingManager,
-    interaction_manager=interactionmanager.InteractionManager,
+    paint_manager=PaintManager,
+    binding_manager=BindingManager,
+    interaction_manager=InteractionManager,
 )
 
 
@@ -62,36 +71,49 @@ class GalryWidget(QGLWidget):
     BindingManager, InteractionManager).
     
     """
-    # background color as a 4-tuple (R,G,B,A)
-    bgcolor = (0, 0, 0, 0)
-    autosave = None
     
-    # default window size
-    width, height = 600, 600
-    
-    # FPS counter, used for debugging
-    fps_counter = FpsCounter()
-    display_fps = DISPLAY_FPS
-
-    # widget creation parameters
-    bindings = None
-    companion_classes_initialized = False
-    
-    # constrain width/height ratio when resizing of zooming
-    constrain_ratio = False
-    constrain_navigation = False
+    width = 600.
+    height = 600.
     
     # Initialization methods
     # ----------------------
     def __init__(self, format=None, autosave=None, getfocus=True, **kwargs):
         """Constructor. Call `initialize` and initialize the companion classes
         as well."""
-        super(GalryWidget, self).__init__(format)
+        if format is not None:
+            super(GalryWidget, self).__init__(format)
+        else:
+            super(GalryWidget, self).__init__()
         
         self.initialized = False
+        self.just_initialized = False
+        
+        
+        # background color as a 4-tuple (R,G,B,A)
+        self.bgcolor = (0, 0, 0, 0)
+        self.autosave = None
+        
+        # default window size
+        # self.width, self.height = 600, 600
+        
+        # FPS counter, used for debugging
+        self.fps_counter = FpsCounter()
+        self.display_fps = DISPLAY_FPS
+        self.activate3D = None
+
+        # widget creation parameters
+        self.bindings = None
+        self.companion_classes_initialized = False
+        
+        # constrain width/height ratio when resizing of zooming
+        self.constrain_ratio = False
+        self.constrain_navigation = False
+        self.activate_help = True
+        self.activate_grid = False
+        
         
         # Load the QT curors here, after QT has been initialized.
-        cursors.load()
+        # cursors.load()
         
         # Capture keyboard events.
         if getfocus:
@@ -106,11 +128,11 @@ class GalryWidget(QGLWidget):
         self.is_fullscreen = False
         
         self.events_to_signals = {}
-        self.prev_event = None
+        # self.prev_event = None
                                     
         # keyword arguments without "_manager" => passed to initialize                  
         self.initialize(**kwargs)
-
+        
         # initialize companion classes if it has not been done in initialize
         if not self.companion_classes_initialized:
             self.initialize_companion_classes()
@@ -118,9 +140,10 @@ class GalryWidget(QGLWidget):
         
         # update rendering options
         self.paint_manager.set_rendering_options(
+                        activate3D=self.activate3D,
                         constrain_ratio=self.constrain_ratio,
                         )
-        self.interaction_manager.constrain_navigation = self.constrain_navigation
+        # self.interaction_manager.constrain_navigation = self.constrain_navigation
         
         self.autosave = autosave
         
@@ -132,17 +155,17 @@ class GalryWidget(QGLWidget):
         
         Arguments:
           * bindings: a list of classes instances deriving from
-            BindingSet.
+            Bindings.
             
         """
         bindings = list(bindings)
         if not bindings:
-            bindings = [bindingmanager.DefaultBindingSet()]
+            bindings = [PlotBindings()]
         # if type(bindings) is not list and type(bindings) is not tuple:
             # bindings = [bindings]
         # if binding is a class, try instanciating it
         for i in xrange(len(bindings)):
-            if not isinstance(bindings[i], bindingmanager.BindingSet):
+            if not isinstance(bindings[i], Bindings):
                 bindings[i] = bindings[i]()
         self.bindings = bindings
         
@@ -172,9 +195,6 @@ class GalryWidget(QGLWidget):
             self.set_bindings()
         self.binding_manager.add(*self.bindings)
         
-        # set base cursor: the current binding is the first one
-        self.interaction_manager.base_cursor = self.bindings[0].base_cursor
-        
     def initialize_companion_classes(self):
         """Initialize companion classes."""
         # default companion classes
@@ -190,6 +210,7 @@ class GalryWidget(QGLWidget):
         # link all managers
         for key, val in self.companion_classes.iteritems():
             for child_key, child_val in self.companion_classes.iteritems():
+                # no self-reference
                 if child_key == key:
                     continue
                 obj = getattr(self, key)
@@ -231,6 +252,7 @@ class GalryWidget(QGLWidget):
         """Initialize OpenGL parameters."""
         self.paint_manager.initializeGL()
         self.initialized = True
+        self.just_initialized = True
         
     def paintGL(self):
         """Paint the scene.
@@ -241,17 +263,19 @@ class GalryWidget(QGLWidget):
         This method calls the `paint_all` method of the PaintManager.
         
         """
+        if self.just_initialized:
+            self.process_interaction('Initialize', do_update=False)
         # paint fps
         if self.display_fps:
             self.paint_fps()
         # paint everything
         self.paint_manager.paintGL()
-        # flush GL commands
-        gl.glFlush()
         # compute FPS
         self.fps_counter.tick()
         if self.autosave:
             self.save_image(self.autosave)
+            
+        self.just_initialized = False
         
     def paint_fps(self):
         """Display the FPS on the top-left of the screen."""
@@ -286,6 +310,11 @@ class GalryWidget(QGLWidget):
     def keyPressEvent(self, e):
         self.user_action_generator.keyPressEvent(e)
         self.process_interaction()
+        # Close the application when pressing Q
+        if e.key() == QtCore.Qt.Key_Q:
+            if hasattr(self, 'window'):
+                self.close_widget()
+        
         
     def keyReleaseEvent(self, e):
         self.user_action_generator.keyReleaseEvent(e)
@@ -300,7 +329,7 @@ class GalryWidget(QGLWidget):
     def normalize_position(self, x, y):
         """Window coordinates ==> world coordinates."""
         if not hasattr(self.paint_manager, 'renderer'):
-            return None
+            return (0, 0)
         vx, vy = self.paint_manager.renderer.viewport
         x = -vx + 2 * vx * x / float(self.width)
         y = -(-vy + 2 * vy * y / float(self.height))
@@ -311,7 +340,7 @@ class GalryWidget(QGLWidget):
         points.
         """
         if not hasattr(self.paint_manager, 'renderer'):
-            return None
+            return (0, 0)
         vx, vy = self.paint_manager.renderer.viewport
         x = 2 * vx * x/float(self.width)
         y = -2 * vy * y/float(self.height)
@@ -355,9 +384,6 @@ class GalryWidget(QGLWidget):
             self.connect_event_to_signal(arg1, arg2)
         elif type(arg2) == int or type(arg2) == str:
             self.connect_signal_to_event(arg1, arg2)
-        # else:
-            # raise TypeError("One of the arguments must be an InteractionEvents \
-               # enum value")
     
     def connect_signal_to_event(self, signal, event):
         """Connect a QT signal to an interaction event.
@@ -388,34 +414,37 @@ class GalryWidget(QGLWidget):
         self.events_to_signals[event] = signal
         
         
-    # Interaction methods
-    # -------------------
+    # Binding mode methods
+    # --------------------
     def switch_interaction_mode(self):
         """Switch the interaction mode."""
         binding = self.binding_manager.switch()
         # set base cursor
-        self.interaction_manager.base_cursor = binding.base_cursor
+        # self.interaction_manager.base_cursor = binding.base_cursor
         return binding
     
     def set_interaction_mode(self, mode):
         """Set the interaction mode.
         
         Arguments:
-          * mode: either a class deriving from `BindingSet` and which has been
-            specified in `set_bindings`, or directly a `BindingSet` instance.
+          * mode: either a class deriving from `Bindings` and which has been
+            specified in `set_bindings`, or directly a `Bindings` instance.
         
         """
         binding = self.binding_manager.set(mode)
         # set base cursor
-        self.interaction_manager.base_cursor = binding.base_cursor
+        # self.interaction_manager.base_cursor = binding.base_cursor
         return binding
         
+        
+    # Interaction methods
+    # -------------------
     def get_current_action(self):
         """Return the current user action with the action parameters."""
         # get current action
         action = self.user_action_generator.action
         
-        # get current key if the action was KeyPressAction
+        # get current key if the action was KeyPress
         key = self.user_action_generator.key
         
         # get key modifier
@@ -424,7 +453,6 @@ class GalryWidget(QGLWidget):
         # retrieve action parameters and normalize using the window size
         parameters = self.normalize_action_parameters(
                         self.user_action_generator.get_action_parameters())
-            
         return action, key, key_modifier, parameters
         
     def get_current_event(self):
@@ -441,14 +469,22 @@ class GalryWidget(QGLWidget):
                                                   key_modifier=key_modifier)
         
         # get the parameter object by calling the param getter
-        if param_getter is not None:
+        if param_getter is not None and parameters is not None:
             args = param_getter(parameters)
         else:
             args = None
             
         return event, args
         
-    def process_interaction(self, event=None, args=None):
+    def set_current_cursor(self):
+        cursor = self.interaction_manager.get_cursor()
+        # if no cursor set, then use the default one in the current binding
+        # mode
+        if cursor is None:
+            cursor = self.binding_manager.get().get_base_cursor()
+        self.setCursor(get_cursor(cursor))
+        
+    def process_interaction(self, event=None, args=None, do_update=None):
         """Process user interaction.
         
         This method is called after each user action (mouse, keyboard...).
@@ -466,8 +502,10 @@ class GalryWidget(QGLWidget):
             # get current event from current user action
             event, args = self.get_current_event()
         
+        prev_event = self.interaction_manager.prev_event
+        
         # handle interaction mode change
-        if event == 'SwitchInteractionModeEvent':
+        if event == 'SwitchInteractionMode':
             binding = self.switch_interaction_mode()
             log_info("Switching interaction mode to %s." % \
                 binding.__class__.__name__)
@@ -480,19 +518,21 @@ class GalryWidget(QGLWidget):
             self.events_to_signals[event].emit(*args)
         
         # set cursor
-        self.setCursor(self.interaction_manager.get_cursor())
+        self.set_current_cursor()
         
         # clean current action (unique usage)
         self.user_action_generator.clean_action()
         
         # update the OpenGL view
-        if not isinstance(self, GalryTimerWidget) and (event is not None or self.prev_event is not None):
+        if do_update is None:
+            do_update = (
+                # (not isinstance(self, GalryTimerWidget)) and
+                (event is not None or prev_event is not None))
+                
+        if do_update:
             self.updateGL()
+
             
-        # keep track of the previous event
-        self.prev_event = event
-    
-    
     # Miscellaneous
     # -------------
     def save_image(self, file=None):
@@ -510,15 +550,19 @@ class GalryWidget(QGLWidget):
         else:
             if hasattr(self.window, 'showNormal'):
                 self.window.showNormal()
+                
+    def close_widget(self):
+        if hasattr(self, 'window'):
+            if hasattr(self.window, 'close'):
+                self.window.close()
     
     
     # Focus methods
     # -------------
     def focusOutEvent(self, event):
         self.user_action_generator.focusOutEvent(event)
-    
-    
-        
+
+
 class GalryTimerWidget(GalryWidget):
     timer = None
     
@@ -551,10 +595,7 @@ class GalryTimerWidget(GalryWidget):
         
         """
         self.t = timeit.default_timer() - self.t0
-        if hasattr(self.paint_manager, 'update_callback'):
-            self.paint_manager.t = self.t
-            self.paint_manager.update_callback()
-            self.updateGL()
+        self.process_interaction('Animate', (self.t,))
         
     def start_timer(self):
         """Start the timer."""
@@ -585,8 +626,11 @@ def create_custom_widget(bindings=None,
                          antialiasing=False,
                          constrain_ratio=False,
                          constrain_navigation=False,
+                         activate_help=True,
+                         activate_grid=False,
                          display_fps=False,
-                         update_interval=None,
+                         activate3D=False,
+                         animation_interval=None,
                          autosave=None,
                          getfocus=True,
                         **companion_classes):
@@ -601,14 +645,14 @@ def create_custom_widget(bindings=None,
         than [-1,1]^2 by default (but it can be customized in 
         interactionmanager.MAX_VIEWBOX).
       * display_fps=False: whether to display the FPS.
-      * update_interval=None: if not None, a special widget with automatic
+      * animation_interval=None: if not None, a special widget with automatic
         timer update is created. This variable then refers to the time interval
         between two successive updates (in seconds).
       * **companion_classes: keyword arguments with the companion classes.
     
     """
-    # use the GalryTimerWidget if update_interval is not None
-    if update_interval is not None:
+    # use the GalryTimerWidget if animation_interval is not None
+    if animation_interval is not None:
         baseclass = GalryTimerWidget
     else:
         baseclass = GalryWidget
@@ -623,9 +667,13 @@ def create_custom_widget(bindings=None,
         """Automatically-created Galry widget."""
         def __init__(self):
             # antialiasing
-            format = QGLFormat()
+            if QGLFormat is not None:
+                format = QGLFormat()
+            else:
+                format = None
             if antialiasing:
-                format.setSampleBuffers(True)
+                if hasattr(format, 'setSampleBuffers'):
+                    format.setSampleBuffers(True)
             super(MyWidget, self).__init__(format=format, autosave=autosave,
                 getfocus=getfocus)
         
@@ -634,10 +682,13 @@ def create_custom_widget(bindings=None,
             self.set_companion_classes(**companion_classes)
             self.constrain_ratio = constrain_ratio
             self.constrain_navigation = constrain_navigation
+            self.activate_help = activate_help
+            self.activate_grid = activate_grid
+            self.activate3D = activate3D
             self.display_fps = display_fps
             self.initialize_companion_classes()
-            if update_interval is not None:
-                self.initialize_timer(dt=update_interval)
+            if animation_interval is not None:
+                self.initialize_timer(dt=animation_interval)
 
     return MyWidget
     
@@ -737,6 +788,7 @@ def create_basic_window(widget=None, size=None, position=(100, 100),
         def closeEvent(self, e):
             """Clean up memory upon closing."""
             self.widget.paint_manager.cleanup()
+            super(BasicWindow, self).closeEvent(e)
             
     return BasicWindow
     

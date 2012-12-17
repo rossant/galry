@@ -1,9 +1,8 @@
 import numpy as np
-from tools import log_debug, log_info, log_warn
-from glrenderer import GLRenderer
-from manager import Manager
-from visuals import TextVisual, RectanglesVisual
-from scene import SceneCreator, serialize
+import OpenGL.GL as gl
+from galry import log_debug, log_info, log_warn, get_color, GLRenderer, \
+    Manager, TextVisual, RectanglesVisual, SceneCreator, serialize, \
+    GridVisual
 
 __all__ = ['PaintManager']
 
@@ -36,20 +35,14 @@ class PaintManager(Manager):
     def initialize(self):
         """Define the scene. To be overriden."""
         
-    def initialize_default(self):
-        """Default visuals (FPS and navigation rectangle)."""
+    def initialize_default(self, **kwargs):
+        # FPS
         if self.parent.display_fps:
             self.add_visual(TextVisual, text='FPS: 000', name='fps',
                             fontsize=18,
                             coordinates=(-.80, .92),
                             visible=False,
                             is_static=True)
-                        
-        self.add_visual(RectanglesVisual, coordinates=(0.,) * 4,
-                        color=self.navigation_rectangle_color, 
-                        is_static=True,
-                        name='navigation_rectangle',
-                        visible=False)
         
         
     # Visual methods
@@ -180,12 +173,9 @@ class PaintManager(Manager):
           * **kwargs: keyword arguments as `visual_field_name: value` pairs.
         
         """
-        
         # default name
         if visual is None:
             visual = 'visual0'
-            
-            
         # if this method is called in initialize (the renderer is then not
         # defined) we save the data to be updated later
         # print hasattr(self, 'renderer'), kwargs
@@ -197,24 +187,6 @@ class PaintManager(Manager):
             if visual in self.data_updating:
                 self.data_updating[visual] = {}
             
-            
-    # Methods related to visuals
-    # --------------------------
-    def transform_view(self):
-        """Change uniform variables to implement interactive navigation."""
-        # TODO: modularize this
-        tx, ty = self.interaction_manager.get_translation()
-        sx, sy = self.interaction_manager.get_scaling()
-        # scale = (np.float32(sx), np.float32(sy))
-        scale = (sx, sy)
-        # translation = (np.float32(tx), np.float32(ty))
-        translation = (tx, ty)
-        # update all non static visuals
-        for visual in self.get_visuals():
-            if not visual.get('is_static', False):
-                self.set_data(visual=visual['name'], 
-                              scale=scale, translation=translation)
-    
     def update_fps(self, fps):
         """Update the FPS in the corresponding text visual."""
         self.set_data(visual='fps', text="FPS: %03d" % fps, visible=True)
@@ -235,11 +207,13 @@ class PaintManager(Manager):
             self.set_data(visual=visual, **kwargs)
  
     def paintGL(self):
-        self.transform_view()
-        self.renderer.paint()
+        if hasattr(self, 'renderer'):
+            self.renderer.paint()
+        gl.glFlush()
  
     def resizeGL(self, width, height):
-        self.renderer.resize(width, height)
+        if hasattr(self, 'renderer'):
+            self.renderer.resize(width, height)
         
     def updateGL(self):
         """Call updateGL in the parent widget."""
@@ -250,7 +224,8 @@ class PaintManager(Manager):
     # ---------------
     def cleanup(self):
         """Cleanup all visuals."""
-        self.renderer.cleanup()
+        if hasattr(self, 'renderer'):
+            self.renderer.cleanup()
         
         
     # Methods to be overriden
