@@ -2,6 +2,7 @@
 from __future__ import print_function
 import os
 from galry import *
+from numpy import *
 try:
     from PIL import Image
 except Exception as e:
@@ -20,7 +21,7 @@ figure(constrain_ratio=True, constrain_navigation=False,)
 
 # download the image and convert it into a Numpy array
 url = "http://earthobservatory.nasa.gov/blogs/elegantfigures/files/2011/10/globe_west_2048.jpg"
-image = np.array(load_image(url))
+image = array(load_image(url))
 
 # display the image
 imshow(image, filter=True)

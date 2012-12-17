@@ -151,5 +151,5 @@ event('Initialize', new_game)
 
 animate(update, dt=DT)
 
-print "Left player: Z/S keys\nRight player: Up/Down arrows\nF for fullscreen"
+print "Left player: W/S keys\nRight player: Up/Down arrows\nF for fullscreen"
 show()

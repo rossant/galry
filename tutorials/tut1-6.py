@@ -6,6 +6,7 @@ In this tutorial we show how to plot efficiently several bar plots.
 
 from galry import *
 from numpy import *
+from numpy.random import *
 
 # We generate 10 random bar plots of 100 values in each.
 values = rand(10, 100)
