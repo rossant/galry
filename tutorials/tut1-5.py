@@ -5,6 +5,7 @@ In this tutorial we show how to plot graphs.
 """
 
 from galry import *
+from numpy import *
 
 # We use networkx because it provides convenient functions to create and
 # manipulate graphs, but this library is not required by Galry.

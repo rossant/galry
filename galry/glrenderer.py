@@ -17,6 +17,9 @@ from galry import enforce_dtype, DataNormalizer, log_info, log_debug, \
     log_warn, RefVar
 
     
+__all__ = ['GLVersion', 'GLRenderer']
+    
+    
 # GLVersion class
 # ---------------
 class GLVersion(object):

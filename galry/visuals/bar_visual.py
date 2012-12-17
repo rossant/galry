@@ -1,6 +1,8 @@
 from plot_visual import PlotVisual
 import numpy as np
 
+__all__ = ['BarVisual']
+
 def get_histogram_points(hist):
     """Tesselates histograms.
     

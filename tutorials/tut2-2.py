@@ -5,8 +5,8 @@ by animating a texture at regular intervals.
 
 """
 
-import numpy as np
 from galry import *
+from numpy import *
 
 # Grid size.
 size = 64
@@ -17,7 +17,7 @@ def iterate(Z):
     """Perform an iteration of the system."""
     # code from http://dana.loria.fr/doc/numpy-to-dana.html
     # find number of neighbours that each square has
-    N = np.zeros(Z.shape)
+    N = zeros(Z.shape)
     N[1:, 1:] += Z[:-1, :-1]
     N[1:, :-1] += Z[:-1, 1:]
     N[:-1, 1:] += Z[1:, :-1]
@@ -52,8 +52,8 @@ figure(constrain_ratio=True, constrain_navigation=True,)
 
 # We create the initial matrix with random values, and we only update the 
 # red channel.
-mat = np.zeros((size, size, 3))
-mat[:,:,0] = np.random.rand(size,size) < .2
+mat = zeros((size, size, 3))
+mat[:,:,0] = random.rand(size,size) < .2
 
 # We show the image.
 imshow(mat, name='image')

@@ -4,6 +4,8 @@ from galry import log_debug, log_info, log_warn
 from fontmaps import load_font
 from visual import Visual
 
+__all__ = ['TextVisual']
+
 VS = """
 gl_Position.x += (offset - text_width / 2) * spacing.x / window_size.x;
 gl_Position.y -= index * spacing.y / window_size.y;

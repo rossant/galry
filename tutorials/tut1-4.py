@@ -6,6 +6,8 @@ In this tutorial, we show how to plot images.
 
 import os
 from galry import *
+from numpy import *
+from matplotlib.pyplot import imread
 
 # Specify that we want to constrain the ratio of the figure while navigating,
 # since we'll show an image.

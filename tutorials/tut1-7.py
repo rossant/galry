@@ -8,6 +8,7 @@ http://code.google.com/p/glumpy/
 """
 
 from galry import *
+from numpy import *
 
 # load a 3D mesh from a OBJ file
 vertices, normals, faces = load_mesh("images/mesh.obj")

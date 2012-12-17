@@ -1,11 +1,9 @@
-"""Galry: high-performance interactive visualization package in Python"""
-
-from numpy import *
+"""Galry: high-performance interactive visualization package in Python."""
 
 from debugtools import *
 
 # import PyQT or Pyside
-from python_qt_binding import QtCore, QtDeclarative, QtGui#, QtOpenGL
+from python_qt_binding import QtCore, QtDeclarative, QtGui
     
 from colors import *
 from manager import *
@@ -26,4 +24,6 @@ from galrywidget import *
 from pyplot import *
 from test import *
 
-from matplotlib.pyplot import imread
+# from matplotlib.pyplot import imread
+
+__version__ = '0.1.0.dev'

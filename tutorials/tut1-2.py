@@ -5,6 +5,7 @@ In this tutorial, we show how to plot several curves efficiently.
 """
 
 from galry import *
+from numpy import *
 
 # We'll plot 10 curves with 10,000 points in each.
 m = 10

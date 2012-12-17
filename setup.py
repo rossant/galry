@@ -10,33 +10,29 @@ if __name__ == '__main__':
 
     setup(
         name='galry',
-        version='0.1.0.dev',
+        version='0.1.0.dev',  # alpha pre-release
         author='Cyrille Rossant',
         author_email='rossant@github',
         packages=['galry',
+                  'galry.managers',
+                  'galry.processors',
                   'galry.python_qt_binding',
-                  'galry.visuals',
-                  'galry.plot',
                   'galry.test',
+                  'galry.visuals',
                   'galry.visuals.fontmaps',
-                  # 'galry.icons',
-                  # 'galry.cursors',
                   ],
-                  # cursors, icons, visuals.fontmaps, test.autosave
         package_data={
             'galry': ['cursors/*.png', 'icons/*.png'],
             'galry.visuals': ['fontmaps/*.*'],
-            'galry.test': ['autosave/*ref.png', 'autosave/*REF.png'],
+            'galry.test': ['autosave/*REF.png'],
         },
         # scripts=[''],
         url='https://github.com/rossant/galry',
         license='LICENSE.md',
-        description='High-performance interactive visualization.',
+        description='High-performance interactive visualization in Python.',
         long_description=LONG_DESCRIPTION,
         install_requires=[
             "numpy >= 1.6",
             "PyOpenGL >= 3.0",
-            # "numpy >= 1.6",
-            # "numpy >= 1.6",
         ],
     )

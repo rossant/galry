@@ -1,6 +1,10 @@
-"""Raster plot example."""
-import numpy as np
+"""Tutorial 1.3: Rasterplot.
+
+In this tutorial, we show how to plot a raster plot using point sprites.
+"""
+
 from galry import *
+from numpy import *
 
 # Total number of spikes.
 spikecount = 20000
@@ -9,13 +13,13 @@ spikecount = 20000
 n = 100
 
 # Random neuron index for each spike.
-neurons = np.random.randint(low=0, high=n, size=spikecount)
+neurons = random.randint(low=0, high=n, size=spikecount)
 
 # One Poisson spike train with all spikes.
-spiketimes = np.cumsum(np.random.exponential(scale=.01, size=spikecount))
+spiketimes = cumsum(random.exponential(scale=.01, size=spikecount))
 
 # Neurons colors.
-colors = np.random.rand(n, 3)
+colors = random.rand(n, 3)
 
 # New figure.
 figure(constrain_navigation=True)

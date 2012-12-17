@@ -6,6 +6,7 @@ of the interaction system.
 """
 
 from galry import *
+from numpy import *
 
 # This function takes x, y coordinates of the mouse and return a text.
 def get_text(*pos):

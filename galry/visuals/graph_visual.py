@@ -3,6 +3,8 @@ from sprite_visual import SpriteVisual
 from plot_visual import PlotVisual
 import numpy as np
 
+__all__ = ['GraphVisual']
+
 def get_tex(n):
     """Create a texture for the nodes. It may be simpler to just use an image!
     
