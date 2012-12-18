@@ -1,6 +1,27 @@
 Galry: high-performance interactive visualization in Python
 ===========================================================
 
+Before pre-release 0.1
+----------------------
+
+  * improve computation of slice bounds which is largely sub-optimal for now
+  * grid: integrate data normalization
+  * include ony shader snippets in the scene, and include shader creation
+    in the renderers
+  * check gl capabilities (eg mipmapping)
+  * support for wx?
+    QT dependencies:
+      * bindingmanager.py (convert from key string to 
+        QT enum)
+      * cursors.py (cursors from pixmap)
+      * icons.py
+      * galrywidget.py (QGLWidget)
+    TODO:
+      * abstract code related to icons/cursors
+      * abstract code related to keyboard enum values      
+      * abstract code related to the widget class
+  
+
 Refactoring
 -----------
 
@@ -11,19 +32,9 @@ Refactoring
   * rename "bindings" to "mode"
   * in interaction manager, better way to transform into transformed coordinates
     and data coordinates
-  * include ony shader snippets in the scene, and include shader creation
-    in the renderers
-  * check gl capabilities (eg mipmapping)
   * better way of switching pyside/pyqt
   * remove compound variables, replace by methods in visual which take
     arguments as inputs and call set_data. the variables are then recorded
-
-
-Features
---------
-
-  * grid: integrate data normalization
-  * adding new visuals dynamically
 
 
 Automation
@@ -47,18 +58,19 @@ Fixes
 Tested
 ------
 
-  * Windows 8 64 bits, AMD GPU                  OK w PyQt4
-  * Windows 7 64 bits, nvidia GPU               OK with #version0
-  * Windows 7 64 bits, Intel HD 4000            OK    
-  * Ubuntu 12.04 in VM, AMD GPU                 OK
-  * Ubuntu 12.10 Nvidia Quadro GPU              OK
-  * Ubuntu 12.10 64 bits Nvidia GPU             OK
-  * MacOSX 64 bits with Nvidia                  OK
+  * Windows 8 64 bits, AMD GPU
+  * Windows 7 64 bits, nvidia GPU
+  * Windows 7 64 bits, Intel HD 4000
+  * Ubuntu 12.04 in VM, AMD GPU
+  * Ubuntu 12.10 Nvidia Quadro GPU
+  * Ubuntu 12.10 64 bits Nvidia GPU
+  * MacOSX 64 bits with Nvidia
 
 
 Later
 -----
 
+  * adding new visuals dynamically
   * tutorials parts 2 and 3
   * HDF5 viewer for long signals: use stride to implement a dynamic 
     multi-resolution undersampling method.

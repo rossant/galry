@@ -1,4 +1,4 @@
-from galry import NavigationEventProcessor, InteractionManager, QtCore, \
+from galry import NavigationEventProcessor, InteractionManager, \
     PaintManager, \
     GridEventProcessor, scale_matrix, rotation_matrix, translation_matrix, \
     MeshNavigationEventProcessor
