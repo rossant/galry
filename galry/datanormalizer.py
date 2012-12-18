@@ -7,7 +7,7 @@ class DataNormalizer(object):
     def __init__(self, data):
         self.data = data
     
-    def normalize(self, initial_viewbox=None):
+    def normalize(self, initial_viewbox=None, symmetric=False):
         """Normalize data given the initial view box.
         
         This function also defines the four following methods:
@@ -50,7 +50,13 @@ class DataNormalizer(object):
         if dy0 == dy1:
             dy0 -= .5
             dy1 += .5
-            
+        
+        # force a symmetric viewbox
+        if symmetric:
+            vx = max(np.abs(dx0), np.abs(dx1))
+            vy = max(np.abs(dy0), np.abs(dy1))
+            dx0, dx1 = -vx, vx
+            dy0, dy1 = -vy, vy
             
             
         if dx0 is None:
