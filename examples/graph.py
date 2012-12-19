@@ -82,11 +82,7 @@ def end_moved(figure, parameter):
     
         
             
-f = figure(antialiasing=True, constrain_navigation=False,
-        display_fps=True,)
-
-
-
+f = figure(antialiasing=True)
 
 
 n = 100

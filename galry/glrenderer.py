@@ -443,7 +443,7 @@ class Slicer(object):
         return [(i*maxsize, min(maxsize+1, size-i*maxsize)) for i in xrange(nslices)]
 
     @staticmethod
-    def _slice_bounds(bounds, position, slice_size):
+    def _slice_bounds(bounds, position, slice_size, regular=False):
         """Slice data bounds in a *single* slice according to the VBOs slicing.
         
         Arguments:
@@ -455,9 +455,6 @@ class Slicer(object):
           * bounds_sliced: the bounds for the current slice. It is a list an
             1D array of integer indices.
         
-        TODO: update and make it vectorized? (currently it is called once per
-        slice)
-        
         """
         # first bound index after the sliced VBO: nothing to paint
         if bounds[0] >= position + slice_size:
@@ -467,10 +464,32 @@ class Slicer(object):
             bounds_sliced = None
         # the current sliced VBO intersects the bounds: something to paint
         else:
+            
             bounds_sliced = bounds
-            # get the bounds that fall within the sliced VBO
-            ind = (bounds_sliced>=position) & (bounds_sliced<position + slice_size)
-            bounds_sliced = bounds_sliced[ind]
+            
+            if not regular:
+                # get the bounds that fall within the sliced VBO
+                ind = (bounds_sliced>=position) & (bounds_sliced<position + slice_size)
+                bounds_sliced = bounds_sliced[ind]
+            # HACK: more efficient algorithm when the bounds are regularly
+            # spaced
+            else:
+                d = float(regular)
+                p = position
+                b0 = bounds_sliced[0]
+                b1 = bounds_sliced[-1]
+                s = slice_size
+                i0 = max(0, int(np.ceil((p-b0)/d)))
+                i1 = max(0, int(np.floor((p+s-b0)/d)))
+                bounds_sliced = bounds_sliced[i0:i1+1].copy()
+                ind = ((b0 >= p) and (b0 < p+s), (b1 >= p) and (b1 < p+s))
+                """
+                bounds_sliced = [b0 + d*i]
+                (p-b0)/d <= i0 < (p+s-b0)/d
+                i0 = ceil((p-b0)/d), i1 = floor((p+s-b0)/d)
+                ind = (bs[0] >= p & < p+s, bs[-1])
+                """
+            
             # remove the onset (first index of the sliced VBO)
             bounds_sliced -= position
             # handle the case when the slice cuts between two bounds
@@ -505,7 +524,17 @@ class Slicer(object):
         if bounds is None:
             bounds = np.array([0, self.size], dtype=np.int32)
         self.bounds = bounds
-        self.subdata_bounds = [self._slice_bounds(self.bounds, pos, size) \
+        
+        # is regular?
+        d = np.diff(bounds)
+        r = False
+        if len(d) > 0:
+            dm, dM = d.min(), d.max()
+            if dm == dM:
+                r = dm
+                # log_info("Regular bounds")
+        
+        self.subdata_bounds = [self._slice_bounds(self.bounds, pos, size, r) \
             for pos, size in self.slices]
        
        
