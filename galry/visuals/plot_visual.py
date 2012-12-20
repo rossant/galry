@@ -13,9 +13,9 @@ def process_coordinates(x=None, y=None):
         y = x
         x = np.tile(np.arange(nsamples).reshape((1, -1)), (nplots, 1))
         
-    # remove single-dimensional dimensions
-    x = np.array(x, dtype=np.float32).squeeze()
-    y = np.array(y, dtype=np.float32).squeeze()
+    # convert into arrays
+    x = np.array(x, dtype=np.float32)#.squeeze()
+    y = np.array(y, dtype=np.float32)#.squeeze()
     
     # x and y should have the same shape
     assert x.shape == y.shape
@@ -165,15 +165,8 @@ class PlotVisual(Visual):
             out_color = color;
             """ % (offset, dx))
 
-        
         # add point size uniform (when it's not specified, there might be some
         # bugs where its value is obtained from other datasets...)
         self.add_uniform("point_size", data=point_size)
         self.add_vertex_main("""gl_PointSize = point_size;""")
         
-        # self.add_vertex_main("""
-            # gl_Position.z = %.4f;
-            # gl_PointSize = point_size;""" % (depth),
-            # after='navigation')
-            
-        # print self.bounds

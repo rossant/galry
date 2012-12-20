@@ -54,10 +54,9 @@ def get_marker_texture(marker, size=None):
         x = np.linspace(-1., 1., size)
         X, Y = np.meshgrid(x, x)
         R = X ** 2 + Y ** 2
-        R = np.minimum(1, 3 * np.exp(-3*R))
+        R = np.minimum(1, 20 * np.exp(-8*R))
         # disc-shaped alpha channel
         texture[:,:,-1] = R
-        
     
     return texture
 
@@ -227,7 +226,12 @@ class Figure(object):
         if marker is not None:
             cls = vs.SpriteVisual
             texsize = kwargs.pop('marker_size', kwargs.pop('ms', None))
-            kwargs['texture'] = get_marker_texture(marker, texsize)
+            # marker string
+            if isinstance(marker, basestring): 
+                kwargs['texture'] = get_marker_texture(marker, texsize)
+            # or custom texture marker
+            else:
+                kwargs['texture'] = marker
             kwargs.pop('options', None)
             # process marker color in options
             if 'color' not in kwargs and len(opt) == 2:

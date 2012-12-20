@@ -4,11 +4,16 @@ Galry: high-performance interactive visualization in Python
 Before pre-release 0.1
 ----------------------
 
-  * improve computation of slice bounds which is largely sub-optimal for now
+  * better handling of coordinates in high level callback
+        window, view, data
   * grid: integrate data normalization
   * include ony shader snippets in the scene, and include shader creation
     in the renderers
   * check gl capabilities (eg mipmapping)
+
+After pre-release
+-----------------
+
   * support for wx?
     QT dependencies:
       * bindingmanager.py (convert from key string to 
