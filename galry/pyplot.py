@@ -18,14 +18,14 @@ __all__ = ['figure', 'Figure', 'get_current_figure',
 def get_marker_texture(marker, size=None):
     """Create a marker texture."""
     if size is None:
-        size = 10.
+        size = 1.
     
     if np.mod(size, 2) == 0:
         size += 1
         
     if marker == '.':
         marker = ','
-        size = 5.
+        size = 2.
     if size is None:
         size = 5.
     

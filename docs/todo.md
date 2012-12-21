@@ -75,6 +75,8 @@ Tested
 Later
 -----
 
+  * investigate the possibility of a MPL backend using galry: check out
+    MPLGL by Chris Beaumont
   * adding new visuals dynamically
   * tutorials parts 2 and 3
   * HDF5 viewer for long signals: use stride to implement a dynamic 
