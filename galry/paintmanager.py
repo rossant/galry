@@ -214,6 +214,7 @@ class PaintManager(Manager):
     def resizeGL(self, width, height):
         if hasattr(self, 'renderer'):
             self.renderer.resize(width, height)
+        gl.glFlush()
         
     def updateGL(self):
         """Call updateGL in the parent widget."""

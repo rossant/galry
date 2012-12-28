@@ -1237,7 +1237,7 @@ class GLVisualRenderer(object):
         
     def cleanup(self):
         """Clean up all variables."""
-        log_info("Cleaning up all variables.")
+        log_debug("Cleaning up all variables.")
         for variable in self.get_variables():
             shader_type = variable['shader_type']
             if shader_type in ('attribute', 'texture'):

@@ -7,25 +7,15 @@ Before pre-release 0.1
   * better handling of coordinates in high level callback
         window, view, data
   * grid: integrate data normalization
+  
   * include ony shader snippets in the scene, and include shader creation
     in the renderers
   * check gl capabilities (eg mipmapping)
 
 After pre-release
 -----------------
-
-  * support for wx?
-    QT dependencies:
-      * bindingmanager.py (convert from key string to 
-        QT enum)
-      * cursors.py (cursors from pixmap)
-      * icons.py
-      * galrywidget.py (QGLWidget)
-    TODO:
-      * abstract code related to icons/cursors
-      * abstract code related to keyboard enum values      
-      * abstract code related to the widget class
   
+  * 
 
 Refactoring
 -----------
@@ -90,6 +80,17 @@ Later
   * handle more complete data type (int 8/16/32 bits, floats, etc)  
   * several plots (like subplot) with different widgets, linking possible
   * colormaps
+  * support for wx?
+    QT dependencies:
+      * bindingmanager.py (convert from key string to 
+        QT enum)
+      * cursors.py (cursors from pixmap)
+      * icons.py
+      * galrywidget.py (QGLWidget)
+    TODO:
+      * abstract code related to icons/cursors
+      * abstract code related to keyboard enum values      
+      * abstract code related to the widget class
   
   
 Doc

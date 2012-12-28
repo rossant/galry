@@ -142,7 +142,7 @@ class Figure(object):
         self.activate_grid = True
         self.activate_help = True
         self.animation_interval = None
-        self.figsize = (GalryWidget.width, GalryWidget.height)
+        self.figsize = (GalryWidget.w, GalryWidget.h)
 
         self.pmclass = mgs.PlotPaintManager
         self.imclass = mgs.PlotInteractionManager
@@ -334,6 +334,7 @@ class Figure(object):
             activate_help=self.activate_help,
             animation_interval=self.animation_interval,
             size=self.figsize,
+            toolbar=True,
             )
         return window
 

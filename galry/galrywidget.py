@@ -1,4 +1,6 @@
 import sys
+import os
+import re
 import time
 import timeit
 import numpy as np
@@ -25,7 +27,7 @@ except Exception as e:
 from galry import get_cursor, FpsCounter, show_window, PaintManager, \
     InteractionManager, BindingManager, \
     UserActionGenerator, PlotBindings, Bindings, FpsCounter, \
-    show_window 
+    show_window, get_icon
 
 __all__ = [
 'GalryWidget',
@@ -72,8 +74,8 @@ class GalryWidget(QGLWidget):
     
     """
     
-    width = 600.
-    height = 600.
+    w = 600.
+    h = 600.
     
     # Initialization methods
     # ----------------------
@@ -236,7 +238,7 @@ class GalryWidget(QGLWidget):
         
         """
         self.initializeGL()
-        self.resizeGL(self.width, self.height)
+        self.resizeGL(self.w, self.h)
         self.updateGL()
         
         
@@ -276,11 +278,11 @@ class GalryWidget(QGLWidget):
         self.paint_manager.update_fps(int(self.fps_counter.get_fps()))
         
     def resizeGL(self, width, height):
-        self.width, self.height = width, height
+        self.w, self.h = width, height
         self.paint_manager.resizeGL(width, height)
         
     def sizeHint(self):
-        return QtCore.QSize(self.width, self.height)
+        return QtCore.QSize(self.w, self.h)
         
         
     # Event methods
@@ -325,8 +327,8 @@ class GalryWidget(QGLWidget):
         if not hasattr(self.paint_manager, 'renderer'):
             return (0, 0)
         vx, vy = self.paint_manager.renderer.viewport
-        x = -vx + 2 * vx * x / float(self.width)
-        y = -(-vy + 2 * vy * y / float(self.height))
+        x = -vx + 2 * vx * x / float(self.w)
+        y = -(-vy + 2 * vy * y / float(self.h))
         return x, y
              
     def normalize_diff_position(self, x, y):
@@ -336,8 +338,8 @@ class GalryWidget(QGLWidget):
         if not hasattr(self.paint_manager, 'renderer'):
             return (0, 0)
         vx, vy = self.paint_manager.renderer.viewport
-        x = 2 * vx * x/float(self.width)
-        y = -2 * vy * y/float(self.height)
+        x = 2 * vx * x/float(self.w)
+        y = -2 * vy * y/float(self.h)
         return x, y
         
     def normalize_action_parameters(self, parameters):
@@ -374,9 +376,9 @@ class GalryWidget(QGLWidget):
           * arg2: an interaction event or a QT bound signal.
         
         """
-        if type(arg1) == int or type(arg1) == str:
+        if type(arg1) == str:
             self.connect_event_to_signal(arg1, arg2)
-        elif type(arg2) == int or type(arg2) == str:
+        elif type(arg2) == str:
             self.connect_signal_to_event(arg1, arg2)
     
     def connect_signal_to_event(self, signal, event):
@@ -734,7 +736,8 @@ class AutodestructibleWindow(QtGui.QMainWindow):
             self.timer.start()
             
 def create_basic_window(widget=None, size=None, position=(100, 100),
-                        autodestruct=None):
+                        autodestruct=None,
+                        toolbar=False):
     """Create a basic QT window with a Galry widget inside.
     
     Arguments:
@@ -772,12 +775,79 @@ def create_basic_window(widget=None, size=None, position=(100, 100),
             widget.window = self
             # create widget
             self.widget = widget
+            if toolbar:
+                self.add_toolbar()
             if size is None:
-                size = self.widget.width, self.widget.height
-            # show widget
-            self.setGeometry(*(position + size))
+                size = self.widget.w, self.widget.h
             self.setCentralWidget(self.widget)
+            self.setWindowTitle("Galry")
+            # self.setGeometry(*(position + size))
+            # ensure the main window size is adjusted so that the widget size
+            # is equal to the specified size
+            self.resize(self.sizeHint())
             self.show()
+            
+        def add_toolbar(self):
+            """Add navigation toolbar"""
+            # reset
+            reset_action = QtGui.QAction("Reset view (R)", self)
+            reset_action.setIcon(get_icon('home'))
+            self.widget.connect_events(reset_action.triggered, 'Reset')
+            
+            # save image
+            save_action = QtGui.QAction("Save image (S)", self)
+            save_action.setIcon(get_icon('save'))
+            save_action.setShortcut("S")
+            save_action.triggered.connect(self.save)
+
+            # show grid
+            grid_action = QtGui.QAction("Show grid (G)", self)
+            grid_action.setIcon(get_icon('grid'))
+            self.widget.connect_events(grid_action.triggered, 'Grid')
+            
+            # help
+            help_action = QtGui.QAction("Show help (H)", self)
+            help_action.setIcon(get_icon('help'))
+            self.widget.connect_events(help_action.triggered, 'Help')
+            
+            # exit
+            exit_action = QtGui.QAction("Exit (Q)", self)
+            exit_action.setIcon(get_icon('exit'))
+            exit_action.triggered.connect(self.close)
+            
+            # add toolbar
+            mytoolbar = QtGui.QToolBar(self.widget)        
+            mytoolbar.setIconSize(QtCore.QSize(32, 32))
+            mytoolbar.addAction(reset_action)
+            mytoolbar.addAction(grid_action)
+            mytoolbar.addAction(save_action)
+            mytoolbar.addAction(help_action)
+            mytoolbar.addAction(exit_action)
+            self.addToolBar(mytoolbar)
+            
+        def save(self, e):
+            """Open a file dialog and save the current image in the specified
+            PNG file."""
+            initial_filename = 'screen'
+            existing = filter(lambda f: f.startswith(initial_filename), os.listdir('.'))
+            i = 0
+            if existing:
+                for f in existing:
+                    r = re.match('screen([0-9]*).png', f)
+                    i = max(i, int(r.groups()[0]))
+                i += 1
+                # if last:
+                    # last = int(last)
+                    # i = last + 1
+            filename, _ = QtGui.QFileDialog.getSaveFileNameAndFilter(self,
+                "Save the current view in a PNG image",
+                initial_filename + str(i) + '.png',
+                '*.png',
+                '*.png',
+                # QtGui.QFileDialog.AnyFile,
+                )
+            if filename:
+                self.widget.save_image(str(filename))
             
         def closeEvent(self, e):
             """Clean up memory upon closing."""
@@ -787,7 +857,7 @@ def create_basic_window(widget=None, size=None, position=(100, 100),
     return BasicWindow
     
 def show_basic_window(widget_class=None, window_class=None, size=None,
-            position=(100, 100), autodestruct=None, **kwargs):
+            position=(100, 100), autodestruct=None, toolbar=False, **kwargs):
     """Create a custom widget and/or window and show it immediately.
     
     Arguments:
@@ -808,7 +878,8 @@ def show_basic_window(widget_class=None, window_class=None, size=None,
     # defaut window class
     if window_class is None:
         window_class = create_basic_window(widget_class, size=size,
-            position=position, autodestruct=autodestruct)
+            position=position, autodestruct=autodestruct, toolbar=toolbar,
+            )
     # create and show window
     return show_window(window_class)
     
