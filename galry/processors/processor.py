@@ -6,7 +6,6 @@ import galry
 
 __all__ = ['EventProcessor']
 
-
 class EventProcessor(object):
     """Process several related events."""
     def __init__(self, interaction_manager, *args, **kwargs):
@@ -64,12 +63,12 @@ class EventProcessor(object):
     def activate(self, boo=True):
         """Activate or deactivate a processor."""
         self.activated = boo
-        
+    
     def deactivate(self):
         """Deactive the processor."""
         self.activated = False
-        
-        
+    
+    
     # Handlers methods
     # ----------------
     def register(self, event, method):

@@ -30,6 +30,8 @@ Refactoring
   * better way of switching pyside/pyqt
   * remove compound variables, replace by methods in visual which take
     arguments as inputs and call set_data. the variables are then recorded
+  * cascade of events (raise events in processors)
+  * activation as events
 
 
 Automation

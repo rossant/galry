@@ -70,6 +70,11 @@ class MeshBindings(PlotBindings):
         self.set('MiddleClickMove', 'Rotation',
                     param_getter=lambda p: (3*p["mouse_position_diff"][0],
                                             3*p["mouse_position_diff"][1]))    
+
+        self.set('LeftClickMove', 'Rotation',
+                    key_modifier='Control',
+                    param_getter=lambda p: (3*p["mouse_position_diff"][0],
+                                            3*p["mouse_position_diff"][1]))    
              
     def set_rotation_keyboard(self):
         """Set zooming bindings with the keyboard."""

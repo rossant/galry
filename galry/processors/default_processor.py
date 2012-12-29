@@ -6,7 +6,7 @@ from galry import Manager, TextVisual, get_color, ordict
 
 class DefaultEventProcessor(EventProcessor):
     def initialize(self):
-        self.register('ToggleFullscreen', self.process_toggle_fullscreen)
+        self.register('Fullscreen', self.process_toggle_fullscreen)
         self.register('Help', self.process_help_event)
         self.help_visible = False
         

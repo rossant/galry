@@ -269,8 +269,7 @@ class GalryWidget(QGLWidget):
         # compute FPS
         self.fps_counter.tick()
         if self.autosave:
-            self.save_image(self.autosave)
-            
+            self.save_image(self.autosave, update=False)
         self.just_initialized = False
         
     def paint_fps(self):
@@ -310,7 +309,6 @@ class GalryWidget(QGLWidget):
         if e.key() == QtCore.Qt.Key_Q:
             if hasattr(self, 'window'):
                 self.close_widget()
-        
         
     def keyReleaseEvent(self, e):
         self.user_action_generator.keyReleaseEvent(e)
@@ -531,10 +529,12 @@ class GalryWidget(QGLWidget):
             
     # Miscellaneous
     # -------------
-    def save_image(self, file=None):
+    def save_image(self, file=None, update=True):
         """Save a screenshot of the widget in the specified file."""
         if file is None:
             file = "image.png"
+        if update:
+            self.updateGL()
         image = self.grabFrameBuffer()
         image.save(file,"PNG")
     
@@ -777,11 +777,13 @@ def create_basic_window(widget=None, size=None, position=(100, 100),
             self.widget = widget
             if toolbar:
                 self.add_toolbar()
-            if size is None:
-                size = self.widget.w, self.widget.h
+            # if size is None:
+                # size = self.widget.w, self.widget.h
+            if size is not None:
+                self.widget.w, self.widget.h = size
             self.setCentralWidget(self.widget)
             self.setWindowTitle("Galry")
-            # self.setGeometry(*(position + size))
+            self.move(*position)
             # ensure the main window size is adjusted so that the widget size
             # is equal to the specified size
             self.resize(self.sizeHint())
@@ -794,16 +796,21 @@ def create_basic_window(widget=None, size=None, position=(100, 100),
             reset_action.setIcon(get_icon('home'))
             self.widget.connect_events(reset_action.triggered, 'Reset')
             
-            # save image
-            save_action = QtGui.QAction("Save image (S)", self)
-            save_action.setIcon(get_icon('save'))
-            save_action.setShortcut("S")
-            save_action.triggered.connect(self.save)
-
             # show grid
             grid_action = QtGui.QAction("Show grid (G)", self)
             grid_action.setIcon(get_icon('grid'))
             self.widget.connect_events(grid_action.triggered, 'Grid')
+
+            # fullscreen
+            fullscreen_action = QtGui.QAction("Fullscreen (F)", self)
+            fullscreen_action.setIcon(get_icon('fullscreen'))
+            self.widget.connect_events(fullscreen_action.triggered, 'Fullscreen')
+
+            # save image
+            save_action = QtGui.QAction("Save image (S)", self)
+            save_action.setIcon(get_icon('save'))
+            save_action.setShortcut("S")
+            save_action.triggered.connect(self.save)            
             
             # help
             help_action = QtGui.QAction("Show help (H)", self)
@@ -820,9 +827,30 @@ def create_basic_window(widget=None, size=None, position=(100, 100),
             mytoolbar.setIconSize(QtCore.QSize(32, 32))
             mytoolbar.addAction(reset_action)
             mytoolbar.addAction(grid_action)
+            mytoolbar.addAction(fullscreen_action)
             mytoolbar.addAction(save_action)
             mytoolbar.addAction(help_action)
             mytoolbar.addAction(exit_action)
+            
+            mytoolbar.setStyleSheet("""
+            QToolBar, QToolButton
+            {
+                background: #000000;
+                border-color: #000000;
+                color: #ffffff;
+            }
+            QToolButton
+            {
+                margin-left: 5px;
+            }
+            QToolButton:hover
+            {
+                background: #1a1a1a;
+            }
+            """)
+            mytoolbar.setMovable(False)
+            mytoolbar.setFloatable(False)
+            
             self.addToolBar(mytoolbar)
             
         def save(self, e):

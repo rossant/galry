@@ -39,7 +39,8 @@ class NavigationEventProcessor(EventProcessor):
         processor = self.get_processor('grid')
         if processor:
             processor.activate(self.grid_visible)
-        
+        if self.grid_visible:
+            processor.update_axes(None)
         
     def process_grid_event(self, parameter):
         self.grid_visible = not(self.grid_visible)

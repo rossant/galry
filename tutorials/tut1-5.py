@@ -35,6 +35,8 @@ color[:,-1] = 1
 edges_color = color.copy()
 edges_color[:,-1] = .25
 
+figure(constrain_ratio=True)
+
 # We plot the graph.
 graph(position=position, edges=edges, color=color, edges_color=edges_color)
 

@@ -21,7 +21,6 @@ def get_tex(n):
     R = np.minimum(1, 3 * np.exp(-5*R))
     tex[:,:,-1] = R
     return tex
-    
         
 def get_player_pos(who):
     return (pos[who][0,1] + pos[who][0,3]) / 2.
@@ -95,16 +94,11 @@ def update(figure, parameter):
     t = parameter[0]
     move_ball(figure)
     figure.set_data(visual='ball', position=ball_pos)
-        
-        
     
-fig = figure()
-
+fig = figure(toolbar=False)
 
 ball_pos = np.array([[0., 0.]])
 ball_v = np.array([[0, 0.]])  
-
-
 
 # player positions
 pos = {}
@@ -117,7 +111,6 @@ score_right = 0
 visual(TextVisual, coordinates=(0., .9), text='',
     fontsize=32, name='score', color=(1.,) * 4)
     
-
 # visuals
 rectangles(coordinates=(0.,) * 4,
     color=(1.,) * 4, name='left')
@@ -126,15 +119,12 @@ rectangles(coordinates=(0.,) * 4,
 sprites(position=np.zeros((1, 2)), texture=get_tex(32),
     color=(1.,) * 4, name='ball')
 
-
-
-
 dx = .05
 
 # left player bindings
-action('KeyPress', 'LeftPlayerMove', key='W',
+action('KeyPress', 'LeftPlayerMove', key='D',
     param_getter=lambda p: dx)
-action('KeyPress', 'LeftPlayerMove', key='S',
+action('KeyPress', 'LeftPlayerMove', key='C',
     param_getter=lambda p: -dx)
 
 # right player bindings
@@ -151,5 +141,5 @@ event('Initialize', new_game)
 
 animate(update, dt=DT)
 
-print "Left player: W/S keys\nRight player: Up/Down arrows\nF for fullscreen"
+print "Left player: D/C keys\nRight player: Up/Down arrows\nF for fullscreen"
 show()
