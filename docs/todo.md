@@ -11,7 +11,10 @@ Before pre-release 0.1
   * include ony shader snippets in the scene, and include shader creation
     in the renderers
   * check gl capabilities (eg mipmapping)
-
+  
+  * toggle toolbar
+  
+  
 After pre-release
 -----------------
   

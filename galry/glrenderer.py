@@ -190,7 +190,7 @@ class Texture(object):
         gl.glTexParameteri(textype, gl.GL_TEXTURE_WRAP_S, gl.GL_CLAMP)
         gl.glTexParameteri(textype, gl.GL_TEXTURE_WRAP_T, gl.GL_CLAMP)
         
-        if mipmap:
+        if mipmap and hasattr(gl, 'glGenerateMipmap'):
             gl.glGenerateMipmap(textype)
             
         if minfilter is None:
@@ -788,6 +788,10 @@ class GLVisualRenderer(object):
             minfilter=variable.get('minfilter', None),
             magfilter=variable.get('magfilter', None),
             )
+        # NEW
+        # get the location of the sampler uniform
+        location = self.shader_manager.get_uniform_location(name)
+        variable['location'] = location
         
     def initialize_uniform(self, name):
         """Initialize an uniform: get the location after the shaders have
@@ -857,31 +861,31 @@ class GLVisualRenderer(object):
         """Load data for a texture variable."""
         variable = self.get_variable(name)
         
-        
         if variable['buffer'] < 0:
             log_info(("Variable '%s' could not be loaded, probably because "
                       "it is not used in the shaders") % name)
             return
-        
         
         if data is None:
             data = variable.get('data', None)
         if data is not None:
             Texture.bind(variable['buffer'], variable['ndim'])
             Texture.load(data)
+            
+        # NEW: update sampler location
+        # Uniform.load_scalar(variable['location'], variable['index'])
+        # self.data_updating[name] = 
+        self.update_samplers = True
         
     def load_uniform(self, name, data=None):
         """Load data for an uniform variable."""
         variable = self.get_variable(name)
         location = variable['location']
         
-        
         if location < 0:
             log_debug(("Variable '%s' could not be loaded, probably because "
                       "it is not used in the shaders") % name)
             return
-        
-        
         
         if data is None:
             data = variable.get('data', None)
@@ -1009,7 +1013,6 @@ class GLVisualRenderer(object):
             log_info(("Variable '%s' could not be loaded, probably because "
                       "it is not used in the shaders") % name)
             return
-        
         
         prevshape = variable['data'].shape
         variable['data'] = data
@@ -1162,19 +1165,33 @@ class GLVisualRenderer(object):
     def bind_textures(self):
         """Bind all textures of the visual.
         This method is used during rendering."""
+        
+        
         textures = self.get_variables('texture')
-        for variable in textures:
+        for i, variable in enumerate(textures):
             buffer = variable.get('buffer', None)
             if buffer is not None:
+                
+                
+                # HACK: we update the sampler values here
+                if self.update_samplers:
+                    Uniform.load_scalar(variable['location'], i)#variable['index'])
+                
+                # NEW
+                gl.glActiveTexture(getattr(gl, 'GL_TEXTURE%d' % i))
+                
                 Texture.bind(buffer, variable['ndim'])
             else:
-                log_info("Texture '%s' was not propertly initialized." % \
+                log_info("Texture '%s' was not properly initialized." % \
                          variable['name'])
         # deactivate all textures if there are not textures
         if not textures:
             Texture.bind(0, 1)
             Texture.bind(0, 2)
-            
+        
+        # no need to update the samplers after the first execution of this 
+        # method
+        self.update_samplers = False
 
     # Paint methods
     # -------------

@@ -679,6 +679,9 @@ class Visual(BaseVisual):
         self.add_foo('uniform', name, **kwargs)
         
     def add_texture(self, name, **kwargs):
+        # NEW: add texture index
+        # if 'index' not in kwargs:
+            # kwargs['index'] = len(self.get_variables('texture'))
         self.add_foo('texture', name, **kwargs)
         
     def add_index(self, name, **kwargs):
