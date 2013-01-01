@@ -98,6 +98,7 @@ class EventProcessor(object):
                 # BAD SMELL HERE :(
                 if not hasattr(fig, 'set_data'):
                     fig.set_data = self.parent.paint_manager.set_data
+                    fig.copy_texture = self.parent.paint_manager.copy_texture
                     fig.set_rendering_options = self.parent.paint_manager.set_rendering_options
                     fig.get_processor = self.interaction_manager.get_processor
                     fig.get_visual = self.paint_manager.get_visual

@@ -186,7 +186,13 @@ class PaintManager(Manager):
             # empty data_updating
             if visual in self.data_updating:
                 self.data_updating[visual] = {}
-            
+    
+    def copy_texture(self, tex1, tex2, visual=None):
+        # default name
+        if visual is None:
+            visual = 'visual0'
+        self.renderer.copy_texture(visual, tex1, tex2)
+    
     def update_fps(self, fps):
         """Update the FPS in the corresponding text visual."""
         self.set_data(visual='fps', text="FPS: %03d" % fps, visible=True)

@@ -239,6 +239,14 @@ class Texture(object):
             raise ValueError("The texture is in an unsupported format.")
     
     @staticmethod
+    def copy(w, h):
+        gl.glCopyTexSubImage2D(gl.GL_TEXTURE_2D,
+            0,  # level
+            0, 0,  # x, y offsets
+            0, 0,  # x, y
+            w, h)  # width, height
+    
+    @staticmethod
     def load(data):
         """Load texture data in a bound texture buffer."""
         # convert data in a array of uint8 in [0, 255]
@@ -296,10 +304,15 @@ class FrameBuffer(object):
         gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, buffer)
         
     @staticmethod
-    def bind_texture(texture):
-        gl.glFramebufferTexture2D(gl.GL_FRAMEBUFFER, gl.GL_COLOR_ATTACHMENT0,
-                       gl.GL_TEXTURE_2D, texture, 0)
-        
+    def bind_texture(texture, i=0):
+        gl.glFramebufferTexture2D(gl.GL_FRAMEBUFFER,
+            getattr(gl, 'GL_COLOR_ATTACHMENT%d' % i),
+            gl.GL_TEXTURE_2D, texture, 0)
+
+    @staticmethod
+    def draw_buffers(n):
+        gl.glDrawBuffers([getattr(gl, 'GL_COLOR_ATTACHMENT%d' % i) for i in xrange(n)])
+            
     @staticmethod
     def unbind():
         """Unbind a FBO."""
@@ -663,10 +676,12 @@ class GLVisualRenderer(object):
         # register the visual dictionary
         self.visual = visual
         self.framebuffer = visual.get('framebuffer', None)
+        # self.beforeclear = visual.get('beforeclear', None)
         # options
         self.options = visual.get('options', {})
         # hold all data changes until the next rendering pass happens
         self.data_updating = {}
+        self.textures_to_copy = []
         # set the primitive type from its name
         self.set_primitive_type(self.visual['primitive_type'])
         # indexed mode? set in initialize_variables
@@ -825,12 +840,23 @@ class GLVisualRenderer(object):
     def initialize_framebuffer(self, name):
         variable = self.get_variable(name)
         variable['buffer'] = FrameBuffer.create()
-        # get the texture variable
-        texture = self.get_variable(variable['texture'])
+        
         # bind the frame buffer
         FrameBuffer.bind(variable['buffer'])
-        # link the texture to the frame buffer
-        FrameBuffer.bind_texture(texture['buffer'])
+        
+        # variable['texture'] is a list of texture names in the current visual
+        if isinstance(variable['texture'], basestring):
+            variable['texture'] = [variable['texture']]
+            
+        # draw as many buffers as there are textures in that frame buffer
+        FrameBuffer.draw_buffers(len(variable['texture']))
+            
+        for i, texname in enumerate(variable['texture']):
+            # get the texture variable: 
+            texture = self.get_variable(texname)
+            # link the texture to the frame buffer
+            FrameBuffer.bind_texture(texture['buffer'], i)
+        
         # unbind the frame buffer
         FrameBuffer.unbind()
         
@@ -1168,6 +1194,9 @@ class GLVisualRenderer(object):
         # flag the other variables as to be updated
         self.data_updating.update(**kwargs)
         
+    def copy_texture(self, tex1, tex2):
+        self.textures_to_copy.append((tex1, tex2))
+        
     def update_all_variables(self):
         """Upload all new data that needs to be updated."""
         # # current size, that may change following variable updating
@@ -1183,6 +1212,13 @@ class GLVisualRenderer(object):
         # reset the data updating dictionary
         self.data_updating.clear()
         
+        # copy textures
+        for tex1, tex2 in self.textures_to_copy:
+            tex1 = self.get_variable(tex1)
+            tex2 = self.get_variable(tex2)
+            Texture.bind(tex1['buffer'], tex1['ndim'])
+            Texture.copy(tex2['buffer'], *tex1['shape'])
+        self.textures_to_copy = []
         
     # Binding methods
     # ---------------
@@ -1408,6 +1444,9 @@ class GLRenderer(object):
         if name in self.visual_renderers:
             self.visual_renderers[name].set_data(**kwargs)
         
+    def copy_texture(self, name, tex1, tex2):
+        self.visual_renderers[name].copy_texture(tex1, tex2)
+    
         
     # Rendering methods
     # -----------------
@@ -1425,15 +1464,12 @@ class GLRenderer(object):
             name = visual['name']
             self.visual_renderers[name] = GLVisualRenderer(self, visual)
             
-            
         # detect FBO
-        self.fbo = None
+        self.fbos = []
         for name, vr in self.visual_renderers.iteritems():
             fbos = vr.get_variables('framebuffer')
             if fbos:
-                self.fbo = fbos[0]['buffer']
-                break
-                
+                self.fbos.extend([fbo['buffer'] for fbo in fbos])
             
     def clear(self):
         """Clear the scene."""
@@ -1446,26 +1482,49 @@ class GLRenderer(object):
     def paint(self):
         """Paint the scene."""
         
-        # render everything in FBO
-        # NEW: FBO
-        if self.fbo is not None:
-            FrameBuffer.bind(self.fbo)
-        
-        # clear
-        self.clear()
-        # paint all visual renderers
-        for name, visual_renderer in self.visual_renderers.iteritems():
-            if not visual_renderer.framebuffer:
-                visual_renderer.paint()
-        
-        # NEW: FBO
-        if self.fbo is not None:
-            FrameBuffer.unbind()
-
-            # render FBO on screen
+        # non-FBO rendering
+        if not self.fbos:
             self.clear()
             for name, visual_renderer in self.visual_renderers.iteritems():
-                if visual_renderer.framebuffer:
+                visual_renderer.paint()
+        
+        # render each FBO separately, then non-VBO
+        else:
+            for fbo in self.fbos:
+                FrameBuffer.bind(fbo)
+                
+                # fbo index
+                ifbo = self.fbos.index(fbo)
+                
+                # vrs = [vr for _, vr in self.visual_renderers.iteritems() \
+                    # if vr.framebuffer == ifbo]
+                
+                # # paint renderers before clear
+                # for vr in vrs:
+                    # # print vr, vr.beforeclear
+                    # if vr.beforeclear:
+                        # vr.paint()
+                        
+                # clear
+                self.clear()
+                
+                # # paint renderers after clear
+                # for vr in vrs:
+                    # if not vr.beforeclear:
+                        # vr.paint()
+                
+                # paint all visual renderers
+                for name, visual_renderer in self.visual_renderers.iteritems():
+                    if visual_renderer.framebuffer == ifbo:
+                        visual_renderer.paint()
+    
+            # finally, paint screen
+            FrameBuffer.unbind()
+    
+            # render screen (non-FBO) visuals
+            self.clear()
+            for name, visual_renderer in self.visual_renderers.iteritems():
+                if visual_renderer.framebuffer == 'screen':
                     visual_renderer.paint()
         
         

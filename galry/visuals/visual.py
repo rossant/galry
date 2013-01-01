@@ -62,7 +62,7 @@ void main()
 {
     vec4 out_color = vec4%DEFAULT_COLOR%;
     %FRAGMENT_MAIN%
-    gl_FragColor = out_color;
+    %FRAG%
 }
 
 """
@@ -348,6 +348,8 @@ class ShaderCreator(object):
         self.headers = {'vertex': [], 'fragment': []}
         self.mains = {'vertex': [], 'fragment': []}
         
+        self.fragdata = None
+        
     def set_variables(self, **kwargs):
         # record all visual variables in the shader creator
         for key, value in kwargs.iteritems():
@@ -450,6 +452,9 @@ class ShaderCreator(object):
     
     # Shader creation
     # ---------------
+    def set_fragdata(self, fragdata):
+        self.fragdata = fragdata
+    
     def get_shader_codes(self):
         """Build the vertex and fragment final codes, using the declarations
         of all template variables."""
@@ -480,6 +485,12 @@ class ShaderCreator(object):
         # Integrate shader headers
         vs = vs.replace("%VERTEX_MAIN%", vs_main)
         fs = fs.replace("%FRAGMENT_MAIN%", fs_main)
+        
+        # frag color or frag data
+        if self.fragdata is None:
+            fs = fs.replace('%FRAG%', """gl_FragColor = out_color;""")
+        else:
+            fs = fs.replace('%FRAG%', """gl_FragData[%d] = out_color;""" % self.fragdata)
         
         # Make sure there are no Windows carriage returns
         vs = vs.replace(b"\r\n", b"\n")
@@ -537,7 +548,8 @@ class BaseVisual(object):
         self.constrain_ratio = kwargs.pop('constrain_ratio', False)
         self.constrain_navigation = kwargs.pop('constrain_navigation', False)
         self.visible = kwargs.pop('visible', True)
-        self.framebuffer = kwargs.pop('framebuffer', False)
+        self.framebuffer = kwargs.pop('framebuffer', 0)
+        # self.beforeclear = kwargs.pop('beforeclear', False)
         return kwargs
         
     
@@ -753,6 +765,9 @@ class Visual(BaseVisual):
         if not self.reinitialization:
             self.shader_creator.add_fragment_main(*args, **kwargs)
         
+    def set_fragdata(self, fragdata):
+        self.shader_creator.set_fragdata(fragdata)
+        
         
     # Default visual methods
     # ----------------------
@@ -852,6 +867,7 @@ class Visual(BaseVisual):
             'constrain_ratio': self.constrain_ratio,
             'constrain_navigation': self.constrain_navigation,
             'framebuffer': self.framebuffer,
+            # 'beforeclear': self.beforeclear,
             'variables': self.get_variables_list(),
             'vertex_shader': self.vertex_shader,
             'fragment_shader': self.fragment_shader,

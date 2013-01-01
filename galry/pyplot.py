@@ -318,16 +318,15 @@ class Figure(object):
     
     # Frame buffer methods
     # --------------------
-    def framebuffer(self, name=None, shape=None):
-        if name is None:
-            name = 'framebuffer'
-        if shape is None:
-            shape = (600, 600)
-        self.visual(vs.FrameBufferVisual, shape=shape, name=name,
-            framebuffer=True)
-        for name, visual in self.visuals.iteritems():
-            if not visual[1].get('framebuffer'):
-                self.update_visual(name, is_static=True)
+    def framebuffer(self, *args, **kwargs):
+        if 'framebuffer' not in kwargs:
+            kwargs['framebuffer'] = 'screen'
+        if 'name' not in kwargs:
+            kwargs['name'] = 'framebuffer'
+        self.visual(vs.FrameBufferVisual, *args, **kwargs)
+        # for name, visual in self.visuals.iteritems():
+            # if not visual[1].get('framebuffer'):
+                # self.update_visual(name, is_static=True)
         
     # Rendering methods
     # -----------------

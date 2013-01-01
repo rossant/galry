@@ -2,10 +2,22 @@ from visual import Visual
 import numpy as np
 
 class FrameBufferVisual(Visual):
-    def initialize(self, shape=None):
-        self.add_texture('fbotex', ncomponents=3, ndim=2, shape=shape,
-            data=np.zeros((shape[0], shape[1], 3)))
-        self.add_framebuffer('fbo', texture='fbotex')
+    def initialize(self, shape=None, ntextures=1, coeffs=None, display=True):
+        if shape is None:
+            shape = (600, 600)
+        
+        for i in xrange(ntextures):
+            self.add_texture('fbotex%d' % i, ncomponents=3, ndim=2, shape=shape,
+                data=np.zeros((shape[0], shape[1], 3)))
+        # self.add_texture('fbotex2', ncomponents=3, ndim=2, shape=shape,
+            # data=np.zeros((shape[0], shape[1], 3)))
+        # self.add_framebuffer('fbo', texture=['fbotex', 'fbotex2'])
+        self.add_framebuffer('fbo', texture=['fbotex%d' % i for i in xrange(ntextures)])
+        
+        if not display:
+            self.add_attribute('position', ndim=2)#, data=np.zeros((1, 2)))
+            self.size = 0
+            return
         
         points = (-1, -1, 1, 1)
         x0, y0, x1, y1 = points
@@ -34,7 +46,17 @@ class FrameBufferVisual(Visual):
         
         self.add_attribute("position", vartype="float", ndim=2, data=position)
         self.add_vertex_main("""vtex_coords = tex_coords;""")
-        self.add_fragment_main("""
-        out_color = texture2D(fbotex, vtex_coords);
-        """)
         
+        if coeffs is None:
+            self.add_fragment_main("""
+            out_color = texture2D(fbotex0, vtex_coords);
+            """)
+        else:
+            FS = ""
+            for i in xrange(ntextures):
+                FS += """
+                vec4 out%d = texture2D(fbotex%d, vtex_coords);
+                """ % (i, i)
+            FS += "out_color = " + " + ".join(["%.5f * out%d" % (coeffs[i], i) for i in xrange(ntextures)]) + ";"
+            self.add_fragment_main(FS)
+            

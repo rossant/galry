@@ -96,7 +96,14 @@ Later
       * abstract code related to icons/cursors
       * abstract code related to keyboard enum values      
       * abstract code related to the widget class
-  
+  * multifbos:
+      * create one special visual which implements everything?
+      * one FBO with 2 textures (prev)
+      * one screen FBO with 1 texture
+      
+      * copy screen FBO => prev.1
+      * partcl renders to prev.0
+      * screen FBO = prev.0 + .9 * prev.1
   
 Doc
 ---
