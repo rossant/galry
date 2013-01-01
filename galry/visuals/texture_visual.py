@@ -1,5 +1,5 @@
 import numpy as np
-from visual import Visual
+from visual import Visual, RefVar
     
 class TextureVisual(Visual):
     """Visual that displays a colored texture."""
@@ -40,7 +40,10 @@ class TextureVisual(Visual):
     def initialize(self, texture=None, points=None,
             mipmap=None, minfilter=None, magfilter=None):
         
-        if texture is not None:
+        if isinstance(texture, RefVar):
+            targettex = self.resolve_reference(texture)['data']
+            shape, ncomponents = targettex.shape[:2], targettex.shape[2]
+        elif texture is not None:
             shape = texture.shape[:2]
             ncomponents = texture.shape[2]
         else:

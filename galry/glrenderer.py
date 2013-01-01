@@ -279,6 +279,30 @@ class Texture(object):
         """Delete texture buffers."""
         gl.glDeleteTextures(buffers)
 
+
+class FrameBuffer(object):
+    """Contains OpenGL functions related to FBO."""
+    @staticmethod
+    def create():
+        """Create a FBO."""
+        buffer = gl.glGenFramebuffers(1)
+        return buffer
+        
+    @staticmethod
+    def bind(buffer):
+        """Bind a FBO."""
+        gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, buffer)
+        
+    @staticmethod
+    def bind_texture(texture):
+        gl.glFramebufferTexture2D(gl.GL_FRAMEBUFFER, gl.GL_COLOR_ATTACHMENT0,
+                       gl.GL_TEXTURE_2D, texture, 0)
+        
+    @staticmethod
+    def unbind():
+        """Unbind a FBO."""
+        gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, 0)
+
         
 # Shader manager
 # --------------
@@ -766,13 +790,9 @@ class GLVisualRenderer(object):
                 self.slicer = self.noslicer
             
             # use the existing buffers from the target variable
-            buffers = self.resolve_reference(variable['data'])
+            target = self.resolve_reference(variable['data'])
             variable['sliced_attribute'] = SlicedAttribute(self.slicer, location,
-                buffers=buffers['sliced_attribute'].buffers)
-            # copy the use_index value from the target visual, because if it
-            # uses indexing, then it does not use slicing, and this visual
-            # should not use slicing too.
-            # self.use_index = 
+                buffers=target['sliced_attribute'].buffers)
         else:
             # initialize the sliced buffers
             variable['sliced_attribute'] = SlicedAttribute(self.slicer, location)
@@ -783,15 +803,21 @@ class GLVisualRenderer(object):
         
     def initialize_texture(self, name):
         variable = self.get_variable(name)
-        variable['buffer'] = Texture.create(variable['ndim'],
-            mipmap=variable.get('mipmap', None),
-            minfilter=variable.get('minfilter', None),
-            magfilter=variable.get('magfilter', None),
-            )
-        # NEW
-        # get the location of the sampler uniform
-        location = self.shader_manager.get_uniform_location(name)
-        variable['location'] = location
+        # handle reference variable to texture
+        if isinstance(variable.get('data', None), RefVar):
+            target = self.resolve_reference(variable['data'])
+            variable['buffer'] = target['buffer']
+            variable['location'] = target['location']
+        else:
+            variable['buffer'] = Texture.create(variable['ndim'],
+                mipmap=variable.get('mipmap', None),
+                minfilter=variable.get('minfilter', None),
+                magfilter=variable.get('magfilter', None),
+                )
+            # NEW
+            # get the location of the sampler uniform
+            location = self.shader_manager.get_uniform_location(name)
+            variable['location'] = location
         
     def initialize_uniform(self, name):
         """Initialize an uniform: get the location after the shaders have
@@ -868,14 +894,19 @@ class GLVisualRenderer(object):
         
         if data is None:
             data = variable.get('data', None)
+            
+        # NEW: update sampler location
+        self.update_samplers = True
+        
+        if isinstance(data, RefVar):
+            log_info("Skipping loading data for texture '%s' since it "
+                "references a target variable." % name)
+            return
+            
         if data is not None:
             Texture.bind(variable['buffer'], variable['ndim'])
             Texture.load(data)
             
-        # NEW: update sampler location
-        # Uniform.load_scalar(variable['location'], variable['index'])
-        # self.data_updating[name] = 
-        self.update_samplers = True
         
     def load_uniform(self, name, data=None):
         """Load data for an uniform variable."""
@@ -1166,16 +1197,14 @@ class GLVisualRenderer(object):
         """Bind all textures of the visual.
         This method is used during rendering."""
         
-        
         textures = self.get_variables('texture')
         for i, variable in enumerate(textures):
             buffer = variable.get('buffer', None)
             if buffer is not None:
                 
-                
                 # HACK: we update the sampler values here
-                if self.update_samplers:
-                    Uniform.load_scalar(variable['location'], i)#variable['index'])
+                if self.update_samplers and not isinstance(variable['data'], RefVar):
+                    Uniform.load_scalar(variable['location'], i)
                 
                 # NEW
                 gl.glActiveTexture(getattr(gl, 'GL_TEXTURE%d' % i))
@@ -1193,6 +1222,7 @@ class GLVisualRenderer(object):
         # method
         self.update_samplers = False
 
+    
     # Paint methods
     # -------------
     def paint(self):
