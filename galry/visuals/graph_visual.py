@@ -35,13 +35,15 @@ class GraphVisual(CompoundVisual):
         edges = np.array(edges, dtype=np.int32)
         uedges = np.unique(edges)
         uedges.sort()
-        m = uedges.max()
-        n = len(uedges)
-        indices = np.zeros(m + 1, dtype=np.int32)
-        indices[uedges] = np.arange(n)
-        # indices = np.arange(uedges.max() + 1)
-        # indices[edges.ravel()].reshape((-1, 2))
-        edges = indices[edges]
+        # m = uedges.max()
+        # n = len(uedges)
+        # indices = np.zeros(m + 1, dtype=np.int32)
+        # indices[uedges] = np.arange(n)
+        # # indices = np.arange(uedges.max() + 1)
+        # # indices[edges.ravel()].reshape((-1, 2))
+        # edges = indices[edges]
+        for i, u in enumerate(uedges):
+            edges[edges == u] = i
         
         # edges
         self.add_visual(PlotVisual, position=position,
