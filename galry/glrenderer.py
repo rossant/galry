@@ -181,7 +181,7 @@ class Uniform(object):
 class Texture(object):
     """Contains OpenGL functions related to textures."""
     @staticmethod
-    def create(ndim, mipmap=False, minfilter=None, magfilter=None):
+    def create(ndim=2, mipmap=False, minfilter=None, magfilter=None):
         """Create a texture with the specifyed number of dimensions."""
         buffer = gl.glGenTextures(1)
         gl.glPixelStorei(gl.GL_UNPACK_ALIGNMENT, 1)
@@ -289,8 +289,10 @@ class FrameBuffer(object):
         return buffer
         
     @staticmethod
-    def bind(buffer):
+    def bind(buffer=None):
         """Bind a FBO."""
+        if buffer is None:
+            buffer = 0
         gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, buffer)
         
     @staticmethod
@@ -660,6 +662,7 @@ class GLVisualRenderer(object):
         self.scene = renderer.scene
         # register the visual dictionary
         self.visual = visual
+        self.framebuffer = visual.get('framebuffer', None)
         # options
         self.options = visual.get('options', {})
         # hold all data changes until the next rendering pass happens
@@ -818,6 +821,18 @@ class GLVisualRenderer(object):
             # get the location of the sampler uniform
             location = self.shader_manager.get_uniform_location(name)
             variable['location'] = location
+    
+    def initialize_framebuffer(self, name):
+        variable = self.get_variable(name)
+        variable['buffer'] = FrameBuffer.create()
+        # get the texture variable
+        texture = self.get_variable(variable['texture'])
+        # bind the frame buffer
+        FrameBuffer.bind(variable['buffer'])
+        # link the texture to the frame buffer
+        FrameBuffer.bind_texture(texture['buffer'])
+        # unbind the frame buffer
+        FrameBuffer.unbind()
         
     def initialize_uniform(self, name):
         """Initialize an uniform: get the location after the shaders have
@@ -843,7 +858,7 @@ class GLVisualRenderer(object):
         for var in self.get_variables():
             shader_type = var['shader_type']
             # skip uniforms
-            if shader_type == 'uniform' or shader_type == 'varying':
+            if shader_type == 'uniform' or shader_type == 'varying' or shader_type == 'framebuffer':
                 continue
             # call load_***(name) to load that variable
             getattr(self, 'load_%s' % shader_type)(var['name'])
@@ -907,7 +922,6 @@ class GLVisualRenderer(object):
             Texture.bind(variable['buffer'], variable['ndim'])
             Texture.load(data)
             
-        
     def load_uniform(self, name, data=None):
         """Load data for an uniform variable."""
         variable = self.get_variable(name)
@@ -954,7 +968,7 @@ class GLVisualRenderer(object):
         else:
             shader_type = variable['shader_type']
             # skip compound, which is handled in set_data
-            if shader_type == 'compound' or shader_type == 'varying':
+            if shader_type == 'compound' or shader_type == 'varying' or shader_type == 'framebuffer':
                 pass
             else:
                 getattr(self, 'update_%s' % shader_type)(name, data, **kwargs)
@@ -1350,7 +1364,7 @@ class GLRenderer(object):
             gl.glDepthRange(0.0, 1.0)
             # TODO: always enable??
             gl.glClearDepth(1.0)
-        
+    
         # Paint the background with the specified color (black by default)
         background = options.get('background', (0, 0, 0, 0))
         gl.glClearColor(*background)
@@ -1410,7 +1424,17 @@ class GLRenderer(object):
         for visual in self.get_visuals():
             name = visual['name']
             self.visual_renderers[name] = GLVisualRenderer(self, visual)
-        
+            
+            
+        # detect FBO
+        self.fbo = None
+        for name, vr in self.visual_renderers.iteritems():
+            fbos = vr.get_variables('framebuffer')
+            if fbos:
+                self.fbo = fbos[0]['buffer']
+                break
+                
+            
     def clear(self):
         """Clear the scene."""
         # clear the buffer (and depth buffer is 3D is activated)
@@ -1421,11 +1445,30 @@ class GLRenderer(object):
         
     def paint(self):
         """Paint the scene."""
+        
+        # render everything in FBO
+        # NEW: FBO
+        if self.fbo is not None:
+            FrameBuffer.bind(self.fbo)
+        
         # clear
         self.clear()
         # paint all visual renderers
         for name, visual_renderer in self.visual_renderers.iteritems():
-            visual_renderer.paint()
+            if not visual_renderer.framebuffer:
+                visual_renderer.paint()
+        
+        # NEW: FBO
+        if self.fbo is not None:
+            FrameBuffer.unbind()
+
+            # render FBO on screen
+            self.clear()
+            for name, visual_renderer in self.visual_renderers.iteritems():
+                if visual_renderer.framebuffer:
+                    visual_renderer.paint()
+        
+        
         
     def resize(self, width, height):
         """Resize the canvas and make appropriate changes to the scene."""

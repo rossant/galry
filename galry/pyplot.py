@@ -13,6 +13,7 @@ __all__ = ['figure', 'Figure', 'get_current_figure',
            'axes', 'xlim', 'ylim',
            'grid', 'animate',
            'event', 'action',
+           'framebuffer',
            'show']
 
 def get_marker_texture(marker, size=None):
@@ -313,7 +314,20 @@ class Figure(object):
             dt = .02
         self.animation_interval = dt
         self.event('Animate', method)
-        
+
+    
+    # Frame buffer methods
+    # --------------------
+    def framebuffer(self, name=None, shape=None):
+        if name is None:
+            name = 'framebuffer'
+        if shape is None:
+            shape = (600, 600)
+        self.visual(vs.FrameBufferVisual, shape=shape, name=name,
+            framebuffer=True)
+        for name, visual in self.visuals.iteritems():
+            if not visual[1].get('framebuffer'):
+                self.update_visual(name, is_static=True)
         
     # Rendering methods
     # -----------------
@@ -429,6 +443,15 @@ def action(*args, **kwargs):
 def animate(*args, **kwargs):
     fig = get_current_figure()
     fig.animate(*args, **kwargs)
+
+
+    
+def framebuffer(*args, **kwargs):
+    fig = get_current_figure()
+    fig.framebuffer(*args, **kwargs)
+    
+    
+
     
     
 def show(*args, **kwargs):

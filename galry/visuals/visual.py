@@ -537,6 +537,7 @@ class BaseVisual(object):
         self.constrain_ratio = kwargs.pop('constrain_ratio', False)
         self.constrain_navigation = kwargs.pop('constrain_navigation', False)
         self.visible = kwargs.pop('visible', True)
+        self.framebuffer = kwargs.pop('framebuffer', False)
         return kwargs
         
     
@@ -571,17 +572,18 @@ class Visual(BaseVisual):
         self.vertex_shader, self.fragment_shader = \
             self.shader_creator.get_shader_codes()
             
-    def extract_common_parameters(self, **kwargs):
-        self.size = kwargs.pop('size', 0)
-        self.default_color = kwargs.pop('default_color', (1., 1., 0., 1.))
-        self.bounds = kwargs.pop('bounds', None)
-        self.is_static = kwargs.pop('is_static', False)
-        self.position_attribute_name = kwargs.pop('position_attribute_name', 'position')
-        self.primitive_type = kwargs.pop('primitive_type', None)
-        self.constrain_ratio = kwargs.pop('constrain_ratio', False)
-        self.constrain_navigation = kwargs.pop('constrain_navigation', False)
-        self.visible = kwargs.pop('visible', True)
-        return kwargs
+    # def extract_common_parameters(self, **kwargs):
+        # self.size = kwargs.pop('size', 0)
+        # self.default_color = kwargs.pop('default_color', (1., 1., 0., 1.))
+        # self.bounds = kwargs.pop('bounds', None)
+        # self.is_static = kwargs.pop('is_static', False)
+        # self.position_attribute_name = kwargs.pop('position_attribute_name', 'position')
+        # self.primitive_type = kwargs.pop('primitive_type', None)
+        # self.constrain_ratio = kwargs.pop('constrain_ratio', False)
+        # self.constrain_navigation = kwargs.pop('constrain_navigation', False)
+        # self.visible = kwargs.pop('visible', True)
+        # self.framebuffer = kwargs.pop('framebuffer', False)
+        # return kwargs
         
     
     # Reference variables methods
@@ -683,6 +685,12 @@ class Visual(BaseVisual):
         # if 'index' not in kwargs:
             # kwargs['index'] = len(self.get_variables('texture'))
         self.add_foo('texture', name, **kwargs)
+        
+    def add_framebuffer(self, name, **kwargs):
+        # NEW: add texture index
+        # if 'index' not in kwargs:
+            # kwargs['index'] = len(self.get_variables('texture'))
+        self.add_foo('framebuffer', name, **kwargs)
         
     def add_index(self, name, **kwargs):
         self.add_foo('index', name, **kwargs)
@@ -843,6 +851,7 @@ class Visual(BaseVisual):
             'primitive_type': self.primitive_type,
             'constrain_ratio': self.constrain_ratio,
             'constrain_navigation': self.constrain_navigation,
+            'framebuffer': self.framebuffer,
             'variables': self.get_variables_list(),
             'vertex_shader': self.vertex_shader,
             'fragment_shader': self.fragment_shader,
