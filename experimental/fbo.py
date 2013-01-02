@@ -6,7 +6,10 @@ import time
 import timeit
 import os
 
-from OpenGL import GL as gl
+# f = 2.
+
+
+
 
 class ParticleVisual(Visual):
     def get_position_update_code(self):
@@ -95,18 +98,86 @@ class ParticleVisual(Visual):
         self.base_fountain(**kwargs)
 
         
+
+
+
+
+
+class MyVisual(Visual):
+    def initialize(self, shape=None):
+        if shape is None:
+            shape = (600, 600)
         
+        self.add_texture('singletex', ncomponents=3, ndim=2,
+            shape=shape,
+            # data=RefVar('singlefbo', 'fbotex0'),
+            data=np.zeros((shape[0], shape[1], 3))
+            )
+            
+        self.add_texture('fulltex', ncomponents=3, ndim=2,
+            shape=shape,
+            # data=RefVar('fullfbo', 'fbotex1'),
+            data=np.zeros((shape[0], shape[1], 3))
+            )
+        
+        # self.add_framebuffer('fbo', texture=['fbotex', 'tracetex'])
+        # self.add_framebuffer('fbo', texture='fbotex')
+        
+        points = (-1, -1, 1, 1)
+        x0, y0, x1, y1 = points
+        x0, x1 = min(x0, x1), max(x0, x1)
+        y0, y1 = min(y0, y1), max(y0, y1)
+        
+        position = np.zeros((4,2))
+        position[0,:] = (x0, y0)
+        position[1,:] = (x1, y0)
+        position[2,:] = (x0, y1)
+        position[3,:] = (x1, y1)
+        
+        tex_coords = np.zeros((4,2))
+        tex_coords[0,:] = (0, 0)
+        tex_coords[1,:] = (1, 0)
+        tex_coords[2,:] = (0, 1)
+        tex_coords[3,:] = (1, 1)
+    
+        self.size = 4
+        self.primitive_type = 'TRIANGLE_STRIP'
+        
+        # texture coordinates
+        self.add_attribute("tex_coords", vartype="float", ndim=2,
+            data=tex_coords)
+        self.add_varying("vtex_coords", vartype="float", ndim=2)
+        
+        self.add_attribute("position", vartype="float", ndim=2, data=position)
+        self.add_vertex_main("""vtex_coords = tex_coords;""")
+        
+        FS = """
+        vec4 out0 = texture2D(singletex, vtex_coords);
+        vec4 out1 = texture2D(fulltex, vtex_coords);
+        out_color = out0 + .95 * out1;
+        """
+        self.add_fragment_main(FS)
+            
 def update(figure, parameter):
     t = parameter[0]
-    # if not hasattr(figure, 'cycle'):
-        # figure.cycle = 0
-    # figure.cycle = np.mod(figure.cycle + 1, 2)
-    # figure.set_data(t=t, cycle=figure.cycle, visual='fountain')
+    # position = .5 * np.array([[np.cos(f*t), np.sin(f*t)]])
+    # figure.set_data(position=position, visual='c')
+    
     figure.set_data(t=t, visual='fountain')
+    
+    figure.copy_texture(RefVar('singlefbo', 'fbotex0'), 'singletex', visual='myvisual')
+    figure.copy_texture(RefVar('fullfbo', 'fbotex0'), 'fulltex', visual='myvisual')
 
-if __name__ == '__main__':        
-    figure()
+if __name__ == '__main__':
+    
+    # position = np.zeros(1)
+    
+    # # => FBO #0
+    # plot(position, 'or', color=get_color('r.5'), ms=100,
+        # is_static=True,
+        # )
 
+        
     # number of particles
     n = 50000
 
@@ -121,21 +192,13 @@ if __name__ == '__main__':
     velocities[:,1] = v * np.sin(angles)
 
     # transparency
-    alpha = .2 * rdn.rand(n)
+    alpha = .02 * rdn.rand(n)
 
     # color
-    color = (0.70,0.75,.98,1.)
+    color = (0.60,0.65,.98,1.)
 
     # random delays
     delays = 10 * rdn.rand(n)
-    
-    figure()
-            
-    # framebuffer(display=False)
-    # framebuffer(name='sc', framebuffer=1)
-    # imshow(RefVar('sc', 'fbotex0'), #points=(-.5,-.5,.5,.5),
-    # # imshow(np.random.rand(4,4,4), points=(-.5,-.5,.5,.5),
-        # is_static=True)#, beforeclear=True)
     
     # # create the visual
     visual(ParticleVisual, 
@@ -148,15 +211,15 @@ if __name__ == '__main__':
         name='fountain',
         )
 
-    # TODO: beginning: copy sc => prev.1
-    framebuffer(ntextures=2, coeffs=[1., .9], framebuffer=1)
-    framebuffer(name='sc')
-        
-    # imshow(RefVar('framebuffer', 'fbotex0'), points=(-.5,.5,.5,-.5),
-    # # imshow(np.random.rand(4,4,4), points=(-.5,-.5,.5,.5),
-        # is_static=True, framebuffer='screen')#, beforeclear=True)
     
-    animate(update, dt=.02)
+    framebuffer(name='singlefbo', display=False)
+    framebuffer(name='fullfbo')#, display=False)
+        
+    # # FBO #0 => #1
+    visual(MyVisual, name='myvisual', framebuffer=1,
+        is_static=True,)
+    
+    animate(update, dt=.01)
 
     show()
 

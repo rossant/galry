@@ -19,16 +19,13 @@ __all__ = ['figure', 'Figure', 'get_current_figure',
 def get_marker_texture(marker, size=None):
     """Create a marker texture."""
     if size is None:
-        size = 1.
-    
-    if np.mod(size, 2) == 0:
-        size += 1
+        size = 1
         
     if marker == '.':
         marker = ','
-        size = 2.
+        size = 2
     if size is None:
-        size = 5.
+        size = 5
     
     texture = np.zeros((size, size, 4))
     
@@ -36,10 +33,14 @@ def get_marker_texture(marker, size=None):
         texture[:] = 1
         
     elif marker == '+':
+        # force odd number
+        size -= (np.mod(size, 2) - 1)
         texture[size / 2, :, :] = 1
         texture[:, size / 2, :] = 1
         
     elif marker == 'x':
+        # force even number
+        size -= (np.mod(size, 2))
         texture[range(size), range(size), :] = 1
         texture[range(size - 1, -1, -1), range(size), :] = 1
         
@@ -50,6 +51,8 @@ def get_marker_texture(marker, size=None):
         texture[:, size / 2, :] = 1
         
     elif marker == 'o':
+        # force even number
+        size -= (np.mod(size, 2))
         # fill with white
         texture[:, :, :-1] = 1
         x = np.linspace(-1., 1., size)

@@ -549,7 +549,7 @@ class BaseVisual(object):
         self.constrain_navigation = kwargs.pop('constrain_navigation', False)
         self.visible = kwargs.pop('visible', True)
         self.framebuffer = kwargs.pop('framebuffer', 0)
-        # self.beforeclear = kwargs.pop('beforeclear', False)
+        self.fragdata = kwargs.pop('fragdata', None)
         return kwargs
         
     
@@ -583,20 +583,7 @@ class Visual(BaseVisual):
         # create the shader source codes
         self.vertex_shader, self.fragment_shader = \
             self.shader_creator.get_shader_codes()
-            
-    # def extract_common_parameters(self, **kwargs):
-        # self.size = kwargs.pop('size', 0)
-        # self.default_color = kwargs.pop('default_color', (1., 1., 0., 1.))
-        # self.bounds = kwargs.pop('bounds', None)
-        # self.is_static = kwargs.pop('is_static', False)
-        # self.position_attribute_name = kwargs.pop('position_attribute_name', 'position')
-        # self.primitive_type = kwargs.pop('primitive_type', None)
-        # self.constrain_ratio = kwargs.pop('constrain_ratio', False)
-        # self.constrain_navigation = kwargs.pop('constrain_navigation', False)
-        # self.visible = kwargs.pop('visible', True)
-        # self.framebuffer = kwargs.pop('framebuffer', False)
-        # return kwargs
-        
+    
     
     # Reference variables methods
     # ---------------------------
@@ -837,6 +824,9 @@ class Visual(BaseVisual):
             self.bounds = [0, self.size]
         # ensure the type of bounds
         self.bounds = np.array(self.bounds, dtype=np.int32)
+    
+        if self.fragdata is not None:
+            self.set_fragdata(self.fragdata)
     
         if self.primitive_type is None:
             self.primitive_type = 'LINE_STRIP'

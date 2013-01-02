@@ -239,13 +239,40 @@ class Texture(object):
             raise ValueError("The texture is in an unsupported format.")
     
     @staticmethod
-    def copy(w, h):
-        gl.glCopyTexSubImage2D(gl.GL_TEXTURE_2D,
-            0,  # level
-            0, 0,  # x, y offsets
-            0, 0,  # x, y
-            w, h)  # width, height
-    
+    def copy(fbo, tex_src, tex_dst, width, height):
+        
+        # /// bind the FBO
+        gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, fbo)
+        # /// attach the source texture to the fbo
+        gl.glFramebufferTexture2D(gl.GL_FRAMEBUFFER, gl.GL_COLOR_ATTACHMENT0,
+                                gl.GL_TEXTURE_2D, tex_src, 0)
+        # /// bind the destination texture
+        gl.glBindTexture(gl.GL_TEXTURE_2D, tex_dst)
+        # /// copy from framebuffer (here, the FBO!) to the bound texture
+        gl.glCopyTexSubImage2D(gl.GL_TEXTURE_2D, 0, 0, 0, 0, 0, width, height)
+        # /// unbind the FBO
+        gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, 0)
+        
+        # # ncomponents==1 ==> GL_R, 3 ==> GL_RGB, 4 ==> GL_RGBA
+        # component_type = getattr(gl, ["GL_INTENSITY8", None, "GL_RGB", "GL_RGBA"] \
+                                            # [ncomponents - 1])
+        # gl.glCopyTexImage2D(gl.GL_TEXTURE_2D,
+            # 0,  # level
+            # component_type, 
+            # 0, 0,  # x, y offsets
+            # 0, 0,  # x, y
+            # w, h, # width, height
+            # 0  # border
+            # )
+            
+    # @staticmethod
+    # def read_buffer(index=0):
+        # gl.glReadBuffer(getattr(gl, 'GL_COLOR_ATTACHMENT%d' % index))
+            
+    # @staticmethod
+    # def draw_buffer():
+        # gl.glDrawBuffer(gl.GL_FRONT)
+            
     @staticmethod
     def load(data):
         """Load texture data in a bound texture buffer."""
@@ -377,6 +404,8 @@ class ShaderManager(object):
         # print self.fragment_shader
         self.vs = self.compile_shader(self.vertex_shader, gl.GL_VERTEX_SHADER)
         self.fs = self.compile_shader(self.fragment_shader, gl.GL_FRAGMENT_SHADER)
+        
+        # print self.fragment_shader
         
     def create_program(self):
         """Create shader program and attach shaders."""
@@ -713,6 +742,7 @@ class GLVisualRenderer(object):
         # initialize all variables
         self.initialize_normalizers()
         self.initialize_variables()
+        self.initialize_fbocopy()
         self.load_variables()
         
     def set_primitive_type(self, primtype):
@@ -766,6 +796,10 @@ class GLVisualRenderer(object):
         
     # Initialization methods
     # ----------------------
+    def initialize_fbocopy(self):
+        """Create a FBO used when copying textures."""
+        self.fbocopy = FrameBuffer.create()
+    
     def initialize_variables(self):
         """Initialize all variables, after the shaders have compiled."""
         # find out whether indexing is used or not, because in this case
@@ -1212,14 +1246,22 @@ class GLVisualRenderer(object):
         # reset the data updating dictionary
         self.data_updating.clear()
         
+    def copy_all_textures(self):
         # copy textures
         for tex1, tex2 in self.textures_to_copy:
-            tex1 = self.get_variable(tex1)
+            # tex1 = self.get_variable(tex1)
+            tex1 = self.resolve_reference(tex1)
             tex2 = self.get_variable(tex2)
-            Texture.bind(tex1['buffer'], tex1['ndim'])
-            Texture.copy(tex2['buffer'], *tex1['shape'])
+            # tex2 = self.resolve_reference(tex2)
+            
+            # # Texture.read_buffer()
+            # Texture.bind(tex2['buffer'], tex2['ndim'])
+            # copy(fbo, tex_src, tex_dst, width, height)
+            Texture.copy(self.fbocopy, tex1['buffer'], tex2['buffer'],
+                tex1['shape'][0], tex1['shape'][1])
         self.textures_to_copy = []
-        
+
+
     # Binding methods
     # ---------------
     def bind_attributes(self, slice=None):
@@ -1316,6 +1358,9 @@ class GLVisualRenderer(object):
                         slice_bounds[1] -  slice_bounds[0])
                 else:
                     Painter.draw_multi_arrays(self.primitive_type, slice_bounds)
+        
+        self.copy_all_textures()
+        
         # deactivate the shaders
         self.shader_manager.deactivate_shaders()
 
@@ -1488,6 +1533,7 @@ class GLRenderer(object):
             for name, visual_renderer in self.visual_renderers.iteritems():
                 visual_renderer.paint()
         
+        
         # render each FBO separately, then non-VBO
         else:
             for fbo in self.fbos:
@@ -1496,26 +1542,13 @@ class GLRenderer(object):
                 # fbo index
                 ifbo = self.fbos.index(fbo)
                 
-                # vrs = [vr for _, vr in self.visual_renderers.iteritems() \
-                    # if vr.framebuffer == ifbo]
-                
-                # # paint renderers before clear
-                # for vr in vrs:
-                    # # print vr, vr.beforeclear
-                    # if vr.beforeclear:
-                        # vr.paint()
-                        
                 # clear
                 self.clear()
-                
-                # # paint renderers after clear
-                # for vr in vrs:
-                    # if not vr.beforeclear:
-                        # vr.paint()
                 
                 # paint all visual renderers
                 for name, visual_renderer in self.visual_renderers.iteritems():
                     if visual_renderer.framebuffer == ifbo:
+                        # print ifbo, visual_renderer
                         visual_renderer.paint()
     
             # finally, paint screen
@@ -1525,9 +1558,10 @@ class GLRenderer(object):
             self.clear()
             for name, visual_renderer in self.visual_renderers.iteritems():
                 if visual_renderer.framebuffer == 'screen':
+                    # print "screen", visual_renderer
                     visual_renderer.paint()
         
-        
+            # print
         
     def resize(self, width, height):
         """Resize the canvas and make appropriate changes to the scene."""
