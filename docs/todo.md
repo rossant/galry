@@ -105,6 +105,12 @@ Later
       * partcl renders to prev.0
       * screen FBO = prev.0 + .9 * prev.1
   
+  * finer control of the gl workflow (custom render method of visuals, or 
+    custom gl calls within the paint function, etc.)
+  * acyclic graph for references and avoid the restriction of order in
+    the visuals definition
+  
+  
 Doc
 ---
 
