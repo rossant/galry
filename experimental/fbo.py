@@ -154,7 +154,9 @@ class MyVisual(Visual):
         FS = """
         vec4 out0 = texture2D(singletex, vtex_coords);
         vec4 out1 = texture2D(fulltex, vtex_coords);
-        out_color = out0 + .95 * out1;
+        out_color = .1 * out0 + .9 * out1;
+        if (out_color.x + out_color.y + out_color.z < .04)
+            out_color = vec4(0, 0, 0, 0);
         """
         self.add_fragment_main(FS)
             
@@ -192,7 +194,7 @@ if __name__ == '__main__':
     velocities[:,1] = v * np.sin(angles)
 
     # transparency
-    alpha = .02 * rdn.rand(n)
+    alpha = .2 * rdn.rand(n)
 
     # color
     color = (0.60,0.65,.98,1.)
