@@ -32,8 +32,8 @@ class PaintManager(Manager):
         """Set rendering options in the scene."""
         self.scene_creator.get_scene()['renderer_options'].update(**kwargs)
         
-    def initialize(self):
-        """Define the scene. To be overriden."""
+    # def initialize(self):
+        # """Define the scene. To be overriden."""
         
     def initialize_default(self, **kwargs):
         # FPS
@@ -53,6 +53,9 @@ class PaintManager(Manager):
         
     def get_visual(self, name):
         return self.scene_creator.get_visual(name)
+        
+    # def get_variables(self, visual):
+        # visual['variables']
         
     
     # Navigation rectangle methods
@@ -204,6 +207,8 @@ class PaintManager(Manager):
         # initialize the scene
         self.initialize()
         self.initialize_default()
+        # finalize
+        self.finalize()
         # initialize the renderer
         self.renderer = GLRenderer(self.scene_creator.get_scene())
         self.renderer.initialize()
@@ -238,10 +243,15 @@ class PaintManager(Manager):
     # Methods to be overriden
     # -----------------------
     def initialize(self):
-        """Initialize the data. To be overriden.
+        """Initialize the scene creation. To be overriden.
 
         This method can make calls to `add_visual` and `set_data` methods.
         
+        """
+        pass
+        
+    def finalize(self):
+        """Finalize the scene creation. To be overriden.
         """
         pass
 

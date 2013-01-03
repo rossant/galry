@@ -2,6 +2,7 @@ import inspect
 # from collections import OrderedDict as odict
 import numpy as np
 from processor import EventProcessor
+from galry import DataNormalizer
 
 
 __all__ = ['GridEventProcessor']
@@ -77,8 +78,30 @@ class GridEventProcessor(EventProcessor):
         self.register(None, self.update_axes)
         
     def update_axes(self, parameter):
-        viewbox = self.get_processor('navigation').get_viewbox()
+        nav = self.get_processor('navigation')
+        viewbox = nav.get_viewbox()
+        # nvb = nav.normalization_viewbox
+        nvb = self.parent.paint_manager.normalization_viewbox
+        # print nvb
+        # initialize the normalizer
+        if nvb is not None:
+            if not hasattr(self, 'normalizer'):
+                # normalization viewbox
+                self.normalizer = DataNormalizer()
+                self.normalizer.normalize(nvb)
+            x0, y0, x1, y1 = viewbox
+            x0 = self.normalizer.unnormalize_x(x0)
+            y0 = self.normalizer.unnormalize_y(y0)
+            x1 = self.normalizer.unnormalize_x(x1)
+            y1 = self.normalizer.unnormalize_y(y1)
+            viewbox = (x0, y0, x1, y1)
+            # print nvb, viewbox
+        
         text, coordinates, n = get_ticks_text(*viewbox)
+        
+        if nvb is not None:
+            coordinates[:,0] = self.normalizer.normalize_x(coordinates[:,0])
+            coordinates[:,1] = self.normalizer.normalize_y(coordinates[:,1])
         
         # here: coordinates contains positions centered on the static
         # xy=0 axes of the screen

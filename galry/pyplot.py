@@ -77,6 +77,7 @@ class PaintManagerCreator(object):
             class MyPaintManager(baseclass):
                 def initialize(self):
                     self.figure = figure
+                    self.normalization_viewbox = figure.viewbox
                     for name, (args, kwargs) in visuals.iteritems():
                         self.add_visual(*args, **kwargs)
                         
@@ -87,6 +88,7 @@ class PaintManagerCreator(object):
         else:
             class MyPaintManager(baseclass):
                 def initialize(self):
+                    self.normalization_viewbox = figure.viewbox
                     for name, (args, kwargs) in visuals.iteritems():
                         self.add_visual(*args, **kwargs)
         return MyPaintManager
@@ -98,7 +100,15 @@ class InteractionManagerCreator(object):
             baseclass = mgs.PlotInteractionManager
         handlers = figure.handlers
         processors = figure.processors
+        
         class MyInteractionManager(baseclass):
+            # def initialize_default(self,
+                # constrain_navigation=None,
+                # normalization_viewbox=None):
+                # super(MyInteractionManager, self).initialize_default(
+                    # constrain_navigation=constrain_navigation,
+                    # normalization_viewbox=figure.viewbox)
+            
             def initialize(self):
                 # use this to pass this Figure instance to the handler function
                 # as a first argument (in EventProcessor.process)
@@ -109,6 +119,7 @@ class InteractionManagerCreator(object):
                 # add all event processors
                 for name, (args, kwargs) in processors.iteritems():
                     self.add_processor(*args, **kwargs)
+                    
         return MyInteractionManager
 
 class BindingCreator(object):
@@ -185,23 +196,32 @@ class Figure(object):
     def axes(self, *viewbox):
         if len(viewbox) == 1:
             viewbox = viewbox[0]
-        x0, x1, y0, y1 = viewbox
+        x0, y0, x1, y1 = viewbox
+        px0, py0, px1, py1 = self.viewbox
+        if x0 is None:
+            x0 = px0
+        if x1 is None:
+            x1 = px1
+        if y0 is None:
+            y0 = py0
+        if y1 is None:
+            y1 = py1
         self.viewbox = (x0, y0, x1, y1)
     
     def xlim(self, x0, x1):
-        self.axes(x0, x1, None, None)
+        self.axes(x0, None, x1, None)
     
     def ylim(self, y0, y1):
-        self.axes(None, None, y0, y1)
+        self.axes(None, y0, None, y1)
     
-    def update_normalization(self):
-        for name, visual in self.visuals.iteritems():
-            if ((self.get_visual_class(name) == vs.PlotVisual) or
-                (self.get_visual_class(name) == vs.SpriteVisual) or
-                (self.get_visual_class(name) == vs.BarVisual)
+    # def update_normalization(self):
+        # for name, visual in self.visuals.iteritems():
+            # if ((self.get_visual_class(name) == vs.PlotVisual) or
+                # (self.get_visual_class(name) == vs.SpriteVisual) or
+                # (self.get_visual_class(name) == vs.BarVisual)
                 
-                ):
-                self.update_visual(name, viewbox=self.viewbox)
+                # ):
+                # self.update_visual(name, viewbox=self.viewbox)
 
         
     # Public visual methods
@@ -334,7 +354,7 @@ class Figure(object):
     # Rendering methods
     # -----------------
     def show(self):
-        self.update_normalization()
+        # self.update_normalization()
         pm = PaintManagerCreator.create(self, self.pmclass)
         im = InteractionManagerCreator.create(self, self.imclass)
         bindings = BindingCreator.create(self, self.bindingsclass)

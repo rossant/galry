@@ -548,6 +548,7 @@ class BaseVisual(object):
         self.constrain_ratio = kwargs.pop('constrain_ratio', False)
         self.constrain_navigation = kwargs.pop('constrain_navigation', False)
         self.visible = kwargs.pop('visible', True)
+        # self.normalize = kwargs.pop('normalize', None)
         self.framebuffer = kwargs.pop('framebuffer', 0)
         self.fragdata = kwargs.pop('fragdata', None)
         return kwargs
@@ -714,13 +715,13 @@ class Visual(BaseVisual):
     def add_options(self, **kwargs):
         self.options.update(kwargs)
         
-    def add_normalizer(self, name, viewbox=None):
-        """Add a data normalizer for attribute 'name'."""
-        # option_name = '%s_normalizer' % name
-        # self.add_option(option_name=(name, viewbox))
-        if 'normalizers' not in self.options:
-            self.options['normalizers'] = {}
-        self.options['normalizers'][name] = viewbox
+    # def add_normalizer(self, name, viewbox=None):
+        # """Add a data normalizer for attribute 'name'."""
+        # # option_name = '%s_normalizer' % name
+        # # self.add_option(option_name=(name, viewbox))
+        # if 'normalizers' not in self.options:
+            # self.options['normalizers'] = {}
+        # self.options['normalizers'][name] = viewbox
         
         
     # Variable methods

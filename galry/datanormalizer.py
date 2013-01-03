@@ -4,7 +4,7 @@ __all__ = ['DataNormalizer']
 
 class DataNormalizer(object):
     """Handles normalizing data so that it fits the fixed [-1,1]^2 viewport."""
-    def __init__(self, data):
+    def __init__(self, data=None):
         self.data = data
     
     def normalize(self, initial_viewbox=None, symmetric=False):
@@ -26,23 +26,33 @@ class DataNormalizer(object):
           * normalized_data: the normalized data.
         
         """
-        x, y = self.data[:,0], self.data[:,1]
         if not initial_viewbox:
             initial_viewbox = (None, None, None, None)
         dx0, dy0, dx1, dy1 = initial_viewbox
         
-        # default: replace None by min/max
-        if self.data.size == 0:
-            dx0 = dy0 = dx1 = dy1 = 0.
+        if self.data is not None:
+            x, y = self.data[:,0], self.data[:,1]
+            # default: replace None by min/max
+            if self.data.size == 0:
+                dx0 = dy0 = dx1 = dy1 = 0.
+            else:
+                if dx0 is None:
+                    dx0 = x.min()
+                if dy0 is None:
+                    dy0 = y.min()
+                if dx1 is None:
+                    dx1 = x.max()
+                if dy1 is None:
+                    dy1 = y.max()
         else:
             if dx0 is None:
-                dx0 = x.min()
+                dx0 = -1.
             if dy0 is None:
-                dy0 = y.min()
+                dy0 = -1.
             if dx1 is None:
-                dx1 = x.max()
+                dx1 = 1.
             if dy1 is None:
-                dy1 = y.max()
+                dy1 = 1.
             
         if dx0 == dx1:
             dx0 -= .5
@@ -58,7 +68,6 @@ class DataNormalizer(object):
             dx0, dx1 = -vx, vx
             dy0, dy1 = -vy, vy
             
-            
         if dx0 is None:
             self.normalize_x = self.unnormalize_x = lambda X: X
         else:
@@ -69,8 +78,11 @@ class DataNormalizer(object):
         else:
             self.normalize_y = lambda Y: -1+2*(Y-dy0)/(dy1-dy0)
             self.unnormalize_y = lambda Y: dy0 + (dy1 - dy0) * (1+Y)/2.
-        data_normalized = np.empty(self.data.shape, dtype=self.data.dtype)
-        data_normalized[:,0] = self.normalize_x(x)
-        data_normalized[:,1] = self.normalize_y(y)
-        return data_normalized
-    
+            
+        if self.data is not None:
+            data_normalized = np.empty(self.data.shape, dtype=self.data.dtype)
+            data_normalized[:,0] = self.normalize_x(x)
+            data_normalized[:,1] = self.normalize_y(y)
+            return data_normalized
+        
+        

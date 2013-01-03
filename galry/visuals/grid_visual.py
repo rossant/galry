@@ -64,7 +64,6 @@ class TicksTextVisual(TextVisual):
     def initialize(self, *args, **kwargs):
         super(TicksTextVisual, self).initialize(*args, **kwargs)
         axis = np.zeros(self.size)
-        # axis[self.size/2:] = 1
         self.add_attribute("axis", ndim=1, vartype="int", data=axis)
 
         
@@ -100,7 +99,6 @@ class TicksLineVisual(PlotVisual):
         self.primitive_type = 'LINES'
         
         axis = np.zeros(self.size)
-        # axis[self.size/2:] = 1
         self.add_attribute("axis", ndim=1, vartype="int", data=axis)
         
         self.add_varying('vcolor', ndim=4)

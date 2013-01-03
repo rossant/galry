@@ -854,7 +854,7 @@ def create_basic_window(widget=None, size=None, position=(100, 100),
             }
             QToolButton:hover
             {
-                background: #1a1a1a;
+                background: #2a2a2a;
             }
             """)
             mytoolbar.setMovable(False)
@@ -891,6 +891,9 @@ def create_basic_window(widget=None, size=None, position=(100, 100),
             self.widget.paint_manager.cleanup()
             super(BasicWindow, self).closeEvent(e)
             
+        def contextMenuEvent(self, e):
+            return
+        
     return BasicWindow
     
 def show_basic_window(widget_class=None, window_class=None, size=None,

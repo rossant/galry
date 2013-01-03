@@ -1,7 +1,9 @@
+import numpy as np
 from galry.processors import NavigationEventProcessor
 from default_manager import DefaultPaintManager, DefaultInteractionManager, \
     DefaultBindings
-from galry import GridEventProcessor, RectanglesVisual, GridVisual, Bindings
+from galry import GridEventProcessor, RectanglesVisual, GridVisual, Bindings, \
+    DataNormalizer
 
 
 class PlotPaintManager(DefaultPaintManager):
@@ -19,12 +21,85 @@ class PlotPaintManager(DefaultPaintManager):
         if self.parent.activate_grid:
             self.add_visual(GridVisual, name='grid', visible=False)
 
+    def finalize(self):
+        if not hasattr(self, 'normalization_viewbox'):
+            self.normalization_viewbox = (None,) * 4
+        # compute the global viewbox
+        visuals = self.get_visuals()
+        xmin, ymin, xmax, ymax = self.normalization_viewbox
+        print xmin, ymin, xmax, ymax
+        nx0 = xmin is None
+        nx1 = xmax is None
+        ny0 = ymin is None
+        ny1 = ymax is None
+        alldata = []
+        for visual in visuals:
+            vars = visual['variables']
+            attrs = [var for var in vars if var['shader_type'] == 'attribute']
+            datalist = [attr['data'] for attr in attrs if 'data' in attr and \
+                isinstance(attr['data'], np.ndarray) and \
+                attr['data'].size > 0 and attr['data'].ndim == 2 and \
+                attr.get('autonormalizable', None)]
+            alldata.extend(datalist)
+            for data in datalist:
+                # print visual['name'], data.shape
+                # continue
+                # if xmin is None:
+                    # x0 = data[:,0].min()
+                # else:
+                    # x0 = xmin
+                if nx0:
+                    x0 = data[:,0].min()
+                    if xmin is None:
+                        xmin = x0
+                    else:
+                        xmin = min(xmin, x0)
+                        
+                if nx1:
+                    x1 = data[:,0].max()
+                    if xmax is None:
+                        xmax = x1
+                    else:
+                        xmax = max(xmax, x1)
+                        
+                if ny0:
+                    y0 = data[:,1].min()
+                    if ymin is None:
+                        ymin = y0
+                    else:
+                        ymin = min(ymin, y0)
+                if ny1:
+                    
+                    y1 = data[:,1].max()
+                    if ymax is None:
+                        ymax = y1
+                    else:
+                        ymax = max(ymax, y1)
+                # x0, x1 = data[:,0].min(), data[:,0].max()
+                # y0, y1 = data[:,1].min(), data[:,1].max()
+                # print x0, y0, x1, y1
+        # print xmin, ymin, xmax, ymax
+        self.normalization_viewbox = (xmin, ymin, xmax, ymax)
+        normalizer = DataNormalizer()
+        normalizer.normalize(self.normalization_viewbox)
+        tr_x = normalizer.normalize_x
+        tr_y = normalizer.normalize_y
+        for data in alldata:
+            data[:,0] = tr_x(data[:,0])
+            data[:,1] = tr_y(data[:,1])
+        # print self.normalization_viewbox
+        # self.interaction_manager.normalization_viewbox = self.normalization_viewbox
+            
 
 class PlotInteractionManager(DefaultInteractionManager):
-    def initialize_default(self, constrain_navigation=None):
+    def initialize_default(self, constrain_navigation=None,
+        # normalization_viewbox=None
+        ):
         super(PlotInteractionManager, self).initialize_default()
         self.add_processor(NavigationEventProcessor,
-            constrain_navigation=constrain_navigation, name='navigation')
+            constrain_navigation=constrain_navigation, 
+            # normalization_viewbox=normalization_viewbox,
+            name='navigation')
         self.add_processor(GridEventProcessor, name='grid', activated=False)
         
         

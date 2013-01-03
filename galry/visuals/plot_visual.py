@@ -36,7 +36,7 @@ def process_coordinates(x=None, y=None):
 class PlotVisual(Visual):
     def initialize(self, x=None, y=None, color=None, point_size=1.0,
             position=None, nprimitives=None, index=None,
-            color_array_index=None, viewbox=None,
+            color_array_index=None, #viewbox=None,
             options=None):
             
         # if position is specified, it contains x and y as column vectors
@@ -63,8 +63,8 @@ class PlotVisual(Visual):
             self.bounds = np.arange(0, self.size + 1, nsamples)
         
         # normalize position
-        if viewbox:
-            self.add_normalizer('position', viewbox)
+        # if viewbox:
+            # self.add_normalizer('position', viewbox)
         
         # by default, use the default color
         if color is None:
@@ -101,7 +101,7 @@ class PlotVisual(Visual):
             colors_ndim = len(color)
         
         # set position attribute
-        self.add_attribute("position", ndim=2, data=position)
+        self.add_attribute("position", ndim=2, data=position, autonormalizable=True)
         
         if index is not None:
             index = np.array(index)

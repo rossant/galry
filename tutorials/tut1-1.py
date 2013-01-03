@@ -10,13 +10,13 @@ from numpy import *
 
 # We define a curve x -> sin(x) on [-10., 10.].
 x = linspace(-10., 10., 10000)
-y = sin(x)
+y = .5 * sin(x)
 
 # We plot this function.
 plot(x, y)
 
 # We set the limits for the y-axis.
-ylim(-5, 5)
+ylim(-1, 1)
 
 # Experiment with the default user actions! All actions can be changed but
 # this would be the subject of a more advanced tutorial.

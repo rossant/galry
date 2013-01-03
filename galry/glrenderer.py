@@ -740,7 +740,7 @@ class GLVisualRenderer(object):
         # log_info(self.shader_manager.fragment_shader)
                                             
         # initialize all variables
-        self.initialize_normalizers()
+        # self.initialize_normalizers()
         self.initialize_variables()
         self.initialize_fbocopy()
         self.load_variables()
@@ -907,8 +907,8 @@ class GLVisualRenderer(object):
         
     # Normalization methods
     # ---------------------
-    def initialize_normalizers(self):
-        self.normalizers = {}
+    # def initialize_normalizers(self):
+        # self.normalizers = {}
         
         
     # Loading methods
@@ -939,13 +939,13 @@ class GLVisualRenderer(object):
             data = olddata
         if data is not None:
             # normalization
-            if name in self.options.get('normalizers', {}):
-                viewbox = self.options['normalizers'][name]
-                if viewbox:
-                    self.normalizers[name] = DataNormalizer(data)
-                    # normalize data with the specified viewbox, None by default
-                    # meaning that the natural bounds of the data are used.
-                    data = self.normalizers[name].normalize(viewbox)
+            # if name in self.options.get('normalizers', {}):
+                # viewbox = self.options['normalizers'][name]
+                # if viewbox:
+                    # self.normalizers[name] = DataNormalizer(data)
+                    # # normalize data with the specified viewbox, None by default
+                    # # meaning that the natural bounds of the data are used.
+                    # data = self.normalizers[name].normalize(viewbox)
             variable['sliced_attribute'].load(data)
         
     def load_index(self, name, data=None):

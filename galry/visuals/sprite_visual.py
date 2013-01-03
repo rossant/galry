@@ -8,7 +8,7 @@ class SpriteVisual(Visual):
     different colors."""
     
     def initialize(self, x=None, y=None, color=None,
-            texture=None, position=None, viewbox=None):
+            texture=None, position=None):#, normalize=None):
             
         # if position is specified, it contains x and y as column vectors
         if position is not None:
@@ -30,8 +30,9 @@ class SpriteVisual(Visual):
         self.primitive_type = 'POINTS'
         
         # normalize position
-        if viewbox:
-            self.add_normalizer('position', viewbox)
+        # if viewbox:
+            # self.add_normalizer('position', viewbox)
+        # self.normalize = normalize
             
         # default color
         if color is None:
@@ -90,7 +91,8 @@ class SpriteVisual(Visual):
         self.add_fragment_main(texture_shader)
         
         # add variables
-        self.add_attribute("position", vartype="float", ndim=2, data=position)
+        self.add_attribute("position", vartype="float", ndim=2, data=position,
+            autonormalizable=True)
         self.add_texture("tex_sampler", size=shape, ndim=self.ndim,
             ncomponents=ncomponents)
         self.add_compound("texture", fun=lambda texture: \

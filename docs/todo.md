@@ -1,25 +1,23 @@
 Galry: high-performance interactive visualization in Python
 ===========================================================
 
-Before pre-release 0.1
-----------------------
+Before pre-release 0.1.0
+------------------------
 
   * better handling of coordinates in high level callback
         window, view, data
   * grid: integrate data normalization
   
-  * include ony shader snippets in the scene, and include shader creation
-    in the renderers
   * check gl capabilities (eg mipmapping)
-  
-  * toggle toolbar
   
   
 After pre-release
 -----------------
   
-  * 
+  * include ony shader snippets in the scene, and include shader creation
+    in the renderers
 
+    
 Refactoring
 -----------
 
@@ -109,6 +107,10 @@ Later
     custom gl calls within the paint function, etc.)
   * acyclic graph for references and avoid the restriction of order in
     the visuals definition
+  * eventually: more object-oriented design...
+  * complete separation between pure visualization and 2D plotting,
+    plotting should be like an external plugin to the visualization toolkit
+    (different folder)
   
   
 Doc

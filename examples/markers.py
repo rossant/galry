@@ -14,6 +14,6 @@ color = rand(10000, 4)
 plot(x, y, '+', ms=20, color=color)
 
 # We specify the axes as (x0, x1, y0, y1).
-axes(-5, 5, -5, 5)
+axes(-5, -5, 5, 5)
 
 show()
