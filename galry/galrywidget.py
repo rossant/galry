@@ -789,8 +789,12 @@ def create_basic_window(widget=None, size=None, position=(100, 100),
             self.resize(self.sizeHint())
             self.show()
             
+        def toggle_toolbar(self):
+            self.toolbar.setVisible(not self.toolbar.isVisible())#not )
+            
         def add_toolbar(self):
             """Add navigation toolbar"""
+            
             # reset
             reset_action = QtGui.QAction("Reset view (R)", self)
             reset_action.setIcon(get_icon('home'))
@@ -812,6 +816,12 @@ def create_basic_window(widget=None, size=None, position=(100, 100),
             save_action.setShortcut("S")
             save_action.triggered.connect(self.save)            
             
+            toolbar_action = QtGui.QAction("Toggle toolbar visibility (T)", self)
+            toolbar_action.setIcon(get_icon('toolbar'))
+            toolbar_action.setShortcut("T")
+            toolbar_action.triggered.connect(self.toggle_toolbar)
+            # self.toolbar_action = toolbar_action
+            
             # help
             help_action = QtGui.QAction("Show help (H)", self)
             help_action.setIcon(get_icon('help'))
@@ -825,12 +835,11 @@ def create_basic_window(widget=None, size=None, position=(100, 100),
             # add toolbar
             mytoolbar = QtGui.QToolBar(self.widget)        
             mytoolbar.setIconSize(QtCore.QSize(32, 32))
-            mytoolbar.addAction(reset_action)
-            mytoolbar.addAction(grid_action)
-            mytoolbar.addAction(fullscreen_action)
-            mytoolbar.addAction(save_action)
-            mytoolbar.addAction(help_action)
-            mytoolbar.addAction(exit_action)
+            
+            for action in [reset_action, grid_action, fullscreen_action,
+                toolbar_action, save_action, help_action, exit_action]:
+                self.addAction(action)
+                mytoolbar.addAction(action)
             
             mytoolbar.setStyleSheet("""
             QToolBar, QToolButton
@@ -850,7 +859,7 @@ def create_basic_window(widget=None, size=None, position=(100, 100),
             """)
             mytoolbar.setMovable(False)
             mytoolbar.setFloatable(False)
-            
+            self.toolbar = mytoolbar
             self.addToolBar(mytoolbar)
             
         def save(self, e):
