@@ -23,11 +23,16 @@ class DefaultPaintManager(PaintManager):
         
         
 class DefaultBindings(Bindings):
+    def set_fullscreen(self):
+        self.set('KeyPress', 'Fullscreen', key='F')
+        
+    def set_help(self):
+        self.set('KeyPress', 'Help', key='H')
+    
     def initialize_default(self):
         super(DefaultBindings, self).initialize_default()
-        self.set('KeyPress', 'Fullscreen', key='F')
-        self.set('KeyPress', 'Help', key='H')
-        
+        self.set_fullscreen()
+        self.set_help()
         
         
         

@@ -109,7 +109,7 @@ class PlotBindings(DefaultBindings):
     This binding set makes use of the keyboard and the mouse.
     
     """
-    def set_widget(self):
+    def set_grid(self):
         self.set('KeyPress', 'Grid', key='G')
     
     def set_panning_mouse(self):
@@ -200,7 +200,7 @@ class PlotBindings(DefaultBindings):
         super(PlotBindings, self).initialize_default()
         """Initialize all bindings. Can be overriden."""
         self.set_base_cursor()
-        self.set_widget()
+        self.set_grid()
         # panning
         self.set_panning_mouse()
         self.set_panning_keyboard()
