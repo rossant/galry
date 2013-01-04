@@ -190,8 +190,12 @@ class Texture(object):
         gl.glTexParameteri(textype, gl.GL_TEXTURE_WRAP_S, gl.GL_CLAMP)
         gl.glTexParameteri(textype, gl.GL_TEXTURE_WRAP_T, gl.GL_CLAMP)
         
-        if mipmap and hasattr(gl, 'glGenerateMipmap'):
-            gl.glGenerateMipmap(textype)
+        if mipmap:
+            if hasattr(gl, 'glGenerateMipmap'):
+                gl.glGenerateMipmap(textype)
+            else:
+                minfilter = 'NEAREST'
+                magfilter = 'NEAREST'
             
         if minfilter is None:
             minfilter = 'NEAREST'
@@ -320,7 +324,10 @@ class FrameBuffer(object):
     @staticmethod
     def create():
         """Create a FBO."""
-        buffer = gl.glGenFramebuffers(1)
+        if hasattr(gl, 'glGenFramebuffers'):
+            buffer = gl.glGenFramebuffers(1)
+        else:
+            buffer = None
         return buffer
         
     @staticmethod

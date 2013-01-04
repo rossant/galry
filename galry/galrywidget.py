@@ -536,7 +536,7 @@ class GalryWidget(QGLWidget):
         if update:
             self.updateGL()
         image = self.grabFrameBuffer()
-        image.save(file,"PNG")
+        image.save(file, "PNG")
     
     def toggle_fullscreen(self):
         self.is_fullscreen = not self.is_fullscreen
@@ -862,7 +862,7 @@ def create_basic_window(widget=None, size=None, position=(100, 100),
             self.toolbar = mytoolbar
             self.addToolBar(mytoolbar)
             
-        def save(self, e):
+        def save(self):
             """Open a file dialog and save the current image in the specified
             PNG file."""
             initial_filename = 'screen'
@@ -876,11 +876,11 @@ def create_basic_window(widget=None, size=None, position=(100, 100),
                 # if last:
                     # last = int(last)
                     # i = last + 1
-            filename, _ = QtGui.QFileDialog.getSaveFileNameAndFilter(self,
+            filename, _ = QtGui.QFileDialog.getSaveFileName(self,
                 "Save the current view in a PNG image",
                 initial_filename + str(i) + '.png',
-                '*.png',
-                '*.png',
+                # '*.png',
+                # '*.png',
                 # QtGui.QFileDialog.AnyFile,
                 )
             if filename:

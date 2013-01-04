@@ -27,7 +27,7 @@ class PlotPaintManager(DefaultPaintManager):
         # compute the global viewbox
         visuals = self.get_visuals()
         xmin, ymin, xmax, ymax = self.normalization_viewbox
-        print xmin, ymin, xmax, ymax
+        # print xmin, ymin, xmax, ymax
         nx0 = xmin is None
         nx1 = xmax is None
         ny0 = ymin is None
