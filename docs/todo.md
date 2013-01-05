@@ -6,9 +6,7 @@ Before pre-release 0.1.0
 
   * better handling of coordinates in high level callback
         window, view, data
-  * grid: integrate data normalization
-  
-  * check gl capabilities (eg mipmapping)
+  * event(fig, *params)
   
   
 After pre-release
