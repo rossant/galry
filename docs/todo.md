@@ -109,6 +109,8 @@ Later
   * complete separation between pure visualization and 2D plotting,
     plotting should be like an external plugin to the visualization toolkit
     (different folder)
+  * test volume rendering example in WebGL from
+    http://research.anatomicaltravel.com/2011/07/volume-rendering-with-webgl/
   
   
 Doc
