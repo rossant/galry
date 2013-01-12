@@ -1,24 +1,14 @@
 Galry: high-performance interactive visualization in Python
 ===========================================================
 
-Before pre-release 0.1.0
-------------------------
-
-  * better handling of coordinates in high level callback
-        window, view, data
-  * event(fig, *params)
-  
-  
-After pre-release
------------------
-  
-  * include ony shader snippets in the scene, and include shader creation
-    in the renderers
-
-    
 Refactoring
 -----------
 
+  * include ony shader snippets in the scene, and include shader creation
+    in the renderers
+  * better handling of coordinates in high level callback
+        window, view, data
+  * event(fig, *params)
   * global color module in galry
   * better design for widget options (constrain ratio, activate_grid, etc)
   * rename visual= into name= in PM.set_data
