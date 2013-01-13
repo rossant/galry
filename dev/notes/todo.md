@@ -39,6 +39,7 @@ Fixes
     widgets within a main window (concurrency issue in pyopengl?)  
   * fix bug in ipython notebook with empty arrays when loading a script
     for the first time
+  * macosx/nvidia: galry 3D examples look funny?
     
   
 Tested
