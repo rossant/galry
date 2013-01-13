@@ -1,7 +1,9 @@
 include *.md *.py
 recursive-include benchmark *.md *.py
+recursive-exclude dev *
 recursive-include docs *.md *.py
 recursive-include examples *.md *.py *.png *.obj
+recursive-exclude experimental *
 recursive-include galry *.md *.py *.png
 recursive-include galry/test *.md *.py
 recursive-exclude galry/test/autosave *.png
