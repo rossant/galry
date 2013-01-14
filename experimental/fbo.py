@@ -23,11 +23,12 @@ class ParticleVisual(Visual):
         return """
         // pass the color and point size to the fragment shader
         varying_color = color;
-        varying_color.w = alpha;
+        varying_color.w = .20;
         """
     
     def base_fountain(self, initial_positions=None,
-        velocities=None, color=None, alpha=None, delays=None):
+        velocities=None, color=None, delays=None, 
+        ):
         
         self.size = initial_positions.shape[0]
         self.primitive_type = 'POINTS'
@@ -46,7 +47,6 @@ class ParticleVisual(Visual):
         self.add_attribute("initial_positions", vartype="float", ndim=2, data=initial_positions)
         self.add_attribute("velocities", vartype="float", ndim=2, data=velocities)
         self.add_attribute("delays", vartype="float", ndim=1, data=delays)
-        self.add_attribute("alpha", vartype="float", ndim=1, data=alpha)
         
         self.add_varying("varying_color", vartype="float", ndim=4)
         
@@ -84,8 +84,6 @@ class ParticleVisual(Visual):
         vs = vs.replace('%COLOR_UPDATE%', self.get_color_update_code())
         vs = vs.replace('%G_CONSTANT%', '3.')
             
-        # self.add_uniform('cycle', vartype='int', data=0)
-            
         self.add_vertex_main(vs)    
         
         self.add_fragment_main(
@@ -97,12 +95,6 @@ class ParticleVisual(Visual):
     def initialize(self, **kwargs):
         self.base_fountain(**kwargs)
 
-        
-
-
-
-
-
 class MyVisual(Visual):
     def initialize(self, shape=None):
         if shape is None:
@@ -110,18 +102,13 @@ class MyVisual(Visual):
         
         self.add_texture('singletex', ncomponents=3, ndim=2,
             shape=shape,
-            # data=RefVar('singlefbo', 'fbotex0'),
             data=np.zeros((shape[0], shape[1], 3))
             )
             
         self.add_texture('fulltex', ncomponents=3, ndim=2,
             shape=shape,
-            # data=RefVar('fullfbo', 'fbotex1'),
             data=np.zeros((shape[0], shape[1], 3))
             )
-        
-        # self.add_framebuffer('fbo', texture=['fbotex', 'tracetex'])
-        # self.add_framebuffer('fbo', texture='fbotex')
         
         points = (-1, -1, 1, 1)
         x0, y0, x1, y1 = points
@@ -154,7 +141,8 @@ class MyVisual(Visual):
         FS = """
         vec4 out0 = texture2D(singletex, vtex_coords);
         vec4 out1 = texture2D(fulltex, vtex_coords);
-        out_color = .1 * out0 + .9 * out1;
+        float a = .05;
+        out_color = a * out0 + (1-a) * out1;
         if (out_color.x + out_color.y + out_color.z < .04)
             out_color = vec4(0, 0, 0, 0);
         """
@@ -162,8 +150,6 @@ class MyVisual(Visual):
             
 def update(figure, parameter):
     t = parameter[0]
-    # position = .5 * np.array([[np.cos(f*t), np.sin(f*t)]])
-    # figure.set_data(position=position, visual='c')
     
     figure.set_data(t=t, visual='fountain')
     
@@ -172,13 +158,6 @@ def update(figure, parameter):
 
 if __name__ == '__main__':
     
-    # position = np.zeros(1)
-    
-    # # => FBO #0
-    # plot(position, 'or', color=get_color('r.5'), ms=100,
-        # is_static=True,
-        # )
-
         
     # number of particles
     n = 50000
@@ -193,9 +172,6 @@ if __name__ == '__main__':
     velocities[:,0] = v * np.cos(angles)
     velocities[:,1] = v * np.sin(angles)
 
-    # transparency
-    alpha = .2 * rdn.rand(n)
-
     # color
     color = (0.60,0.65,.98,1.)
 
@@ -206,16 +182,14 @@ if __name__ == '__main__':
     visual(ParticleVisual, 
         initial_positions=positions,
         velocities=velocities,
-        alpha=alpha,
         color=color,
         delays=delays,
         is_static=True,
         name='fountain',
         )
 
-    
     framebuffer(name='singlefbo', display=False)
-    framebuffer(name='fullfbo')#, display=False)
+    framebuffer(name='fullfbo', is_static=True)
         
     # # FBO #0 => #1
     visual(MyVisual, name='myvisual', framebuffer=1,

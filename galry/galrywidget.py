@@ -578,7 +578,6 @@ class GalryTimerWidget(GalryWidget):
         """
         self.t = 0.
         self.dt = dt
-        self.t0 = timeit.default_timer()
         # start simulation after initialization completes
         self.timer = QtCore.QTimer()
         self.timer.setInterval(dt * 1000)
@@ -599,6 +598,7 @@ class GalryTimerWidget(GalryWidget):
     def start_timer(self):
         """Start the timer."""
         if self.timer:
+            self.t0 = timeit.default_timer()
             self.timer.start()
         
     def stop_timer(self):

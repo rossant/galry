@@ -102,6 +102,7 @@ class EventProcessor(object):
                     fig.set_rendering_options = self.parent.paint_manager.set_rendering_options
                     fig.get_processor = self.interaction_manager.get_processor
                     fig.get_visual = self.paint_manager.get_visual
+                    fig.process_interaction = self.parent.process_interaction
                 
                 fig.resizeGL = self.parent.paint_manager.resizeGL
                 # here, we are using the high level interface and figure

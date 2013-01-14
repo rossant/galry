@@ -29,6 +29,8 @@ class NavigationEventProcessor(EventProcessor):
         self.register('ZoomBox', self.process_zoombox_event)
         self.register('Reset', self.process_reset_event)
         self.register('ResetZoom', self.process_resetzoom_event)
+        self.register('SetPosition', self.process_setposition_event)
+        self.register('SetViewbox', self.process_setviewbox_event)
 
         self.register('Grid', self.process_grid_event)
         self.grid_visible = False
@@ -101,6 +103,14 @@ class NavigationEventProcessor(EventProcessor):
         self.set_cursor(None)
         self.transform_view()
         
+    def process_setposition_event(self, parameter):
+        self.set_position(*parameter)
+        self.transform_view()
+        
+    def process_setviewbox_event(self, parameter):
+        self.set_viewbox(*parameter)
+        self.transform_view()
+    
         
     # Navigation methods
     # ------------------    
