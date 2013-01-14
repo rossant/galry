@@ -33,8 +33,11 @@ class MyVisual(Visual):
         out_color.a = .1 * ceil(clamp(t - vi, 0, 1));
         """)
 
+# number of steps
 n = 1e6
-T = 10.
+
+# duration of the animation
+T = 30.
 
 X = np.cumsum(np.random.randn(n, 2), axis=0)
 # generate colors by varying linearly the hue, and convert from HSV to RGB
@@ -48,14 +51,13 @@ m = X.min(axis=0)
 M = X.max(axis=0)
 center = (M + m)/2
 X = 2 * (X - center) / (max(M) - min(m))
-# X = X - center / (max(M) - min(m))
 
 # current camera position
 x = np.array([0., 0.])
 y = np.array([0., 0.])
 
 # filtering parameter
-dt = .005
+dt = .015
 
 # zoom level
 dx = .25
@@ -63,7 +65,7 @@ dx = .25
 def anim(fig, params):
     global x, y, dx
     t, = params
-    i = int(n * t / T)
+    i = int(n * t / T) + 25000
     # follow the current position
     if i < n:
         y = X[i,:]
@@ -79,10 +81,7 @@ def anim(fig, params):
         fig.process_interaction('SetViewbox', viewbox)
         fig.set_data(t=t)
 
-figure(constrain_ratio=True)
+figure(constrain_ratio=True, toolbar=False)
 visual(MyVisual, X, color, T)
-animate(anim, dt=.001)
+animate(anim, dt=.01)
 show()
-
-
-

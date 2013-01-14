@@ -159,6 +159,7 @@ class Figure(object):
         self.animation_interval = None
         self.figsize = (GalryWidget.w, GalryWidget.h)
         self.toolbar = True
+        self.autosave = None
         
         self.pmclass = mgs.PlotPaintManager
         self.imclass = mgs.PlotInteractionManager
