@@ -372,6 +372,7 @@ class Figure(object):
             animation_interval=self.animation_interval,
             size=self.figsize,
             toolbar=self.toolbar,
+            autosave=self.autosave,
             )
         return window
 

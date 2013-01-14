@@ -249,6 +249,7 @@ class GalryWidget(QGLWidget):
         self.paint_manager.initializeGL()
         self.initialized = True
         self.just_initialized = True
+        self.i = 0
         
     def paintGL(self):
         """Paint the scene.
@@ -269,8 +270,13 @@ class GalryWidget(QGLWidget):
         # compute FPS
         self.fps_counter.tick()
         if self.autosave:
-            self.save_image(self.autosave, update=False)
+            if '%' in self.autosave:
+                autosave = self.autosave % self.i
+            else:
+                autosave = self.autosave
+            self.save_image(autosave, update=False)
         self.just_initialized = False
+        self.i += 1
         
     def paint_fps(self):
         """Display the FPS on the top-left of the screen."""
