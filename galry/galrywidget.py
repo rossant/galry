@@ -90,6 +90,7 @@ class GalryWidget(QGLWidget):
         self.initialized = False
         self.just_initialized = False
         
+        self.i = 0
         
         # background color as a 4-tuple (R,G,B,A)
         self.bgcolor = (0, 0, 0, 0)
@@ -249,7 +250,6 @@ class GalryWidget(QGLWidget):
         self.paint_manager.initializeGL()
         self.initialized = True
         self.just_initialized = True
-        self.i = 0
         
     def paintGL(self):
         """Paint the scene.
