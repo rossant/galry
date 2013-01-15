@@ -4,7 +4,7 @@ from visual import Visual
 
 __all__ = ['process_coordinates', 'PlotVisual']
 
-def process_coordinates(x=None, y=None):
+def process_coordinates(x=None, y=None, thickness=None):
     # handle the case where x is defined and not y: create x
     if y is None and x is not None:
         if x.ndim == 1:
@@ -30,13 +30,14 @@ def process_coordinates(x=None, y=None):
     position[:, 0] = x.ravel()
     position[:, 1] = y.ravel()
     
+    
     return position, x.shape
     
 
 class PlotVisual(Visual):
     def initialize(self, x=None, y=None, color=None, point_size=1.0,
             position=None, nprimitives=None, index=None,
-            color_array_index=None, #viewbox=None,
+            color_array_index=None, thickness=None,
             options=None):
             
         # if position is specified, it contains x and y as column vectors
@@ -45,6 +46,28 @@ class PlotVisual(Visual):
             shape = (position.shape[0], 1)
         else:
             position, shape = process_coordinates(x=x, y=y)
+        
+        # handle thickness
+        if thickness:
+            w = thickness
+            n = position.shape[0]
+            X = position
+            Y = np.zeros((2 * n, 2))
+            u = np.zeros((n, 2))
+            u[1:,0] = -np.diff(X[:,1])
+            u[1:,1] = np.diff(X[:,0])
+            r = (u[:,0] ** 2 + u[:,1] ** 2) ** .5
+            r[r == 0.] = 1
+            u[:,0] /= r
+            u[:,1] /= r
+            Y[::2,:] = X - w * u
+            Y[1::2,:] = X + w * u
+            position = Y
+            x = Y[:,0]
+            y = Y[:,1]
+            shape = (2 * shape[0], shape[1])
+            self.primitive_type = 'TRIANGLE_STRIP'
+            
         
         # register the size of the data
         self.size = np.prod(shape)
