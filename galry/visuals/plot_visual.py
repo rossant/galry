@@ -11,7 +11,7 @@ def process_coordinates(x=None, y=None, thickness=None):
             x = x.reshape((1, -1))
         nplots, nsamples = x.shape
         y = x
-        x = np.tile(np.arange(nsamples).reshape((1, -1)), (nplots, 1))
+        x = np.tile(np.linspace(0., 1., nsamples).reshape((1, -1)), (nplots, 1))
         
     # convert into arrays
     x = np.array(x, dtype=np.float32)#.squeeze()
@@ -43,31 +43,15 @@ class PlotVisual(Visual):
         # if position is specified, it contains x and y as column vectors
         if position is not None:
             position = np.array(position, dtype=np.float32)
-            shape = (position.shape[0], 1)
+            if thickness:
+                shape = (2 * position.shape[0], 1)
+            else:
+                shape = (position.shape[0], 1)
         else:
             position, shape = process_coordinates(x=x, y=y)
+            if thickness:
+                shape = (shape[0], 2 * shape[1])
         
-        # handle thickness
-        if thickness:
-            w = thickness
-            n = position.shape[0]
-            X = position
-            Y = np.zeros((2 * n, 2))
-            u = np.zeros((n, 2))
-            u[1:,0] = -np.diff(X[:,1])
-            u[1:,1] = np.diff(X[:,0])
-            r = (u[:,0] ** 2 + u[:,1] ** 2) ** .5
-            r[r == 0.] = 1
-            u[:,0] /= r
-            u[:,1] /= r
-            Y[::2,:] = X - w * u
-            Y[1::2,:] = X + w * u
-            position = Y
-            x = Y[:,0]
-            y = Y[:,1]
-            shape = (2 * shape[0], shape[1])
-            self.primitive_type = 'TRIANGLE_STRIP'
-            
         
         # register the size of the data
         self.size = np.prod(shape)
@@ -79,6 +63,28 @@ class PlotVisual(Visual):
         else:
             nsamples = self.size // nprimitives
         
+        
+        # handle thickness
+        if thickness:
+            w = thickness
+            n = self.size
+            X = position
+            Y = np.zeros((n, 2))
+            u = np.zeros((n/2, 2))
+            u[1:,0] = -np.diff(X[:,1])
+            u[1:,1] = np.diff(X[:,0])
+            r = (u[:,0] ** 2 + u[:,1] ** 2) ** .5
+            r[r == 0.] = 1
+            u[:,0] /= r
+            u[:,1] /= r
+            Y[::2,:] = X - w * u
+            Y[1::2,:] = X + w * u
+            position = Y
+            x = Y[:,0]
+            y = Y[:,1]
+            self.primitive_type = 'TRIANGLE_STRIP'
+            
+            
         # register the bounds
         if nsamples <= 1:
             self.bounds = [0, self.size]
