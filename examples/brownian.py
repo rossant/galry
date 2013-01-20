@@ -39,7 +39,14 @@ n = 1e6
 # duration of the animation
 T = 30.
 
-X = np.cumsum(np.random.randn(n, 2), axis=0)
+b = np.array(np.random.rand(n, 2) < .5, dtype=np.float32)
+b[b == True] = 1
+b[b == False] = -1
+X = np.cumsum(b, axis=0)
+
+# print X
+# exit()
+
 # generate colors by varying linearly the hue, and convert from HSV to RGB
 h = np.linspace(0., 1., n)
 hsv = np.ones((1, n, 3))
@@ -65,7 +72,7 @@ dx = .25
 def anim(fig, params):
     global x, y, dx
     t, = params
-    i = int(n * t / T) + 25000
+    i = int(n * t / T) + 15000
     # follow the current position
     if i < n:
         y = X[i,:]
