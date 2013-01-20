@@ -1,6 +1,12 @@
 Galry: high-performance interactive visualization in Python
 ===========================================================
 
+  * finish tutorials
+  * update README and docs
+  * create installer and test it everywhere
+  * pre-release announcement
+  
+
 Refactoring
 -----------
 
@@ -9,7 +15,6 @@ Refactoring
   * better handling of coordinates in high level callback
         window, view, data
   * event(fig, *params)
-  * global color module in galry
   * better design for widget options (constrain ratio, activate_grid, etc)
   * rename visual= into name= in PM.set_data
   * rename extend into initialize (and have initialize_default)
@@ -35,8 +40,6 @@ Fixes
 -----
 
   * make unit tests work in ipython with pylab activated
-  * try to reproduce bug with violation memory access when there are several
-    widgets within a main window (concurrency issue in pyopengl?)  
   * fix bug in ipython notebook with empty arrays when loading a script
     for the first time
   * macosx/nvidia: galry 3D examples look funny?
@@ -60,18 +63,14 @@ Later
   * investigate the possibility of a MPL backend using galry: check out
     MPLGL by Chris Beaumont
   * adding new visuals dynamically
-  * tutorials parts 2 and 3
   * HDF5 viewer for long signals: use stride to implement a dynamic 
     multi-resolution undersampling method.
     Refinement: thread to update data on the GPU only when no action is occurring,
     for maximum perceived performance
   * user preferences, with DEBUG option
-  * better error messages when template is not correct (eg data is missing,
-    size is missing, etc)
   * opencl buffers and opencl/gl interop buffers
   * handle more complete data type (int 8/16/32 bits, floats, etc)  
   * several plots (like subplot) with different widgets, linking possible
-  * colormaps
   * support for wx?
     QT dependencies:
       * bindingmanager.py (convert from key string to 
@@ -83,14 +82,6 @@ Later
       * abstract code related to icons/cursors
       * abstract code related to keyboard enum values      
       * abstract code related to the widget class
-  * multifbos:
-      * create one special visual which implements everything?
-      * one FBO with 2 textures (prev)
-      * one screen FBO with 1 texture
-      
-      * copy screen FBO => prev.1
-      * partcl renders to prev.0
-      * screen FBO = prev.0 + .9 * prev.1
   
   * finer control of the gl workflow (custom render method of visuals, or 
     custom gl calls within the paint function, etc.)
