@@ -80,6 +80,7 @@ class Bindings(object):
         self.base_cursor = 'ArrowCursor'
         self.text = None
         self.binding = ordict()
+        self.descriptions = ordict()
         self.initialize_default()
         self.initialize()
         
@@ -106,7 +107,7 @@ class Bindings(object):
         pass
         
     def set(self, action, event, key_modifier=None, key=None,
-                            param_getter=None):
+                            param_getter=None, description=None):
         """Register an action-event binding.
         
         Arguments:
@@ -130,6 +131,8 @@ class Bindings(object):
             param = param_getter
             param_getter = lambda p: param
         self.binding[(action, key_modifier, key)] = (event, param_getter)
+        if description:
+            self.descriptions[(action, key_modifier, key)] = description
         
     def get(self, action, key_modifier=None, key=None):
         """Return the event and parameter getter function associated to
@@ -142,6 +145,9 @@ class Bindings(object):
           
         """
         return self.binding.get((action, key_modifier, key), (None, None))
+    
+    def get_description(self, action, key_modifier=None, key=None):
+        return self.descriptions.get((action, key_modifier, key), None)
     
     
     # Help methods
@@ -156,6 +162,8 @@ class Bindings(object):
         
         texts = {}
         for (action, key_modifier, key), (event, _) in self.binding.iteritems():
+            desc = self.get_description(action, key_modifier, key)
+            
             # key string
             if key:
                 key = QtGui.QKeySequence(key).toString()
@@ -172,6 +180,9 @@ class Bindings(object):
                 bstr = 'Press ' + key_modifier + key + ' : ' + event
             else:
                 bstr = key_modifier + action + ' : ' + event
+            
+            if desc:
+                bstr += ' ' + desc
             
             if event not in texts:
                 texts[event] = []

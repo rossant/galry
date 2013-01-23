@@ -259,6 +259,9 @@ class NavigationEventProcessor(EventProcessor):
             These coordinates are all in [-1, 1].
         
         """
+        # prevent too small zoombox
+        if (np.abs(x1 - x0) < .07) & (np.abs(y1 - y0) < .07):
+            return
         # force the zoombox to keep its original ratio
         if self.parent.constrain_ratio:
             x0, y0, x1, y1 = self.constrain_viewbox(x0, y0, x1, y1)

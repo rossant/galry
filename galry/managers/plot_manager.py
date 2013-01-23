@@ -123,16 +123,16 @@ class PlotBindings(DefaultBindings):
         """Set panning bindings with the keyboard."""
         # Panning: keyboard arrows
         self.set('KeyPress', 'Pan',
-                    key='Left',
+                    key='Left', description='Left',
                     param_getter=lambda p: (.24, 0))
         self.set('KeyPress', 'Pan',
-                    key='Right',
+                    key='Right', description='Right',
                     param_getter=lambda p: (-.24, 0))
         self.set('KeyPress', 'Pan',
-                    key='Up',
+                    key='Up', description='Up',
                     param_getter=lambda p: (0, -.24))
         self.set('KeyPress', 'Pan',
-                    key='Down',
+                    key='Down', description='Down',
                     param_getter=lambda p: (0, .24))
                 
     def set_zooming_mouse(self):
@@ -167,16 +167,16 @@ class PlotBindings(DefaultBindings):
         """Set zooming bindings with the keyboard."""
         # Zooming: ALT + key arrows
         self.set('KeyPress', 'Zoom',
-                    key='Left', key_modifier='Control', 
+                    key='Left', description='X-', key_modifier='Control', 
                     param_getter=lambda p: (-.25, 0, 0, 0))
         self.set('KeyPress', 'Zoom',
-                    key='Right', key_modifier='Control', 
+                    key='Right', description='X+', key_modifier='Control', 
                     param_getter=lambda p: (.25, 0, 0, 0))
         self.set('KeyPress', 'Zoom',
-                    key='Up', key_modifier='Control', 
+                    key='Up', description='Y+', key_modifier='Control', 
                     param_getter=lambda p: (0, 0, .25, 0))
         self.set('KeyPress', 'Zoom',
-                    key='Down', key_modifier='Control', 
+                    key='Down', description='Y-', key_modifier='Control', 
                     param_getter=lambda p: (0, 0, -.25, 0))
         
     def set_zooming_wheel(self):
