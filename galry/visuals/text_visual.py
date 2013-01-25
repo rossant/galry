@@ -9,6 +9,9 @@ __all__ = ['TextVisual']
 VS = """
 gl_Position.x += (offset - text_width / 2) * spacing.x / window_size.x;
 gl_Position.y -= index * spacing.y / window_size.y;
+
+gl_Position.xy = gl_Position.xy + posoffset;
+
 gl_PointSize = point_size;
 flat_text_map = text_map;
 """
@@ -146,7 +149,7 @@ class TextVisual(Visual):
 
     def initialize(self, text, coordinates=(0., 0.), font='segoe', fontsize=24,
             color=None, letter_spacing=None, interline=0.,
-            prevent_constrain=False, depth=None):
+            prevent_constrain=False, depth=None, posoffset=None):
         """Initialize the text template."""
         
         if prevent_constrain:
@@ -172,7 +175,11 @@ class TextVisual(Visual):
         self.add_attribute("index", vartype="float", ndim=1)
         self.add_attribute("text_map", vartype="float", ndim=4)
         self.add_varying("flat_text_map", vartype="float", flat=True, ndim=4)
-        
+       
+        if posoffset is None:
+            posoffset = (0., 0.)
+        self.add_uniform('posoffset', vartype='float', ndim=2, data=posoffset)
+       
         # texture
         self.add_texture("tex_sampler", size=self.texture.shape[:2], ndim=2,
                             ncomponents=self.texture.shape[2],

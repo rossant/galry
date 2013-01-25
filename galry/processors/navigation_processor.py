@@ -221,6 +221,11 @@ class NavigationEventProcessor(EventProcessor):
         
         """
         return x/self.sx - self.tx, y/self.sy - self.ty
+        
+    def get_window_coordinates(self, x, y):
+        """Inverse of get_data_coordinates.
+        """
+        return (x + self.tx) * self.sx, (y + self.ty) * self.sy
     
     def constrain_viewbox(self, x0, y0, x1, y1):
         """Constrain the viewbox ratio."""
