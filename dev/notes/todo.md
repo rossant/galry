@@ -1,9 +1,6 @@
 Galry: high-performance interactive visualization in Python
 ===========================================================
 
-  * create installer and test it everywhere
-  * pre-release announcement
-  
 
 Refactoring
 -----------
