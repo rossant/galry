@@ -1,3 +1,4 @@
+"""GPU-based image processing filters."""
 import os
 from galry import *
 import pylab as plt

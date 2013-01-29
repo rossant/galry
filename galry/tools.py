@@ -66,13 +66,15 @@ def show_window(window, **kwargs):
         app.exec_()
     return window
     
-def run_all_scripts(dir=".", autodestruct=True, condition=None):
+def run_all_scripts(dir=".", autodestruct=True, condition=None, ignore=[]):
     """Run all scripts successively."""
     if condition is None:
         condition = lambda file: file.endswith(".py") and not file.startswith("_")
     os.chdir(dir)
     files = sorted([file for file in os.listdir(dir) if condition(file)])
     for file in files:
+        if file in ignore:
+            continue
         print "Running %s..." % file
         args = ["python", file]
         if autodestruct:

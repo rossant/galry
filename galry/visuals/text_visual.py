@@ -1,6 +1,6 @@
 import numpy as np
 import os
-from galry import log_debug, log_info, log_warn
+from galry import log_debug, log_info, log_warn, get_color
 from fontmaps import load_font
 from visual import Visual
 
@@ -148,12 +148,15 @@ class TextVisual(Visual):
         self.texture, self.matrix, self.get_map = load_font(font, fontsize)
 
     def initialize(self, text, coordinates=(0., 0.), font='segoe', fontsize=24,
-            color=None, letter_spacing=None, interline=0.,
+            color=None, letter_spacing=None, interline=0., autocolor=None,
             prevent_constrain=False, depth=None, posoffset=None):
         """Initialize the text template."""
         
         if prevent_constrain:
             self.constrain_ratio = False
+            
+        if autocolor is not None:
+            color = get_color(autocolor)
             
         if color is None:
             color = self.default_color

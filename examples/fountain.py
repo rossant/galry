@@ -1,3 +1,4 @@
+"""Particle system example."""
 from galry import *
 import pylab as plt
 import numpy as np

@@ -1,5 +1,6 @@
 import numpy as np
 from visual import Visual
+from galry import get_color
 
 __all__ = ['normalize',
            'projection_matrix', 'rotation_matrix', 'scale_matrix',
@@ -146,7 +147,7 @@ class MeshVisual(Visual):
         self.constrain_ratio = constrain_ratio
         self.initialize_navigation(is_static)
     
-    def initialize(self, camera_angle=None, camera_ratio=None,
+    def initialize(self, camera_angle=None, camera_ratio=None, autocolor=None,
         camera_zrange=None, position=None, color=None, normal=None, index=None):
         """Initialize the template.
         
@@ -172,6 +173,11 @@ class MeshVisual(Visual):
           * `ambient_light`: the amount of ambient light (white color).
             
         """
+        
+        if autocolor is not None:
+            color = get_color(autocolor)
+        
+        
         # default camera parameters
         if camera_angle is None:
             camera_angle = np.pi / 4

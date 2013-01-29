@@ -77,11 +77,11 @@ class TicksLineVisual(PlotVisual):
             gl_Position = vec4(position, 0., 1.);
             
             // highlight x.y = 0 axes
-            if ((abs(gl_Position.x) < .0000000001) || 
+            /*if ((abs(gl_Position.x) < .0000000001) || 
                 (abs(gl_Position.y) < .0000000001))
                 vcolor = vec4(1, 1, 1, .75);
-            else
-                vcolor = vec4(1, 1, 1, .25);
+            else*/
+            vcolor = vec4(1, 1, 1, .25);
                 
             if (axis < .5) {
                 gl_Position.x = scale.x * (position.x + translation.x);

@@ -1,3 +1,5 @@
+"""Dash line example with binary texture."""
+
 from galry import *
 import numpy as np
 

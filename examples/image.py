@@ -1,3 +1,4 @@
+"""Download an image and show it."""
 # Necessary for future Python 3 compatibility
 from __future__ import print_function
 import os

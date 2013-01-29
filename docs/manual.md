@@ -4,17 +4,14 @@ User manual
 Galry is a **high-performance interactive visualization library in Python**.
 
 It offers a **high-level interface** for quickly visualizing large
-visuals. It can be used either in script mode, or in interactive mode
-with IPython. It integrates smoothly with the QT event system of IPython
-so that you can interact with the plotting widget from the IPython console
-(much like matplotlib).
+datasets.
 
-The **low-level interface** lets you create a fully customized GUI
-for interactive visualization. It integrates with QT, through either PyQT or 
+The **low-level interface** allows to create a fully customized GUI
+for interactive visualization. It integrates with Qt, through either PyQt4 or 
 PySide. Integration with other GUI systems may be considered at some point
 (wx, etc.).
 
-This user manual gives a wide, high-level introduction to both interfaces.
+This manual gives a high-level introduction to both interfaces.
 **The user interested in the practical details can go through the tutorials.**
 
 
@@ -22,15 +19,30 @@ High-level interface
 --------------------
 
 This interface is similar to the one offered by matplotlib. Only a very small
-portion of matplotlib's features are currently implemented, but it's fine
-since Galry focuses on interactive visualization and not publication-ready
-figure plotting.
+portion of matplotlib's features are currently implemented, because Galry
+is not meant to generate publication-ready figures (it can merely export
+the raw window as a PNG image).
 
-A GL backend for matplotlib might also be an idea, but the current internal
-architecture of matplotlib is not adapted for high-performance interactive
-rendering for now.
+The list below shows all available functions.
 
-
+  * `plot`: plot curves or scatter plot.
+  * `text`
+  * `rectangles`
+  * `imshow`
+  * `graph`
+  * `mesh`
+  * `barplot`
+  * `sprites`
+  * `visual`
+  * `axes`
+  * `xlim`
+  * `ylim`
+  * `grid`
+  * `animate`
+  * `event`
+  * `action`
+  * `framebuffer`
+  * `show`
 
 
 
@@ -50,7 +62,7 @@ mode. It allows to plot simple figures (scatter plots, curves, etc.) in
 less than 10 lines of code. But it also gives you the opportunity to customize 
 plots as 
 much as you want. The integration of the plot within the GUI window can also
-be fully customized (thanks to QT).
+be fully customized (thanks to Qt).
 
 Here, we give a **high-level overview of this interface** and, consequently, 
 of the internal architecture of Galry.
@@ -59,8 +71,8 @@ of the internal architecture of Galry.
 ### The `GalryWidget` class
 
 The **main class that Galry provides is `GalryWidget`**.
-It is a QT widget deriving
-from `QGLWidget` which is defined in QT (available in PyQT and Pyside).
+It is a Qt widget deriving
+from `QGLWidget` which is defined in Qt (available in PyQt and Pyside).
 The `GalryWidget` displays an OpenGL context entirely controlled by
 Galry through OpenGL.
 

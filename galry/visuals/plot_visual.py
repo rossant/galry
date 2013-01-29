@@ -1,5 +1,5 @@
 import numpy as np
-from galry import get_color
+from galry import get_color, get_next_color
 from visual import Visual
 
 __all__ = ['process_coordinates', 'PlotVisual']
@@ -38,7 +38,7 @@ class PlotVisual(Visual):
     def initialize(self, x=None, y=None, color=None, point_size=1.0,
             position=None, nprimitives=None, index=None,
             color_array_index=None, thickness=None,
-            options=None):
+            options=None, autocolor=None):
             
         # if position is specified, it contains x and y as column vectors
         if position is not None:
@@ -74,7 +74,9 @@ class PlotVisual(Visual):
             u[1:,0] = -np.diff(X[:,1])
             u[1:,1] = np.diff(X[:,0])
             r = (u[:,0] ** 2 + u[:,1] ** 2) ** .5
-            r[r == 0.] = 1
+            # r[r == 0.] = 1
+            ind = np.nonzero(r == 0.)[0]
+            r[ind] = r[ind - 1]
             u[:,0] /= r
             u[:,1] /= r
             Y[::2,:] = X - w * u
@@ -97,7 +99,16 @@ class PlotVisual(Visual):
         
         # by default, use the default color
         if color is None:
-            color = self.default_color
+            if nprimitives <= 1:
+                color = self.default_color
+        
+        # automatic color with color map
+        if autocolor is not None:
+            if nprimitives <= 1:
+                color = get_next_color(autocolor)
+            else:
+                color = [get_next_color(i + autocolor) for i in xrange(nprimitives)]
+            
             
         # # handle the case where the color is a string where each character
         # # is a color (eg. 'ry')

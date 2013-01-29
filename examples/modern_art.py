@@ -1,3 +1,4 @@
+"""Modern art."""
 from galry import *
 import numpy.random as rdn
 

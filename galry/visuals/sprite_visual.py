@@ -1,13 +1,13 @@
 import numpy as np
 from visual import Visual
 from plot_visual import process_coordinates
-from galry import get_color
+from galry import get_color, get_next_color
     
 class SpriteVisual(Visual):
     """Template displaying one texture in multiple positions with
     different colors."""
     
-    def initialize(self, x=None, y=None, color=None,
+    def initialize(self, x=None, y=None, color=None, autocolor=None,
             texture=None, position=None):#, normalize=None):
             
         # if position is specified, it contains x and y as column vectors
@@ -37,6 +37,12 @@ class SpriteVisual(Visual):
         # default color
         if color is None:
             color = self.default_color
+        
+        
+        # automatic color with color map
+        if autocolor is not None:
+            color = get_next_color(autocolor)
+            
         
         color = get_color(color)
         

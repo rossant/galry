@@ -19,6 +19,8 @@ class PlotPaintManager(DefaultPaintManager):
         
         # Grid
         if self.parent.activate_grid:
+            # show_grid = self.parent.show_grid
+            # show_grid = getattr(self.parent, 'show_grid', False)
             self.add_visual(GridVisual, name='grid', visible=False)
 
     def finalize(self):
@@ -87,8 +89,6 @@ class PlotPaintManager(DefaultPaintManager):
         for data in alldata:
             data[:,0] = tr_x(data[:,0])
             data[:,1] = tr_y(data[:,1])
-        # print self.normalization_viewbox
-        # self.interaction_manager.normalization_viewbox = self.normalization_viewbox
             
 
 class PlotInteractionManager(DefaultInteractionManager):
@@ -100,7 +100,7 @@ class PlotInteractionManager(DefaultInteractionManager):
             constrain_navigation=constrain_navigation, 
             # normalization_viewbox=normalization_viewbox,
             name='navigation')
-        self.add_processor(GridEventProcessor, name='grid', activated=False)
+        self.add_processor(GridEventProcessor, name='grid')#, activated=False)
         
         
 class PlotBindings(DefaultBindings):

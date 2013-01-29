@@ -1,3 +1,4 @@
+"""GPU-based interactive Mandelbrot fractal example."""
 from galry import *
 import numpy as np
 import numpy.random as rdn

@@ -1,6 +1,7 @@
 from visual import CompoundVisual, RefVar
 from sprite_visual import SpriteVisual
 from plot_visual import PlotVisual
+from galry import get_color
 import numpy as np
 
 __all__ = ['GraphVisual']
@@ -24,7 +25,10 @@ def get_tex(n):
 
 class GraphVisual(CompoundVisual):
     def initialize(self, position=None, edges=None, color=None,
-        edges_color=None, node_size=None, **kwargs):
+        edges_color=None, node_size=None, autocolor=None, **kwargs):
+        
+        if autocolor is not None:
+            color = get_color(autocolor)
         
         if node_size is None:
             node_size = 8

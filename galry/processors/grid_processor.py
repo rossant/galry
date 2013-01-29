@@ -79,9 +79,14 @@ class GridEventProcessor(EventProcessor):
         
     def update_axes(self, parameter):
         nav = self.get_processor('navigation')
+        # print nav
+        if not nav:
+            return
+        
         viewbox = nav.get_viewbox()
+        
         # nvb = nav.normalization_viewbox
-        nvb = self.parent.paint_manager.normalization_viewbox
+        nvb = getattr(self.parent.paint_manager, 'normalization_viewbox', None)
         # print nvb
         # initialize the normalizer
         if nvb is not None:
@@ -102,6 +107,7 @@ class GridEventProcessor(EventProcessor):
         if nvb is not None:
             coordinates[:,0] = self.normalizer.normalize_x(coordinates[:,0])
             coordinates[:,1] = self.normalizer.normalize_y(coordinates[:,1])
+        
         
         # here: coordinates contains positions centered on the static
         # xy=0 axes of the screen
@@ -129,5 +135,4 @@ class GridEventProcessor(EventProcessor):
         self.set_data(visual='grid_text', text=text,
             coordinates=coordinates,
             axis=axis)
-            
             

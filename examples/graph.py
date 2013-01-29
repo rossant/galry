@@ -1,3 +1,5 @@
+"""Display an interactive graph with force-based dynamical layout. Nodes
+can be moved with the mouse."""
 from galry import *
 import numpy.random as rdn
 import networkx as nx
@@ -136,5 +138,7 @@ event('NodeMoved', node_moved)
 event(None, end_moved)
 
 animate(update, dt=f.dt)
+
+print "Move nodes with middle-click + move"
 
 show()

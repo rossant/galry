@@ -1,7 +1,3 @@
-This file describes important changes that break compatibility with the
-previous versions (hence the "experimental" keyword used on the front page).
-They were mostly implemented in a separate branch before being merged in the
-master branch.
 
 2012-12-17 Update
 -----------------

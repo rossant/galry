@@ -36,7 +36,7 @@ def find_best_size(font="segoe", size=32):
                 if int(m.group(1)) > size:
                     break
                 newsize = int(m.group(1))
-        log_info("font %s %d does not exist, loading size %d instead" % \
+        log_debug("font %s %d does not exist, loading size %d instead" % \
             (font, size, newsize))
         return newsize
 

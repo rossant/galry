@@ -1,3 +1,5 @@
+"""GPU-based HSV color space example."""
+
 FSH = """
 vec3 Hue(float H)
 {
@@ -70,15 +72,16 @@ class MV(TextureVisual):
         self.add_fragment_main(FS)
         
 u = 1.
-def act(fig, param):
+def change_color(fig, param):
     global u
     du = param
     u += du
     fig.set_data(u=u)
-        
+
+figure(constrain_navigation=True)
 visual(MV)
-action('KeyPress', act, key='Up', key_modifier='Shift', param_getter=.01)
-action('KeyPress', act, key='Down', key_modifier='Shift', param_getter=-.01)
+action('KeyPress', change_color, key='Up', key_modifier='Shift', param_getter=.01)
+action('KeyPress', change_color, key='Down', key_modifier='Shift', param_getter=-.01)
 show()
 
 

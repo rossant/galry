@@ -1,6 +1,7 @@
 import re
+import numpy as np
 
-__all__ = ['get_color']
+__all__ = ['get_color', 'get_next_color']
 
 HEX = '0123456789abcdef'
 HEX2 = dict((a+b, (HEX.index(a)*16 + HEX.index(b)) / 255.) \
@@ -31,6 +32,10 @@ BASIC_COLORS = [
     (0., 0., 0.),
     (1., 1., 1.),
 ]
+COLORMAP = [4, 1, 0, 3, 2, 5]
+
+def get_next_color(i):
+    return BASIC_COLORS[COLORMAP[np.mod(i, 6)]]
 
 def get_basic_color(color):
     col = BASIC_COLORS[BASIC_COLORS_STRING.index(color)]
@@ -63,6 +68,8 @@ def get_color(color):
       * a list of colors
     
     """
+    if type(color) == int:
+        color = get_next_color(color)
     if isinstance(color, basestring):
         color = color.lower()
         for pattern, fun in PATTERNS.iteritems():

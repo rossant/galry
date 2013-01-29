@@ -1,3 +1,12 @@
+"""Pong video game example, can be played with two players on the
+same computer.
+
+Controls:
+    Left player: D/C keys
+    Right player: Up/Down arrows
+    F for fullscreen
+
+"""
 import os
 from galry import *
 import pylab as plt
@@ -6,7 +15,7 @@ import pylab as plt
 DT = .01
 
 # ball velocity
-V = .5
+V = 1
 
 # half-size of the racket
 DL = .15

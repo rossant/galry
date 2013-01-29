@@ -412,8 +412,6 @@ class ShaderManager(object):
         self.vs = self.compile_shader(self.vertex_shader, gl.GL_VERTEX_SHADER)
         self.fs = self.compile_shader(self.fragment_shader, gl.GL_FRAGMENT_SHADER)
         
-        # print self.fragment_shader
-        
     def create_program(self):
         """Create shader program and attach shaders."""
         program = gl.glCreateProgram()
@@ -623,7 +621,7 @@ class SlicedAttribute(object):
             # create the sliced buffers
             self.create()
         else:
-            log_info("Creating sliced attribute with existing buffers " +
+            log_debug("Creating sliced attribute with existing buffers " +
                 str(buffers))
             # or use existing buffers
             self.load_buffers(buffers)
@@ -814,7 +812,7 @@ class GLVisualRenderer(object):
         if self.get_variables('index'):
             # deactivate slicing
             self.slicer = self.noslicer
-            log_info("deactivating slicing because there's an indexed buffer")
+            log_debug("deactivating slicing because there's an indexed buffer")
             self.use_index = True
         else:
             self.use_index = False
@@ -845,7 +843,7 @@ class GLVisualRenderer(object):
             # HACK: if the targeted attribute is indexed, we should
             # deactivate slicing here
             if self.renderer.visual_renderers[variable['data'].visual].use_index:
-                log_info("deactivating slicing")
+                log_debug("deactivating slicing")
                 self.slicer = self.noslicer
             
             # use the existing buffers from the target variable
@@ -934,12 +932,12 @@ class GLVisualRenderer(object):
         """Load data for an attribute variable."""
         variable = self.get_variable(name)
         if variable['sliced_attribute'].location < 0:
-            log_info(("Variable '%s' could not be loaded, probably because "
+            log_debug(("Variable '%s' could not be loaded, probably because "
                       "it is not used in the shaders") % name)
             return
         olddata = variable.get('data', None)
         if isinstance(olddata, RefVar):
-            log_info("Skipping loading data for attribute '%s' since it "
+            log_debug("Skipping loading data for attribute '%s' since it "
                 "references a target variable." % name)
             return
         if data is None:
@@ -970,7 +968,7 @@ class GLVisualRenderer(object):
         variable = self.get_variable(name)
         
         if variable['buffer'] < 0:
-            log_info(("Variable '%s' could not be loaded, probably because "
+            log_debug(("Variable '%s' could not be loaded, probably because "
                       "it is not used in the shaders") % name)
             return
         
@@ -981,7 +979,7 @@ class GLVisualRenderer(object):
         self.update_samplers = True
         
         if isinstance(data, RefVar):
-            log_info("Skipping loading data for texture '%s' since it "
+            log_debug("Skipping loading data for texture '%s' since it "
                 "references a target variable." % name)
             return
             
@@ -1031,7 +1029,7 @@ class GLVisualRenderer(object):
         """Update data of a variable."""
         variable = self.get_variable(name)
         if variable is None:
-            log_info("Variable '%s' was not found, unable to update it." % name)
+            log_debug("Variable '%s' was not found, unable to update it." % name)
         else:
             shader_type = variable['shader_type']
             # skip compound, which is handled in set_data
@@ -1045,7 +1043,7 @@ class GLVisualRenderer(object):
         variable = self.get_variable(name)
         
         if variable['sliced_attribute'].location < 0:
-            log_info(("Variable '%s' could not be updated, probably because "
+            log_debug(("Variable '%s' could not be updated, probably because "
                       "it is not used in the shaders") % name)
             return
         
@@ -1122,7 +1120,7 @@ class GLVisualRenderer(object):
         variable = self.get_variable(name)
         
         if variable['buffer'] < 0:
-            log_info(("Variable '%s' could not be loaded, probably because "
+            log_debug(("Variable '%s' could not be loaded, probably because "
                       "it is not used in the shaders") % name)
             return
         
@@ -1249,7 +1247,7 @@ class GLVisualRenderer(object):
                 # log_info("Updating variable '%s'" % name)
                 self.update_variable(name, data)
             else:
-                log_info("Data for variable '%s' is None" % name)
+                log_debug("Data for variable '%s' is None" % name)
         # reset the data updating dictionary
         self.data_updating.clear()
         
@@ -1310,7 +1308,7 @@ class GLVisualRenderer(object):
                 
                 Texture.bind(buffer, variable['ndim'])
             else:
-                log_info("Texture '%s' was not properly initialized." % \
+                log_debug("Texture '%s' was not properly initialized." % \
                          variable['name'])
         # deactivate all textures if there are not textures
         if not textures:
@@ -1336,7 +1334,7 @@ class GLVisualRenderer(object):
         # if the shaders could not be successfully activated, stop the
         # rendering immediately
         except Exception as e:
-            log_info("Error while activating the shaders: " + str(e))
+            log_warn("Error while activating the shaders: " + str(e))
             return
             
         # update all variables
@@ -1507,7 +1505,7 @@ class GLRenderer(object):
         # print the renderer information
         for key, value in GLVersion.get_renderer_info().iteritems():
             if key is not None and value is not None:
-                log_info(key + ": " + value)
+                log_debug(key + ": " + value)
         # initialize the renderer options using the options set in the Scene
         self.set_renderer_options()
         # create the VisualRenderer objects

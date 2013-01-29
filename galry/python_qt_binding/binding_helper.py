@@ -158,7 +158,7 @@ def _load_pyqt(required_modules, optional_modules):
 
     import PyQt4.QtCore
     
-    log_info("PyQt loaded")
+    log_debug("PyQt loaded")
     
     return PyQt4.QtCore.PYQT_VERSION_STR
 
@@ -235,7 +235,7 @@ def _load_pyside(required_modules, optional_modules):
 
     import PySide
     
-    log_info("PySide loaded")
+    log_debug("PySide loaded")
     
     return PySide.__version__
 

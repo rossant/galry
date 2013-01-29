@@ -1,3 +1,5 @@
+"""3D cube example."""
+
 from galry import *
 import numpy as np
 

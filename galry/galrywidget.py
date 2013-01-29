@@ -510,7 +510,7 @@ class GalryWidget(QGLWidget):
         # handle interaction mode change
         if event == 'SwitchInteractionMode':
             binding = self.switch_interaction_mode()
-            log_info("Switching interaction mode to %s." % \
+            log_debug("Switching interaction mode to %s." % \
                 binding.__class__.__name__)
         
         # process the interaction event
@@ -633,6 +633,7 @@ def create_custom_widget(bindings=None,
                          constrain_navigation=False,
                          activate_help=True,
                          activate_grid=False,
+                         show_grid=False,
                          display_fps=False,
                          activate3D=False,
                          animation_interval=None,
@@ -689,6 +690,7 @@ def create_custom_widget(bindings=None,
             self.constrain_navigation = constrain_navigation
             self.activate_help = activate_help
             self.activate_grid = activate_grid
+            self.show_grid = show_grid
             self.activate3D = activate3D
             self.display_fps = display_fps
             self.initialize_companion_classes()

@@ -1,5 +1,6 @@
 import numpy as np
 from plot_visual import PlotVisual
+from galry import get_color
     
 class RectanglesVisual(PlotVisual):
     """Template for displaying one or several rectangles. This template
@@ -40,11 +41,14 @@ class RectanglesVisual(PlotVisual):
         
         return dict(position=position)
     
-    def initialize(self, coordinates=None, color=None):#, depth=None):
+    def initialize(self, coordinates=None, color=None, autocolor=None):#, depth=None):
         
         if type(coordinates) is tuple:
             coordinates = np.array(coordinates, dtype=np.float32).reshape((1, -1))
         nprimitives = coordinates.shape[0]
+        
+        if autocolor is not None:
+            color = get_color(autocolor)
         
         if color is None:
             color = self.default_color

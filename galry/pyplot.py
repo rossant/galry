@@ -1,9 +1,11 @@
 import numpy as np
 # from collections import OrderedDict as odict
+import inspect
 
 from galry import GalryWidget, show_basic_window, get_color, PaintManager,\
-    InteractionManager, ordict
+    InteractionManager, ordict, get_next_color
 import galry.managers as mgs
+import galry.processors as ps
 import galry.visuals as vs
 
 __all__ = ['figure', 'Figure', 'get_current_figure',
@@ -18,15 +20,20 @@ __all__ = ['figure', 'Figure', 'get_current_figure',
 
 def get_marker_texture(marker, size=None):
     """Create a marker texture."""
-    if size is None:
-        size = 1
+    # if size is None:
+        # size = 1
         
     if marker == '.':
         marker = ','
-        size = 2
-    if size is None:
-        size = 5
+        if size is None:
+            size = 2
     
+    if size is None:
+        if marker == ',':
+            size = 1
+        else:
+            size = 5
+        
     texture = np.zeros((size, size, 4))
     
     if marker == ',':
@@ -60,7 +67,7 @@ def get_marker_texture(marker, size=None):
         R = X ** 2 + Y ** 2
         R = np.minimum(1, 20 * np.exp(-8*R))
         # disc-shaped alpha channel
-        texture[:,:,-1] = R
+        texture[:size,:size,-1] = R
     
     return texture
 
@@ -155,6 +162,7 @@ class Figure(object):
         self.activate3D = None
         self.antialiasing = None
         self.activate_grid = True
+        self.show_grid = False
         self.activate_help = True
         self.animation_interval = None
         self.figsize = (GalryWidget.w, GalryWidget.h)
@@ -176,6 +184,14 @@ class Figure(object):
     # -----------------------
     def add_visual(self, *args, **kwargs):
         name = kwargs.get('name', 'visual%d' % len(self.visuals))
+        
+        # give the autocolor (colormap index) only if it
+        # is requested
+        _args, _, _, _ = inspect.getargspec(args[0].initialize)
+        if 'autocolor' in _args:
+            if kwargs.get('color', None) is None:
+                kwargs['autocolor'] = len(self.visuals)
+            
         self.visuals[name] = (args, kwargs)
     
     def get_visual_class(self, name):
@@ -215,20 +231,41 @@ class Figure(object):
     def ylim(self, y0, y1):
         self.axes(None, y0, None, y1)
     
-    # def update_normalization(self):
-        # for name, visual in self.visuals.iteritems():
-            # if ((self.get_visual_class(name) == vs.PlotVisual) or
-                # (self.get_visual_class(name) == vs.SpriteVisual) or
-                # (self.get_visual_class(name) == vs.BarVisual)
-                
-                # ):
-                # self.update_visual(name, viewbox=self.viewbox)
-
         
     # Public visual methods
     # ---------------------
     def plot(self, *args, **kwargs):
+        """Plot lines, curves, scatter plots, or any sequence of basic
+        OpenGL primitives.
         
+        Arguments:
+        
+          * x, y: 1D vectors of the same size with point coordinates, or
+            2D arrays where each row is plotted as an independent plot.
+            If only x is provided, then it contains the y coordinates and the
+            x coordinates are assumed to be linearly spaced.
+          * options: a string with shorcuts for the options: color and marker.
+            The color can be any char among: `rgbycmkw`.
+            The marker can be any char among: `,.+-|xo`. 
+          * color: the color of the line(s), or a list/array of colors for each 
+            independent primitive.
+          * marker, or m: the type of the marker as a char, or a NxMx3 texture.
+          * marker_size, or ms: the size of the marker.
+          * thickness: None by default, or the thickness of the line.
+          * primitive_type: the OpenGL primitive type of the visual. Can be:
+          
+              * `LINES`: a segment is rendered for each pair of successive
+                points
+              * `LINE_STRIP`: a sequence of segments from one point to the
+                next.
+              * `POINTS`: each point is rendered as a pixel.
+              * `TRIANGLES`: each successive triplet of points is rendered as
+                a triangle.
+              * `TRIANGLE_STRIP`: one triangle is rendered from a point to the
+                next (i.e. successive triangles share two vertices out of
+                three).
+        
+        """
         # deal with special string argument containing options
         lenargs = len(args)
         opt = ''
@@ -268,18 +305,62 @@ class Figure(object):
         self.add_visual(cls, *args, **kwargs)
         
     def barplot(self, *args, **kwargs):
+        """Render a bar plot (histogram).
+        
+        Arguments:
+        
+          * values: a 1D vector of bar plot values, or a 2D array where each
+            row is an independent bar plot.
+          * offset: a 2D vector where offset[i,:] contains the x, y coordinates
+            of bar plot #i.
+        
+        """
         self.add_visual(vs.BarVisual, *args, **kwargs)
         
     def text(self, *args, **kwargs):
+        """Render text.
+        
+        Arguments:
+        
+          * text: a string or a list of strings
+          * coordinates: a tuple with x, y coordinates of the text, or a list 
+            with coordinates for each string.
+          * fontsize=24: the font size
+          * color: the color of the text
+          * letter_spacing: the letter spacing
+          * interline=0.: the interline when there are several independent 
+            texts
+        
+        """
         self.add_visual(vs.TextVisual, *args, **kwargs)
         
     def rectangles(self, *args, **kwargs):
+        """Render one or multiple rectangles.
+        
+        Arguments:
+        
+          * coordinates: a 4-tuple with (x0, y0, x1, y1) coordinates, or a list
+            of such coordinates for rendering multiple rectangles.
+          * color: color(s) of the rectangle(s).
+        
+        """
         self.add_visual(vs.RectanglesVisual, *args, **kwargs)
     
     def sprites(self, *args, **kwargs):
+        """"""
         self.add_visual(vs.SpriteVisual, *args, **kwargs)
        
     def imshow(self, *args, **kwargs):
+        """Draw an image.
+        
+        Arguments:
+        
+          * texture: a NxMx3 or NxMx4 array with RGB(A) components.
+          * points: a 4-tuple with (x0, y0, x1, y1) coordinates of the texture.
+          * filter=False: if True, linear filtering and mimapping is used
+            if supported by the OpenGL implementation.
+        
+        """
         filter = kwargs.pop('filter', None)
         if filter:
             kwargs.update(
@@ -289,9 +370,37 @@ class Figure(object):
         self.add_visual(vs.TextureVisual, *args, **kwargs)
         
     def graph(self, *args, **kwargs):
+        """Draw a graph.
+        
+        Arguments:
+        
+          * position: a Nx2 array with the coordinates of all nodes.
+          * edges: a Nx2-long vector where each row is an edge with the
+            nodes indices (integers).
+          * color: the color of all nodes, or an array where each row is a 
+            node's color.
+          * edges_color: the color of all edges, or an array where each row is
+            an edge's color.
+          * node_size: the node size for all nodes.
+        
+        """
+        
         self.add_visual(vs.GraphVisual, *args, **kwargs)
         
     def mesh(self, *args, **kwargs):
+        """Draw a 3D mesh.
+        
+        Arguments:
+        
+          * position: the positions as 3D vertices,
+          * normal: the normals as 3D vectors,
+          * color: the color of each vertex, as 4D vertices.
+          * camera_angle: the view angle of the camera, in radians.
+          * camera_ratio: the W/H ratio of the camera.
+          * camera_zrange: a pair with the far and near z values for the camera
+            projection.
+        
+        """
         self.pmclass = mgs.MeshPaintManager
         self.imclass = mgs.MeshInteractionManager
         self.antialiasing = True
@@ -299,21 +408,30 @@ class Figure(object):
         self.add_visual(vs.MeshVisual, *args, **kwargs)
     
     def visual(self, visualcls, *args, **kwargs):
+        """Render a custom visual.
+        
+        Arguments:
+        
+          * visual_class: the Visual class.
+          * *args, **kwargs: the arguments to `visual_class.initialize`.
+        
+        """
         self.add_visual(visualcls, *args, **kwargs)
     
     def grid(self, *args, **kwargs):
-        # TODO: do not add new grid visual but activate the existing one
-        self.add_visual(vs.GridVisual, *args, **kwargs)
-        self.add_event_processor(vs.GridEventProcessor)
+        """Activate the grid."""
+        self.show_grid = True
         
         
     # Public interaction methods
     # --------------------------
     def event(self, event, method):
+        """Connect an event to a callback method."""
         # self.add_handler(event, method)
         self.handlers[event] = method
         
     def action(self, action, event, *args, **kwargs):
+        """Connect an action to an event or a callback method."""
         # first case: event is a function or a method, and directly bind the
         # action to that function
         if not isinstance(event, basestring):
@@ -334,6 +452,14 @@ class Figure(object):
             self.bindings.append((args, kwargs))
         
     def animate(self, method, dt=None):
+        """Connect a callback method to the Animate event.
+        
+        Arguments:
+        
+          * method: the callback method,
+          * dt: the time step in seconds.
+        
+        """
         if dt is None:
             dt = .02
         self.animation_interval = dt
@@ -348,13 +474,12 @@ class Figure(object):
         if 'name' not in kwargs:
             kwargs['name'] = 'framebuffer'
         self.visual(vs.FrameBufferVisual, *args, **kwargs)
-        # for name, visual in self.visuals.iteritems():
-            # if not visual[1].get('framebuffer'):
-                # self.update_visual(name, is_static=True)
+
         
     # Rendering methods
     # -----------------
     def show(self):
+        """Show the figure."""
         # self.update_normalization()
         pm = PaintManagerCreator.create(self, self.pmclass)
         im = InteractionManagerCreator.create(self, self.imclass)
@@ -369,6 +494,7 @@ class Figure(object):
             activate3D=self.activate3D,
             antialiasing=self.antialiasing,
             activate_grid=self.activate_grid,
+            show_grid=self.show_grid,
             activate_help=self.activate_help,
             animation_interval=self.animation_interval,
             size=self.figsize,
@@ -434,7 +560,6 @@ def visual(*args, **kwargs):
     fig.visual(*args, **kwargs)
     
 
-    
 # Axes methods
 # ------------
 def grid(*args, **kwargs):
@@ -469,15 +594,14 @@ def animate(*args, **kwargs):
     fig.animate(*args, **kwargs)
 
 
-    
+# Frame buffer
+# ------------
 def framebuffer(*args, **kwargs):
     fig = get_current_figure()
     fig.framebuffer(*args, **kwargs)
     
     
 
-    
-    
 def show(*args, **kwargs):
     fig = get_current_figure()
     fig.show(*args, **kwargs)

@@ -7,5 +7,6 @@ y = .5 * sin(10 * x)
 
 X = np.vstack((y, y + 1))
 plot(X, thickness=.02, color=['y','r'])
+xlim(-1, 1)
 
 show()
