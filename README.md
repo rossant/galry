@@ -17,6 +17,12 @@ written for advanced uses.
 [Click here to go to the FAQ](https://github.com/rossant/galry/blob/master/docs/faq.md).
 
 
+User survey
+-----------
+
+<iframe src="https://docs.google.com/spreadsheet/embeddedform?formkey=dE5qZldRN3pvY2NEaXRhb2J4UDhoYWc6MQ" width="760" height="569" frameborder="0" marginheight="0" marginwidth="0">Chargement en cours...</iframe>
+
+
 Gallery
 -------
 

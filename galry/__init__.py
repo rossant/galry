@@ -22,7 +22,7 @@ from paintmanager import *
 from managers import *
 from galrywidget import *
 from pyplot import *
-from test import *
+# from test import *
 
 # from matplotlib.pyplot import imread
 

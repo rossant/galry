@@ -1,7 +1,12 @@
 import os
 from distutils.core import setup
 
-LONG_DESCRIPTION = """Galry is a high performance interactive visualization package in Python. It lets you visualize and navigate into very large plots in real time, by using the graphics card as much as possible. Galry is written directly on top of PyOpenGL for the highest performance possible."""
+LONG_DESCRIPTION = \
+"""Galry is a high performance interactive visualization
+package in Python. It lets you visualize and navigate
+into very large plots in real time, by using the graphics
+card as much as possible. Galry is written directly on
+top of PyOpenGL for the highest performance possible."""
 
 if os.path.exists('MANIFEST'):
     os.remove('MANIFEST')
