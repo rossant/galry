@@ -6,7 +6,7 @@ Python** based on OpenGL.
 It allows to interactively visualize very large plots (tens of millions of
 points) in real time, by using the graphics card as much as possible.
 
-Galry's high-level interface is directly inspired from Matplotlib and Matlab.
+Galry's high-level interface is directly inspired by Matplotlib and Matlab.
 The low-level interface can be used to write complex interactive visualization
 GUIs with Qt that deal with large 2D/3D datasets.
 
@@ -33,7 +33,23 @@ use the latest graphics card drivers).
 
 Galry is licensed under the BSD license.
 
+
 [Click here to go to the installation page](https://github.com/rossant/galry/wiki/Installation).
+
+### Quick install
+
+  * Make sure you've installed all dependencies.
+  * Download galry's package (ZIP button on top of the page).
+  * Extract the package and do `python setup.py install`.
+  * To test it, open a Python or IPython prompt and type:
+    
+    from galry import *
+    from numpy.random import randn
+    plot(randn(3, 10000))
+    show()
+    
+  * You should see three overlayed random signals. You can navigate with the
+    mouse and the keyboard. Click on `H` to see all available actions.
 
 
 Quick links
