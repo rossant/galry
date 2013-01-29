@@ -211,6 +211,7 @@ class Figure(object):
     # Normalization methods
     # ---------------------
     def axes(self, *viewbox):
+        """Set the axes with (x0, y0, x1, y1)."""
         if len(viewbox) == 1:
             viewbox = viewbox[0]
         x0, y0, x1, y1 = viewbox
@@ -226,9 +227,11 @@ class Figure(object):
         self.viewbox = (x0, y0, x1, y1)
     
     def xlim(self, x0, x1):
+        """Set the x limits x0 and x1."""
         self.axes(x0, None, x1, None)
     
     def ylim(self, y0, y1):
+        """Set the y limits y0 and y1."""
         self.axes(None, y0, None, y1)
     
         
@@ -509,6 +512,19 @@ class Figure(object):
 # Public figure methods
 # ---------------------
 def figure(*args, **kwargs):
+    """Create a new figure.
+    
+    Arguments:
+    
+      * constrain_ratio: constrain the W/H ratio when zooming and resizing
+        the window.
+      * constrain_navigation: prevent zooming outside the scene.
+      * display_fps: display frames per second or not.
+      * antialiasing: activate antialiasing or not.
+      * size: figure size.
+      * toolbar: show the toolbar by default or not.
+      
+    """
     fig = Figure(*args, **kwargs)
     global _FIGURE
     _FIGURE = fig

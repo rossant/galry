@@ -48,10 +48,11 @@ Here are the available interaction functions:
     callback function.
   * `event`: bind an event to a callback method.
   * `action`: bind an action to an event or directly a callback method.
+  * `figure`: create a new figure.
   * `show`: show the figure.
 
 The details of these functions can be found in the tutorials/examples or
-directly in the doc strings (in `galry/pyplot.py`, the API reference not
+directly in the doc strings (in `galry/pyplot.py`, the API reference is not
 done yet).
 
 
@@ -408,7 +409,7 @@ The implemented user actions are for now:
  * `LeftClickMove`
  * `MiddleClickMove`
  * `RightClickMove`
- * `DoubleClick
+ * `DoubleClick`
  * `Wheel`
  * `KeyPress`
  
