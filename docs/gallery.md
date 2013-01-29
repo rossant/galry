@@ -1,6 +1,9 @@
 Galry's Gallery
 ===============
 
+Screenshots
+-----------
+
 ![Multiple plots](https://raw.github.com/rossant/galry/master/images/img0.png)
 ![Multiple bar plots](https://raw.github.com/rossant/galry/master/images/img1.png)
 ![Raster plot](https://raw.github.com/rossant/galry/master/images/img2.png)
@@ -14,4 +17,10 @@ Galry's Gallery
 ![Particle system](https://raw.github.com/rossant/galry/master/images/img10.png)
 ![3D mesh](https://raw.github.com/rossant/galry/master/images/img11.png)
 ![Cellular automata](https://raw.github.com/rossant/galry/master/images/img12.png)
+
+
+Videos
+------
+
+[Click here to see demos on Youtube.](http://www.youtube.com/watch?v=Nv4aNR4Gi6w&list=PLyxVOal96D3zFYTYNco1DIVANAQ5122f1)
 

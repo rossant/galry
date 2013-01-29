@@ -43,10 +43,10 @@ Galry is licensed under the BSD license.
   * Extract the package and do `python setup.py install`.
   * To test it, open a Python or IPython prompt and type:
     
-    from galry import *
-    from numpy.random import randn
-    plot(randn(3, 10000))
-    show()
+        from galry import *
+        from numpy.random import randn
+        plot(randn(3, 10000))
+        show()
     
   * You should see three overlayed random signals. You can navigate with the
     mouse and the keyboard. Click on `H` to see all available actions.
