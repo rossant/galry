@@ -26,7 +26,11 @@ User survey
 Gallery
 -------
 
-[Click here to see some screenshots and videos](https://github.com/rossant/galry/blob/master/docs/gallery.md).
+![Multiple plots](https://raw.github.com/rossant/galry/master/images/thumbnails/img0.jpg)
+![Multiple bar plots](https://raw.github.com/rossant/galry/master/images/thumbnails/img1.jpg)
+![Dynamic fractal](https://raw.github.com/rossant/galry/master/images/thumbnails/img5.jpg)
+
+[Click here to see all screenshots and videos](https://github.com/rossant/galry/blob/master/docs/gallery.md).
 
 
 Installation
