@@ -43,13 +43,11 @@ use the latest graphics card drivers).
 
 Galry is licensed under the BSD license.
 
-
-[Click here to go to the installation page](https://github.com/rossant/galry/wiki/Installation).
-
 ### Quick install
 
   * Make sure you've installed all dependencies.
-  * Download galry's package (ZIP button on top of the page).
+  * Download galry's package (ZIP button on top of the page for the full
+    repository, or see links below).
   * Extract the package and do `python setup.py install`.
   * To test it, open a Python or IPython prompt and type:
     
@@ -59,7 +57,15 @@ Galry is licensed under the BSD license.
         show()
     
   * You should see three overlayed random signals. You can navigate with the
-    mouse and the keyboard. Click on `H` to see all available actions.
+    mouse and the keyboard. Press `H` to see all available actions.
+
+[Click here to go to the installation page](https://github.com/rossant/galry/wiki/Installation).
+
+### Packages
+
+[Windows 64 bits installer](http://galry.rossant.net/galry-0.1.0.dev.win-amd64.exe)
+[ZIP](http://galry.rossant.net/galry-0.1.0.dev.tar.gz)
+[TGZ](http://galry.rossant.net/galry-0.1.0.dev.zip)
 
 
 Quick links
@@ -69,6 +75,7 @@ Quick links
   * [Installation page](https://github.com/rossant/galry/wiki/Installation)
   * [User Manual](https://github.com/rossant/galry/blob/master/docs/manual.md)
   * [Tutorials](https://github.com/rossant/galry/tree/master/tutorials)
+  * [Tutorials](https://github.com/rossant/galry/tree/master/examples)
   * [Gallery](https://github.com/rossant/galry/blob/master/docs/gallery.md)
   * [Benchmarks wiki](https://github.com/rossant/galry/wiki/Benchmarks)
   * [FAQ](https://github.com/rossant/galry/blob/master/docs/faq.md)
