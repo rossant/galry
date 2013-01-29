@@ -23,33 +23,42 @@ portion of matplotlib's features are currently implemented, because Galry
 is not meant to generate publication-ready figures (it can merely export
 the raw window as a PNG image).
 
-The list below shows all available functions.
+Here are the available rendering functions.
 
-  * `plot`: plot curves or scatter plot.
-  * `text`
-  * `rectangles`
-  * `imshow`
-  * `graph`
-  * `mesh`
-  * `barplot`
-  * `sprites`
-  * `visual`
-  * `axes`
-  * `xlim`
-  * `ylim`
-  * `grid`
-  * `animate`
-  * `event`
-  * `action`
-  * `framebuffer`
-  * `show`
+  * `plot`: draw curves or scatter plot.
+  * `text`: draw one or multiple strings of text with custom positions and
+    colors.
+  * `rectangles`: draw one or multiple rectangles.
+  * `imshow`: draw an image.
+  * `graph`: draw a graph with nodes and edges and custom colors.
+  * `mesh`: draw a 3D mesh.
+  * `barplot`: draw one or multiple bar plots.
+  * `visual`: draw a custom visual.
+  
+Here are the available axes functions:
+  
+  * `axes`: specify the axes boundaries.
+  * `xlim`: specify the x limits.
+  * `ylim`: specify the y limits.
+  * `grid`: display the grid by default.
+  
+Here are the available interaction functions:
 
+  * `animate`: update the scene at regular intervals by calling a specified
+    callback function.
+  * `event`: bind an event to a callback method.
+  * `action`: bind an action to an event or directly a callback method.
+  * `show`: show the figure.
+
+The details of these functions can be found in the tutorials/examples or
+directly in the doc strings (in `galry/pyplot.py`, the API reference not
+done yet).
 
 
 Low-level interface
 -------------------
 
-The low-level interface is not *that* low-level. It contains two parts:
+The low-level interface contains two parts:
 a rendering module, and an interactivity module. The rendering module should
 be thought as a module on top of OpenGL, which hides low-level implementation
 details about OpenGL and exposes functions related to data and rendering.
@@ -281,15 +290,17 @@ Currently, available visuals are:
 
   * `PlotVisual`: generic visual for basic or advanced plotting. Any
     GL primitive is possible:
-      * `Lines`: independent line segments,
-      * `LineStrip`: continuous signal as successive line segments,
-      * `LineLoop`: like `LineStrip` but as a closed polygon,
-      * `Points`: pixels with arbitrary size,
-      * `Triangles`: independent triangles,
-      * `TriangleStrip`: successive triangles, two consecutive triangles
+    
+      * `LINES`: independent line segments,
+      * `LINE_STRIP`: continuous signal as successive line segments,
+      * `LINE_LOOP`: like `LineStrip` but as a closed polygon,
+      * `POINTS`: pixels with arbitrary size,
+      * `TRIANGLES`: independent triangles,
+      * `TRIANGLE_STRIP`: successive triangles, two consecutive triangles
         sharing one side, useful for rendering any filled polygon,
-      * `TriangleFan`: successive triangles, all sharing the very first vertex.
+      * `TRIANGLE_FAN`: successive triangles, all sharing the very first vertex.
         Useful for rendering discs.
+        
     In addition, multiple independent primitives of the same type can be 
     rendered in the same visual (example: multiple signals as multiple
     `LineStrip`). Indexed rendering is also possible.
@@ -431,7 +442,7 @@ The implemented interaction events are:
 New interaction events can be defined.
   
 As soon as an user action happens during the lifetime of the widget,
-galry finds the associated interaction event according to the
+Galry finds the associated interaction event according to the
 current interaction mode. Then, that interaction event and the relevant
 action parameters (returned by the function specified in the binding)
 are passed to the `InteractionManager`. This manager contains one or several

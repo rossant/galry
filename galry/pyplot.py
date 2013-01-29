@@ -258,12 +258,14 @@ class Figure(object):
                 points
               * `LINE_STRIP`: a sequence of segments from one point to the
                 next.
+              * `LINE_LOOP`: like `LINE_STRIP` but closed.
               * `POINTS`: each point is rendered as a pixel.
               * `TRIANGLES`: each successive triplet of points is rendered as
                 a triangle.
               * `TRIANGLE_STRIP`: one triangle is rendered from a point to the
                 next (i.e. successive triangles share two vertices out of
                 three).
+              * `TRIANGLE_FAN`: the first vertex is shared by all triangles.
         
         """
         # deal with special string argument containing options
