@@ -20,7 +20,7 @@ written for advanced uses.
 User survey
 -----------
 
-<iframe src="https://docs.google.com/spreadsheet/embeddedform?formkey=dE5qZldRN3pvY2NEaXRhb2J4UDhoYWc6MQ" width="760" height="569" frameborder="0" marginheight="0" marginwidth="0">Chargement en cours...</iframe>
+[**We'd be very grateful if you could fill in this really short form if you're interested in Galry!**](https://docs.google.com/spreadsheet/viewform?formkey=dE5qZldRN3pvY2NEaXRhb2J4UDhoYWc6MQ#gid=0)
 
 
 Gallery
