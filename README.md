@@ -59,6 +59,12 @@ Galry is licensed under the BSD license.
   * You should see three overlayed random signals. You can navigate with the
     mouse and the keyboard. Press `H` to see all available actions.
 
+**Note to Linux users**: a crash (segmentation fault) has been reported with
+Ubuntu and some versions of PySide. If you have this problem, you can try to
+update PySide to version >= 1.1.1 where this crash appears to be resolved. 
+In addition, a work-around for Galry is on its way.
+
+    
 [Click here to go to the installation page](https://github.com/rossant/galry/wiki/Installation).
 
 ### Packages
