@@ -1,4 +1,4 @@
-"""Tutorial 2.2: Convay's Game of Life.
+"""Tutorial 2.3: Convay's Game of Life.
 
 In this tutorial, we show how to simulate the Convay's Game of Life
 by animating a texture at regular intervals.
