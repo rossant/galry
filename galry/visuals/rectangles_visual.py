@@ -41,7 +41,7 @@ class RectanglesVisual(PlotVisual):
         
         return dict(position=position)
     
-    def initialize(self, coordinates=None, color=None, autocolor=None):#, depth=None):
+    def initialize(self, coordinates=None, color=None, autocolor=None, depth=None):
         
         if type(coordinates) is tuple:
             coordinates = np.array(coordinates, dtype=np.float32).reshape((1, -1))
@@ -67,4 +67,4 @@ class RectanglesVisual(PlotVisual):
         self.add_compound("coordinates", fun=self.coordinates_compound, 
             data=coordinates)
             
-            
+        self.depth = depth

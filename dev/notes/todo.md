@@ -88,7 +88,8 @@ Later
     (different folder)
   * test volume rendering example in WebGL from
     http://research.anatomicaltravel.com/2011/07/volume-rendering-with-webgl/
-  
+  * better text rendering: single texture with the fragment shader which
+    does all the text processing
   
 Doc
 ---
