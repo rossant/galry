@@ -1,11 +1,23 @@
 from python_qt_binding.QtCore import Qt 
 
-__all__ = ['UserActionGenerator', ]
+__all__ = ['UserActionGenerator', 'LEAP']
 
 
 def get_maximum_norm(p1, p2):
     """Return the inf norm between two points."""
     return max(abs(p1[0]-p2[0]), abs(p1[1]-p2[1]))
+    
+# try importing leap motion SDK    
+try:
+    import Leap
+    LEAP = {}
+    LEAP['frame'] = None
+    class LeapListener(Leap.Listener):
+        def on_frame(self, controller):
+            LEAP['frame'] = controller.frame()
+except:
+    # leap SDK not available
+    LEAP = None
     
 class UserActionGenerator(object):
     """Raise user action events.
@@ -31,6 +43,14 @@ class UserActionGenerator(object):
         self.mouse_position_diff = (0, 0)
         self.mouse_press_position = (0, 0)
         self.wheel = 0
+        self.init_leap()
+        
+    def init_leap(self):
+        if LEAP:
+            self.leap_listener = LeapListener()
+            self.leap_controller = Leap.Controller()
+            self.leap_controller.add_listener(self.leap_listener)
+        # self.leap = LEAP
         
     def get_action_parameters(self):
         """Return an action parameter object."""
@@ -112,5 +132,8 @@ class UserActionGenerator(object):
     def focusOutEvent(self, e):
         # reset all actions when the focus goes out
         self.reset()
+        
+    def close(self):
+        self.leap_controller.remove_listener(self.leap_listener)
         
         

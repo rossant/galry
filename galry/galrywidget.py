@@ -557,6 +557,7 @@ class GalryWidget(QGLWidget):
                 self.window.showNormal()
                 
     def close_widget(self):
+        self.user_action_generator.close()
         if hasattr(self, 'window'):
             if hasattr(self.window, 'close'):
                 self.window.close()
