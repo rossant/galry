@@ -14,10 +14,13 @@ try:
     LEAP['frame'] = None
     class LeapListener(Leap.Listener):
         def on_frame(self, controller):
-            LEAP['frame'] = controller.frame()
+            try:
+                LEAP['frame'] = controller.frame()
+            except:
+                pass
 except:
     # leap SDK not available
-    LEAP = None
+    LEAP = {}
     
 class UserActionGenerator(object):
     """Raise user action events.
@@ -43,14 +46,13 @@ class UserActionGenerator(object):
         self.mouse_position_diff = (0, 0)
         self.mouse_press_position = (0, 0)
         self.wheel = 0
-        self.init_leap()
+        # self.init_leap()
         
     def init_leap(self):
         if LEAP:
             self.leap_listener = LeapListener()
             self.leap_controller = Leap.Controller()
             self.leap_controller.add_listener(self.leap_listener)
-        # self.leap = LEAP
         
     def get_action_parameters(self):
         """Return an action parameter object."""
