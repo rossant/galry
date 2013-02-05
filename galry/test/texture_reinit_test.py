@@ -5,15 +5,14 @@ import numpy as np
 
 class PM(PaintManager):
     def initialize(self):
-        position = np.random.randn(1, 2) * .2
-        self.add_visual(PlotVisual, position=position, primitive_type='POINTS',
-            color=(1., 1., 1., 1.))
+        self.add_visual(TextureVisual, texture=np.zeros((2, 2, 3)))
         # initialize the visual again, but takes only the data defined in
         # visual.initialize()
-        self.reinitialize_visual(x=[-.5, .5, .5, -.5, -.5],
-                                 y=[-.5, -.5, .5, .5, -.5],
-                                 primitive_type='LINE_STRIP',
-                                 color=(1.,) * 4)
+        tex = np.zeros((600, 600, 3))
+        a = 150
+        tex[a:-a,a:-a,:] = 1
+        tex[a+1:-a-1,a+1:-a-1,:] = 0
+        self.reinitialize_visual(texture=tex)
 
 class PlotReinitTest(GalryTest):
     def test(self):

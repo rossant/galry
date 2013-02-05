@@ -136,6 +136,7 @@ class UserActionGenerator(object):
         self.reset()
         
     def close(self):
-        self.leap_controller.remove_listener(self.leap_listener)
+        if hasattr(self, 'leap_controller'):
+            self.leap_controller.remove_listener(self.leap_listener)
         
         
