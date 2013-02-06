@@ -2,7 +2,7 @@ API notes
 =========
 
 The interface will be portable, i.e. not tied to Python. Using and
-object-oriented paradigm may help to achieve this goal.
+object-oriented paradigm may help achieving this goal.
 
 The low-level interface is a thin wrapper on top of OpenGL, with less
 boilerplate code than pure OpenGL calls. It could be used in other
@@ -44,7 +44,7 @@ In particular, the user-provided GLSL code will be automatically adapted
 for OpenGL desktop or ES version (it will just contain the code of the main 
 and some external functions, not variable declarations).
 
-In the current version, this functionality is broadly speaking provided
+In the current version, this functionality is broadly speaking implemented
 in GLRenderer.
 
 
@@ -59,7 +59,7 @@ most common use cases.
 The central notion in this layer is that of *visual*. A visual is a visual 
 object defined by several OpenGL objects (defined in the low-level API):
 buffers, textures, shader codes, etc. It is also characterized by a `paint`
-method, which can be simple (default) or more complex).
+method, which can be simple (default) or more complex.
 
 Globally, there will be methods to manipulate visuals in the scene. In
 particular, the final `paint` method can also be overriden.

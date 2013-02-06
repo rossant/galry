@@ -1,3 +1,5 @@
+Notes about the high-level API
+==============================
 
 This document contains some examples of how the future high-level API
 can be used for specific tasks. The objectives of this API are:

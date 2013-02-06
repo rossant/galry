@@ -25,7 +25,7 @@ it with a GUI library offering an OpenGL context.
     # create a 2D texture
     mytexture1 = Texture(ndim=2, shape=mytex.shape)
     # object-oriented interface, each object has some properties which can be 
-    # set in the constructor or later
+    # set in the constructor or as object attributes
     mytexture1.data = mytex
 
     # add the objects in the context (might be done transparently with Python)
@@ -69,7 +69,7 @@ and shown/hidden in the scene.
             # when several options are possible with the arguments (ie.
             # single color, multiple colors, etc.), subclasses of visuals
             # should be written instead of using lots of if statements
-            vb = VertexBuffer(VEC3, data=data)
+            vb = VertexBuffer(VEC2, data=data)
             vs = VertexShader("""...""")
             painter = Painter(ptype=TRIANGLES, size=data.shape[0])
             self.add(vb, vs, painter)
@@ -93,5 +93,70 @@ Then, to use visuals:
     # scene.initialize(), scene.paint(), scene.resize(width, height)
     
 
+### More complex example: graphs
 
+This example shows how to display a graph (with nodes and edges) and
+text, and how memory usage can be optimized (i.e. using the same buffers
+for multiple visuals). It also shows how visuals can be combined.
 
+    class GraphVisual(Visual):
+        def __init__(self, nodes, edges, ...):
+            # buffers containing the nodes and the edges
+            vb = VertexBuffer(VEC2, data=nodes)
+            ib = IndexBuffer(edges)
+            
+            # painters for painting the nodes and edges
+            painter_nodes = Painter(POINTS, size=nodes.shape[0])
+            painter_edges = Painter(LINES, size=edges.shape[0])
+            
+            # shaders
+            vs_nodes = VertexShader("""...""")
+            fs_nodes = FragmentShader("""...""")
+            vs_edges = VertexShader("""...""")
+            fs_edges = FragmentShader("""...""")
+            
+            self.add(vb, ib, ...)
+
+        def paint(self):
+            # bind the buffer with the nodes positions
+            self.vb.bind()
+            
+            # enable the nodes shaders
+            self.vs_nodes.enable()
+            self.fs_nodes.enable()
+            
+            # paint the nodes
+            self.painter_nodes.paint()
+            
+            # bind the index buffer
+            self.ib.bind()
+            
+            # enable the edges shaders
+            self.vs_edges.enable()
+            self.fs_edges.enable()
+            
+            # paint the edges
+            self.painter_edges.paint()
+            
+
+    class GraphWithText(Visual):
+        def __init__(self, nodes, edges, text, ...):
+            # mixture visuals can be created, containing several visuals
+            # as building blocks
+            visual_graph = GraphVisual(nodes, edges, ...)
+            visual_text = TextVisual(text)
+            
+            self.add(visual_graph, visual_text)
+            
+        def paint(self):
+            self.visual_graph.paint()
+            # assuming the vertex buffer is still bound after
+            # visual_graph.paint(), it means that visual_text.paint() will use
+            # it for rendering the text at each node position
+            self.visual_text.paint()
+            # if buffers are unbound after paint(), we should think about
+            # an option to activate/deactivate unbinding of GL objects at the
+            # end of paint()
+            
+            
+        
