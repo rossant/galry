@@ -14,6 +14,15 @@ PySide. Integration with other GUI systems may be considered at some point
 This manual gives a high-level introduction to both interfaces.
 **The user interested in the practical details can go through the tutorials.**
 
+Important note
+--------------
+
+Major changes to the library are to be expected in the coming months. The API
+will probably change, especially the low-level interface. Galry is not
+ready to be used in production yet, but can already be advantageously used as a
+fast and efficient visualization toolkit capable of handling large datasets,
+using the high-level interface.
+
 
 High-level interface
 --------------------
