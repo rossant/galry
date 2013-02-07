@@ -35,7 +35,7 @@ it with a GUI library offering an OpenGL context.
                                                 # variable name
 
     vs = VertexShader("""...""", myuniform1=Uniform(ndim=3, data=myvector))
-    vs.myuniform2 = ...
+    vs.myvarying = Varying(VEC2)
 
     # add a frame buffer
     fbo = FrameBuffer()
@@ -159,4 +159,9 @@ for multiple visuals). It also shows how visuals can be combined.
             # end of paint()
             
             
-        
+High-level interface
+--------------------
+
+
+
+
