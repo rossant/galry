@@ -84,7 +84,7 @@ Then, to use visuals:
     
     # The scene contains the visual and has access to the context (low-level
     # API)
-    scene = Scene(context)
+    scene = Scene(context)  # other name for Scene: VisualContext?
     
     triangles = TrianglesVisual(data=myarray)
     scene.add(triangles)
