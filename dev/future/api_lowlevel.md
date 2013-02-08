@@ -115,12 +115,14 @@ in the fragment shader.
 
 ### Public methods
 
-  * `Texture.set_info(ndim, dtype, params)`: set the texture information.
-    ndim is the number of dimensions of the texture (between 1 and 3). Generally dtype=UINT8. params is a TextureParams object with various information
+  * `Texture.set_info(ndim, dtype, params, index)`: set the texture
+    information for the specified texture index (used for multi texturing)
+    ndim is the number of dimensions of the texture (between 1 and 3).
+    Generally dtype=UINT8. params is a TextureParams object with various information
     about the texture: filtering options, mipmapping, clamp options, etc.
-  * `Texture.set_data(data, shape)`
+  * `Texture.set_data(data, shape, index)`
   * `Texture.initialize()`
-  * `Texture.activate()`: bind the texture.
+  * `Texture.activate(index)`: bind the texture.
   * `Texture.deactivate()`: unbind the texture.
   * `Texture.cleanup()`: release all resources.
 
