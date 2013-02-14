@@ -49,7 +49,7 @@ class GalryTest(unittest.TestCase):
     for automatic comparison with the ground truth."""
         
     # in milliseconds
-    autodestruct = 100
+    autodestruct = 1000
     
     def log_header(self, s):
         s += '\n' + ('-' * (len(s) + 10))

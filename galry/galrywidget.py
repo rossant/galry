@@ -485,7 +485,9 @@ class GalryWidget(QGLWidget):
         # mode
         if cursor is None:
             cursor = self.binding_manager.get().get_base_cursor()
-        self.setCursor(get_cursor(cursor))
+        qcursor = get_cursor(cursor)
+        if qcursor:
+            self.setCursor(qcursor)
         
     def process_interaction(self, event=None, args=None, do_update=None):
         """Process user interaction.
@@ -557,7 +559,7 @@ class GalryWidget(QGLWidget):
                 self.window.showNormal()
                 
     def close_widget(self):
-        self.user_action_generator.close()
+        # self.user_action_generator.close()
         if hasattr(self, 'window'):
             if hasattr(self.window, 'close'):
                 self.window.close()
