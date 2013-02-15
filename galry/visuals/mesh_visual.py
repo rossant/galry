@@ -214,7 +214,7 @@ class MeshVisual(Visual):
         
         # diffuse and ambient light
         light_direction = normalize(np.array([0., 0., -1.]))
-        ambient_light = .05
+        ambient_light = .25
         self.add_uniform("light_direction", size=None, ndim=3, data=light_direction)
         self.add_uniform("ambient_light", size=None, ndim=1, data=ambient_light)
         
