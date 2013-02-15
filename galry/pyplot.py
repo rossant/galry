@@ -9,7 +9,7 @@ import galry.processors as ps
 import galry.visuals as vs
 
 __all__ = ['figure', 'Figure', 'get_current_figure',
-           'plot', 'text', 'rectangles', 'imshow', 'graph', 'mesh', 'barplot',
+           'plot', 'text', 'rectangles', 'imshow', 'graph', 'mesh', 'barplot', 'surface',
            'sprites',
            'visual',
            'axes', 'xlim', 'ylim',
@@ -412,6 +412,14 @@ class Figure(object):
         self.bindingsclass = mgs.MeshBindings
         self.add_visual(vs.MeshVisual, *args, **kwargs)
     
+    def surface(self, Z, *args, **kwargs):
+        self.pmclass = mgs.MeshPaintManager
+        self.imclass = mgs.MeshInteractionManager
+        self.antialiasing = True
+        self.bindingsclass = mgs.MeshBindings
+        self.add_visual(vs.SurfaceVisual, Z, *args, **kwargs)
+        
+    
     def visual(self, visualcls, *args, **kwargs):
         """Render a custom visual.
         
@@ -572,6 +580,10 @@ def graph(*args, **kwargs):
 def mesh(*args, **kwargs):
     fig = get_current_figure()
     fig.mesh(*args, **kwargs)
+    
+def surface(*args, **kwargs):
+    fig = get_current_figure()
+    fig.surface(*args, **kwargs)
     
 def visual(*args, **kwargs):
     fig = get_current_figure()

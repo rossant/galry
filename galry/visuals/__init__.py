@@ -6,6 +6,7 @@ from sprite_visual import *
 from texture_visual import *
 from rectangles_visual import *
 from mesh_visual import *
+from surface_visual import *
 from graph_visual import *
 from bar_visual import *
 from framebuffer_visual import *
