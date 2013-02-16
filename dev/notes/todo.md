@@ -1,6 +1,10 @@
 Galry: high-performance interactive visualization in Python
 ===========================================================
 
+Examples
+    bezier curves
+    performant n body simulation
+
 
 Refactoring
 -----------

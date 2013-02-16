@@ -46,7 +46,11 @@ class SurfaceVisual(MeshVisual):
         position = np.hstack((X.reshape((-1, 1)), Z.reshape((-1, 1)), Y.reshape((-1, 1)),))
 
         #color
-        Znormalized = (Z - Z.min()) / (Z.max() - Z.min())
+        m, M = Z.min(), Z.max()
+        if m != M:
+            Znormalized = (Z - m) / (M - m)
+        else:
+            Znormalized = Z
         color = colormap(Znormalized).reshape((-1, 3))
         color = np.hstack((color, np.ones((n*n,1))))
 
@@ -78,11 +82,11 @@ class SurfaceVisual(MeshVisual):
             position=position,
             normal=normal,
             color=color, 
-            index=index,)
-        
+            index=index,
+        )        
         super(SurfaceVisual, self).initialize(*args, **kwargs)
     
-    
+        
     
     
     

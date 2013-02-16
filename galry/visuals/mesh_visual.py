@@ -148,7 +148,8 @@ class MeshVisual(Visual):
         self.initialize_navigation(is_static)
     
     def initialize(self, camera_angle=None, camera_ratio=None, autocolor=None,
-        camera_zrange=None, position=None, color=None, normal=None, index=None):
+        camera_zrange=None, position=None, color=None, normal=None, index=None,
+        vertex_shader=None):
         """Initialize the template.
         
         Arguments:
@@ -219,7 +220,8 @@ class MeshVisual(Visual):
         self.add_uniform("ambient_light", size=None, ndim=1, data=ambient_light)
         
         # vertex shader with transformation matrices and basic lighting
-        self.add_vertex_main("""
+        if not vertex_shader:
+            vertex_shader = """
             // convert the position from 3D to 4D.
             gl_Position = vec4(position, 1.0);
             // compute the amount of light
@@ -231,7 +233,8 @@ class MeshVisual(Visual):
             varying_color = color * light;
             // keep the transparency
             varying_color.w = color.w;
-        """)
+            """
+        self.add_vertex_main(vertex_shader)
         
         # basic fragment shader
         self.add_fragment_main("""
