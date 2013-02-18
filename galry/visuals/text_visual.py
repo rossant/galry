@@ -66,23 +66,6 @@ class TextVisual(Visual):
         if type(coordinates) == tuple:
             coordinates = [coordinates]
             
-            
-        # ####################################################
-            # # if hasattr(self.textsizes, '__len__'):
-                # # coordinates *= len(self.textsizes)
-        # if self.multiline:
-            # if len(coordinates) == 1:
-                
-                # c = coordinates[0]
-                # # interline = .5
-                # coordinates = [(c[0], c[1] - i * self.interline) 
-                    # for i in xrange(self.multiline)]
-        # ####################################################
-            
-            
-            
-            
-            
         coordinates = np.array(coordinates)
         position = np.repeat(coordinates, self.textsizes, axis=0)
         return dict(position=position)
@@ -95,18 +78,6 @@ class TextVisual(Visual):
         
         if "\n" in text:
             text = text.split("\n")
-            
-        # ####################################################
-            # self.multiline = len(text)
-            # if type(coordinates) != list:
-                # c = coordinates
-                # # interline = .5
-                # coordinates = [(c[0], c[1] - i * self.interline) 
-                    # for i in xrange(len(text))]
-        # else:
-            # self.multiline = False
-        # ####################################################
-            
             
         if type(text) == list:
             self.textsizes = [len(t) for t in text]
@@ -195,7 +166,13 @@ class TextVisual(Visual):
                             data=(letter_spacing, interline))
         self.add_uniform("point_size", vartype="float", ndim=1,
                             data=point_size)
-        self.add_uniform("color", vartype="float", ndim=4, data=color)
+        # one color per
+        if isinstance(color, np.ndarray) and color.ndim > 1:
+            self.add_attribute('color0', vartype="float", ndim=4, data=color)
+            self.add_varying('color', vartype="float", ndim=4)
+            self.add_vertex_main('color = color0;')
+        else:
+            self.add_uniform("color", vartype="float", ndim=4, data=color)
         self.add_uniform("text_width", vartype="float", ndim=1)
         
         # compound variables

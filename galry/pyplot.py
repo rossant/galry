@@ -169,9 +169,9 @@ class Figure(object):
         self.toolbar = True
         self.autosave = None
         
-        self.pmclass = mgs.PlotPaintManager
-        self.imclass = mgs.PlotInteractionManager
-        self.bindingsclass = mgs.PlotBindings
+        self.pmclass = kwargs.pop('paint_manager', mgs.PlotPaintManager)
+        self.imclass = kwargs.pop('interaction_manager', mgs.PlotInteractionManager)
+        self.bindingsclass = kwargs.pop('bindings', mgs.PlotBindings)
         
         self.initialize(*args, **kwargs)
         
