@@ -1,12 +1,9 @@
 from galry import *
 from numpy import *
 
-n = 1000
+n = 10000
 x = linspace(-1., 1., n)
-y = .5 * sin(10 * x)
 
-X = np.vstack((y, y + 1))
-plot(X, thickness=.02, color=['y','r'])
-xlim(-1, 1)
+plot(x, np.sin(10*x), thickness=.02)
 
 show()

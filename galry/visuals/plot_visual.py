@@ -65,18 +65,23 @@ class PlotVisual(Visual):
         
         
         # handle thickness
-        if thickness:
+        if thickness and position.shape[0] >= 2:
             w = thickness
             n = self.size
             X = position
             Y = np.zeros((n, 2))
             u = np.zeros((n/2, 2))
-            u[1:,0] = -np.diff(X[:,1])
-            u[1:,1] = np.diff(X[:,0])
+            X2 = np.vstack((X, 2*X[-1,:]-X[-2,:]))
+            u[:,0] = -np.diff(X2[:,1])
+            u[:,1] = np.diff(X2[:,0])
             r = (u[:,0] ** 2 + u[:,1] ** 2) ** .5
-            # r[r == 0.] = 1
-            ind = np.nonzero(r == 0.)[0]
-            r[ind] = r[ind - 1]
+            rm = r.mean()
+            r[r == 0.] = rm
+            # print u
+            # print r
+            # ind = np.nonzero(r == 0.)[0]
+            # print ind, ind-1
+            # r[ind] = r[ind - 1]
             u[:,0] /= r
             u[:,1] /= r
             Y[::2,:] = X - w * u
@@ -84,6 +89,8 @@ class PlotVisual(Visual):
             position = Y
             x = Y[:,0]
             y = Y[:,1]
+            # print x
+            # print y
             self.primitive_type = 'TRIANGLE_STRIP'
             
             
