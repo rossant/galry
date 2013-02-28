@@ -17,6 +17,7 @@ Screenshots
 ![Particle system](https://raw.github.com/rossant/galry/master/images/thumbnails/img10.jpg)
 ![3D mesh](https://raw.github.com/rossant/galry/master/images/thumbnails/img11.jpg)
 ![Cellular automata](https://raw.github.com/rossant/galry/master/images/thumbnails/img12.jpg)
+![2D surface](https://raw.github.com/rossant/galry/master/images/thumbnails/img13.jpg)
 
 
 Videos
