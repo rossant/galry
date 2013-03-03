@@ -45,7 +45,10 @@ class GLVersion(object):
     
     @staticmethod
     def version_header():
-        return '#version 120\n'
+        if GLVersion.get_renderer_info()['opengl_version'][0] < '3':
+            return '#version 110\n'
+        else:
+            return '#version 120\n'
         
     @staticmethod
     def precision_header():
@@ -176,7 +179,7 @@ class Uniform(object):
         else:
             funname = 'glUniformMatrix%dx%d%sv' % (n, m, Uniform.float_suffix[is_float])
         getattr(gl, funname)(location, 1, False, data)
-        
+
 
 class Texture(object):
     """Contains OpenGL functions related to textures."""
@@ -324,7 +327,7 @@ class FrameBuffer(object):
     @staticmethod
     def create():
         """Create a FBO."""
-        if hasattr(gl, 'glGenFramebuffers'):
+        if gl.glGenFramebuffers:
             buffer = gl.glGenFramebuffers(1)
         else:
             buffer = None

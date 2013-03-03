@@ -70,9 +70,9 @@ if DEBUG:
 else:
     level = logging.WARNING
 logger = setup_logging(level)
-
+logger.setLevel(level)
 # DEBUG
-info_level()
+# info_level()
 
 
 if __name__ == '__main__':
