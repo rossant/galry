@@ -6,7 +6,7 @@ import time
 import timeit
 import collections
 import subprocess
-from python_qt_binding import QtCore, QtGui
+from qtools.qtpy import QtCore, QtGui
 from functools import wraps
 from galry import log_debug, log_info, log_warn
 from collections import OrderedDict as ordict

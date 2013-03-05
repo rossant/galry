@@ -5,11 +5,11 @@ import time
 import timeit
 import numpy as np
 import numpy.random as rdn
-from python_qt_binding import QtCore, QtGui
-from python_qt_binding.QtCore import Qt, pyqtSignal
+from qtools.qtpy import QtCore, QtGui
+from qtools.qtpy.QtCore import Qt, pyqtSignal
 from galry import DEBUG, log_debug, log_info, log_warn
 try:
-    from python_qt_binding.QtOpenGL import QGLWidget, QGLFormat
+    from qtools.qtpy.QtOpenGL import QGLWidget, QGLFormat
 except Exception as e:
     log_warn(("The QT-OpenGL bindings are not available and Galry won't be"
         " able to render plots."))

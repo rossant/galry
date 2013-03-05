@@ -1,6 +1,6 @@
 import os
-from python_qt_binding import QtCore
-from python_qt_binding import QtGui
+from qtools.qtpy import QtCore
+from qtools.qtpy import QtGui
 
 __all__ = ['get_icon']
 

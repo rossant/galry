@@ -1,5 +1,5 @@
-from python_qt_binding import QtCore, QtGui
-from python_qt_binding.QtCore import Qt 
+from qtools.qtpy import QtCore, QtGui
+from qtools.qtpy.QtCore import Qt 
 from galry import Manager, ordict
 import numpy as np
 

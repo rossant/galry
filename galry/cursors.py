@@ -1,5 +1,5 @@
-from python_qt_binding.QtCore import Qt 
-from python_qt_binding import QtGui, QT_BINDING, QT_BINDING_VERSION
+from qtools.qtpy.QtCore import Qt 
+from qtools.qtpy import QtGui, QT_BINDING, QT_BINDING_VERSION
 import os
 
 __all__ = ['get_cursor']
