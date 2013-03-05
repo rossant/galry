@@ -24,7 +24,6 @@ if __name__ == '__main__':
         packages=['galry',
                   'galry.managers',
                   'galry.processors',
-                  'galry.python_qt_binding',
                   'galry.test',
                   'galry.visuals',
                   'galry.visuals.fontmaps',

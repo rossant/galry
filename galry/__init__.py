@@ -4,6 +4,7 @@ from debugtools import *
 
 # import PyQT or Pyside
 # from python_qt_binding import *
+from qtools.qtpy import *
     
 from colors import *
 from manager import *
