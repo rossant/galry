@@ -2,6 +2,9 @@ language: python
 python:
   - "2.7"
 # command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
-install: python setup.py install -q
+install:
+  - git clone https://github.com/rossant/qtools ../qtools
+  - ln -s ../qtools/qtools qtools
+  - python setup.py install -q
 # command to run tests, e.g. python setup.py test
 script: python setup.py test
