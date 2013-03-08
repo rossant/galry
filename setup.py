@@ -27,10 +27,12 @@ if __name__ == '__main__':
                   'galry.test',
                   'galry.visuals',
                   'galry.visuals.fontmaps',
-                  
-                  'qtools',
-                  'qtools.qtpy',
-                  'qtools.tests',
+                  # qtools needs to be in this folder. you can clone this repo
+                  # https://github.com/rossant/qtools
+                  # and create a symlink to qtools/ here
+                  'qtools.qtools',
+                  'qtools.qtools.qtpy',
+                  'qtools.qtools.tests',
                   ],
         package_data={
             'galry': ['cursors/*.png', 'icons/*.png'],

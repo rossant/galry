@@ -8,6 +8,6 @@ recursive-include galry *.md *.py *.png
 recursive-include galry/test *.md *.py
 recursive-exclude galry/test/autosave *.png
 recursive-include galry/test/autosave *REF.png
-recursive-include qtools *.md *.py
+recursive-include qtools/qtools *.md *.py
 recursive-exclude tools *
 recursive-include tutorials *.md *.py *.png *.obj

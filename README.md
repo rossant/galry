@@ -43,37 +43,51 @@ use the latest graphics card drivers).
 
 Galry is licensed under the BSD license.
 
-### Quick install
-
-  * Make sure you've installed all dependencies.
-  * Download galry's package (ZIP button on top of the page for the full
-    repository, or see links below).
-  * Extract the package and do `python setup.py install`.
-  * To test it, open a Python or IPython prompt and type:
-    
-        from galry import *
-        from numpy.random import randn
-        plot(randn(3, 10000))
-        show()
-    
-  * You should see three overlayed random signals. You can navigate with the
-    mouse and the keyboard. Press `H` to see all available actions.
-
-**Note for Linux users**: a crash (segmentation fault) has been reported with
-Ubuntu and some versions of PySide. If you have this problem, you can try to
-update PySide to version >= 1.1.1 where this crash appears to be resolved.
-This version is available on Ubuntu 12.10, and Ubuntu 12.04 on 
-Personal Package Archives (PPA).
-In addition, a work-around for Galry is on its way.
-
-    
-[Click here to go to the installation page](https://github.com/rossant/galry/wiki/Installation).
-
 ### Packages
 
-  * [Windows 64 bits installer](http://galry.rossant.net/galry-0.1.0.dev.win-amd64.exe)
+Here are the packages:
+
+  * [Windows 32 bits installer](http://galry.rossant.net/galry-0.1.0.dev.win32.exe)
   * [ZIP](http://galry.rossant.net/galry-0.1.0.dev.tar.gz)
   * [TGZ](http://galry.rossant.net/galry-0.1.0.dev.zip)
+
+To install Galry:
+
+  * Make sure you've installed all dependencies.
+  * Download one of the packages above.
+  * Extract the package and do `python setup.py install`.
+
+### Development version
+
+  * Clone the repository:
+  
+        git clone https://github.com/rossant/galry.git
+  
+  * You also need to add `qtools` as a submodule:
+
+        git submodule add https://github.com/rossant/qtools.git
+        
+  * Finally install Galry:
+  
+        python setup.py install
+
+  
+### Test that Galry is well installed
+  
+To test that the installation went fine, open a Python or IPython prompt and type:
+    
+    from galry import *
+    from numpy.random import randn
+    plot(randn(3, 10000))
+    show()
+    
+You should see three overlayed random signals. You can navigate with the
+mouse and the keyboard. Press `H` to see all available actions.
+
+
+### More details
+    
+[Click here to go to the installation page](https://github.com/rossant/galry/wiki/Installation).
 
 
 Quick links
