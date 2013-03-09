@@ -59,14 +59,14 @@ To install Galry:
 
 ### Development version
 
-  * Clone the repository with the `recursive` option to clone the submodules
-    as well:
+  * Clone the repository:
   
-        git clone --recursive https://github.com/rossant/galry.git
+        git clone https://github.com/rossant/galry.git
   
-  * Install Galry:
+  * Install Galry with `pip` so that external packages are automatically
+    updated (like `qtools` which contains some Qt-related utility functions):
   
-        python setup.py install
+        pip install -r requirements.txt
 
   
 ### Test that Galry is well installed

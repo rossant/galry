@@ -1,0 +1,2 @@
+.
+git+git://github.com/rossant/qtools.git#egg=qtools
