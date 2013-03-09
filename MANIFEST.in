@@ -10,3 +10,4 @@ recursive-exclude galry/test/autosave *.png
 recursive-include galry/test/autosave *REF.png
 recursive-exclude tools *
 recursive-include tutorials *.md *.py *.png *.obj
+exclude setup_dev.py
