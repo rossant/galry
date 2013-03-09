@@ -4,7 +4,7 @@ python:
 # command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
 # before_install:
   # - git submodule update --init --recursive
-# install:
+install:
   # - git clone https://github.com/rossant/qtools ../qtools
   # - ln -s ../qtools/qtools qtools
   # - python setup.py install -q

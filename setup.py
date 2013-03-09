@@ -27,10 +27,12 @@ if __name__ == '__main__':
                   'galry.test',
                   'galry.visuals',
                   'galry.visuals.fontmaps',
-
+                  
+                  #<
                   # 'qtools',
                   # 'qtools.qtpy',
                   # 'qtools.tests',
+                  #>
                   ],
         package_data={
             'galry': ['cursors/*.png', 'icons/*.png'],
