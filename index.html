@@ -4,40 +4,30 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
     <title>Galry by rossant</title>
+
     <link rel="stylesheet" href="stylesheets/styles.css">
     <link rel="stylesheet" href="stylesheets/pygment_trac.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-    <script src="javascripts/respond.js"></script>
-    <!--[if lt IE 9]>
-      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-    <!--[if lt IE 8]>
-    <link rel="stylesheet" href="stylesheets/ie.css">
-    <![endif]-->
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
   </head>
   <body>
-      <div id="header">
-        <nav>
-          <li class="fork"><a href="https://github.com/rossant/galry">View On GitHub</a></li>
-          <li class="downloads"><a href="https://github.com/rossant/galry/zipball/master">ZIP</a></li>
-          <li class="downloads"><a href="https://github.com/rossant/galry/tarball/master">TAR</a></li>
-          <li class="title">DOWNLOADS</li>
-        </nav>
-      </div><!-- end header -->
-
     <div class="wrapper">
+      <header>
+        <h1>Galry</h1>
+        <p>High-performance interactive visualization in Python</p>
 
+        <p class="view"><a href="https://github.com/rossant/galry">View the Project on GitHub <small>rossant/galry</small></a></p>
+
+
+        <ul>
+          <li><a href="https://github.com/rossant/galry/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/rossant/galry/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/rossant/galry">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
       <section>
-        <div id="title">
-          <h1>Galry</h1>
-          <p>High-performance interactive visualization in Python</p>
-          <hr>
-          <span class="credits left">Project maintained by <a href="https://github.com/rossant">rossant</a></span>
-          <span class="credits right">Hosted on GitHub Pages &mdash; Theme by <a href="http://twitter.com/#!/michigangraham">mattgraham</a></span>
-        </div>
-
         <p>Galry is a <strong>high performance interactive visualization package in 
 Python</strong> based on OpenGL.
 It allows to interactively visualize very large plots (tens of millions of
@@ -55,15 +45,11 @@ written for advanced uses.</p>
 
 <h2>User survey</h2>
 
-<p><strong><a href="https://docs.google.com/spreadsheet/viewform?formkey=dE5qZldRN3pvY2NEaXRhb2J4UDhoYWc6MQ#gid=0">We'd be very grateful if you could fill in this really short form if you're interested in Galry!</a></strong></p>
-<!--
-<iframe src="https://docs.google.com/spreadsheet/embeddedform?formkey=dE5qZldRN3pvY2NEaXRhb2J4UDhoYWc6MQ" width="760" height="670" frameborder="0" marginheight="0" marginwidth="0">Chargement en cours...</iframe>
--->
-<p></p>
+<p><a href="https://docs.google.com/spreadsheet/viewform?formkey=dE5qZldRN3pvY2NEaXRhb2J4UDhoYWc6MQ#gid=0"><strong>We'd be very grateful if you could fill in this really short form if you're interested in Galry!</strong></a></p>
 
 <h2>Gallery</h2>
 
-<p><img src="https://raw.github.com/rossant/galry/master/images/thumbnails/img0.jpg" alt="Multiple plots"><img src="https://raw.github.com/rossant/galry/master/images/thumbnails/img5.jpg" alt="Dynamic fractal"></p>
+<p><img src="https://raw.github.com/rossant/galry/master/images/thumbnails/img0.jpg" alt="Multiple plots"><img src="https://raw.github.com/rossant/galry/master/images/thumbnails/img1.jpg" alt="Multiple bar plots"><img src="https://raw.github.com/rossant/galry/master/images/thumbnails/img5.jpg" alt="Dynamic fractal"></p>
 
 <p><a href="https://github.com/rossant/galry/blob/master/docs/gallery.md">Click here to see all screenshots and videos</a>.</p>
 
@@ -76,37 +62,51 @@ use the latest graphics card drivers).</p>
 
 <p>Galry is licensed under the BSD license.</p>
 
-<h3>Quick install</h3>
+<h3>Packages</h3>
+
+<p>Here are the packages:</p>
+
+<ul>
+<li><a href="http://galry.rossant.net/galry-0.1.0.dev.tar.gz">ZIP</a></li>
+<li><a href="http://galry.rossant.net/galry-0.1.0.dev.zip">TGZ</a></li>
+</ul><p>To install Galry:</p>
 
 <ul>
 <li>Make sure you've installed all dependencies.</li>
-<li>Download galry's package (ZIP button on top of the page).</li>
+<li>Download one of the packages above.</li>
 <li>Extract the package and do <code>python setup.py install</code>.</li>
+</ul><h3>Development version</h3>
+
+<ul>
 <li>
-<p>To test it, open a Python or IPython prompt and type:</p>
+<p>Clone the repository:</p>
+
+<pre><code>git clone https://github.com/rossant/galry.git
+</code></pre>
+</li>
+<li>
+<p>Install Galry with <code>pip</code> so that external packages are automatically
+updated (like <code>qtools</code> which contains some Qt-related utility functions):</p>
+
+<pre><code>pip install -r requirements.txt
+</code></pre>
+</li>
+</ul><h3>Test that Galry is well installed</h3>
+
+<p>To test that the installation went fine, open a Python or IPython prompt and type:</p>
 
 <pre><code>from galry import *
 from numpy.random import randn
 plot(randn(3, 10000))
 show()
 </code></pre>
-</li>
-<li><p>You should see three overlayed random signals. You can navigate with the
-mouse and the keyboard. Press <code>H</code> to see all available actions.</p></li>
 
-</ul>
+<p>You should see three overlayed random signals. You can navigate with the
+mouse and the keyboard. Press <code>H</code> to see all available actions.</p>
+
+<h3>More details</h3>
 
 <p><a href="https://github.com/rossant/galry/wiki/Installation">Click here to go to the installation page</a>.</p>
-
-<h3>Packages</h3>
-
-<ul>
-<li><a href="http://galry.rossant.net/galry-0.1.0.dev.win-amd64.exe">Windows 64 bits installer</a></li>
-<li><a href="http://galry.rossant.net/galry-0.1.0.dev.tar.gz">ZIP</a></li>
-<li><a href="http://galry.rossant.net/galry-0.1.0.dev.zip">TGZ</a></li>
-</ul>
-
-
 
 <h2>Quick links</h2>
 
@@ -124,32 +124,22 @@ mouse and the keyboard. Press <code>H</code> to see all available actions.</p></
 <li><a href="http://cyrille.rossant.net">Contact</a></li>
 </ul>
       </section>
-
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/rossant">rossant</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
     </div>
-<!--[if !IE]><script>fixScale(document);</script><![endif]-->
-<script type="text/javascript">
-var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
-document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
-</script>
-<script type="text/javascript">
-try {
-var pageTracker = _gat._getTracker("UA-6774000-3");
-pageTracker._trackPageview();
-} catch(err) {}
-</script>
-<script type="text/javascript">
-var sc_project=8405204; 
-var sc_invisible=1; 
-var sc_security="c13aafcf"; 
-var scJsHost = (("https:" == document.location.protocol) ?
-"https://secure." : "http://www.");
-document.write("<sc"+"ript type='text/javascript' src='" +
-scJsHost +
-"statcounter.com/counter/counter.js'></"+"script>");</script>
-<noscript><div class="statcounter"><a title="web analytics"
-href="http://statcounter.com/" target="_blank"><img
-class="statcounter"
-src="https://c.statcounter.com/8405204/0/c13aafcf/1/"
-alt="web analytics"></a></div></noscript>
+    <script src="javascripts/scale.fix.js"></script>
+              <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-6774000-3");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
   </body>
 </html>
