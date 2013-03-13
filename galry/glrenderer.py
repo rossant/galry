@@ -327,7 +327,7 @@ class FrameBuffer(object):
     @staticmethod
     def create():
         """Create a FBO."""
-        if gl.glGenFramebuffers:
+        if hasattr(gl, 'glGenFramebuffers') and gl.glGenFramebuffers:
             buffer = gl.glGenFramebuffers(1)
         else:
             buffer = None
