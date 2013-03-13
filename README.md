@@ -47,7 +47,6 @@ Galry is licensed under the BSD license.
 
 Here are the packages:
 
-  * [Windows 32 bits installer](http://galry.rossant.net/galry-0.1.0.dev.win32.exe)
   * [ZIP](http://galry.rossant.net/galry-0.1.0.dev.tar.gz)
   * [TGZ](http://galry.rossant.net/galry-0.1.0.dev.zip)
 
