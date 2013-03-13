@@ -45,7 +45,7 @@ class GLVersion(object):
     
     @staticmethod
     def version_header():
-        if GLVersion.get_renderer_info()['opengl_version'][0] < '3':
+        if GLVersion.get_renderer_info()['opengl_version'][0:3] < '2.1':
             return '#version 110\n'
         else:
             return '#version 120\n'
