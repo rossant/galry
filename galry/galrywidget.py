@@ -121,6 +121,11 @@ class GalryWidget(QGLWidget):
         # Capture mouse events.
         self.setMouseTracking(True)
         
+        # Capture touch events.
+        self.setAcceptTouchEvents = True
+        self.grabGesture(QtCore.Qt.PinchGesture)
+        self.mouse_blocked = False  # True during a pinch gesture
+        
         # Initialize the objects providing the core features of the widget.
         self.user_action_generator = UserActionGenerator()
         
@@ -292,19 +297,44 @@ class GalryWidget(QGLWidget):
         
     # Event methods
     # -------------
+    def event(self, e):
+        r = super(GalryWidget, self).event(e)
+        if e.type() == QtCore.QEvent.Gesture:
+            e.accept()
+            gesture = e.gesture(QtCore.Qt.PinchGesture)
+            self.pinchEvent(gesture)
+            if gesture.state() == Qt.GestureStarted:
+                self.mouse_blocked = True
+            elif gesture.state() == Qt.GestureFinished:
+                self.mouse_blocked = False
+            return False
+        return r
+    
+    def pinchEvent(self, e):
+        self.user_action_generator.pinchEvent(e)
+        self.process_interaction()
+    
     def mousePressEvent(self, e):
+        if self.mouse_blocked:
+            return
         self.user_action_generator.mousePressEvent(e)
         self.process_interaction()
         
     def mouseReleaseEvent(self, e):
+        if self.mouse_blocked:
+            return
         self.user_action_generator.mouseReleaseEvent(e)
         self.process_interaction()
         
     def mouseDoubleClickEvent(self, e):
+        if self.mouse_blocked:
+            return
         self.user_action_generator.mouseDoubleClickEvent(e)
         self.process_interaction()
         
     def mouseMoveEvent(self, e):
+        if self.mouse_blocked:
+            return
         self.user_action_generator.mouseMoveEvent(e)
         self.process_interaction()
         
@@ -368,6 +398,10 @@ class GalryWidget(QGLWidget):
                                             *parameters["mouse_position_diff"])
         parameters["mouse_press_position"] = self.normalize_position(\
                                             *parameters["mouse_press_position"])
+        parameters["pinch_position"] = self.normalize_position(\
+                                            *parameters["pinch_position"])
+        parameters["pinch_start_position"] = self.normalize_position(\
+                                            *parameters["pinch_start_position"])
         return parameters
     
     

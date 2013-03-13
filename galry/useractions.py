@@ -45,6 +45,13 @@ class UserActionGenerator(object):
         self.mouse_position = (0, 0)
         self.mouse_position_diff = (0, 0)
         self.mouse_press_position = (0, 0)
+        
+        self.pinch_position = (0, 0)
+        self.pinch_rotation = 0.
+        self.pinch_scale = 1.
+        self.pinch_scale_diff = 0.
+        self.pinch_start_position = (0, 0)
+        
         self.wheel = 0
         # self.init_leap()
         
@@ -68,6 +75,13 @@ class UserActionGenerator(object):
         parameters = dict(mouse_position=mp,
                             mouse_position_diff=mpd,
                             mouse_press_position=mpp,
+                            
+                            pinch_start_position=self.pinch_start_position,
+                            pinch_position=self.pinch_position,
+                            pinch_rotation=self.pinch_rotation,
+                            pinch_scale=self.pinch_scale,
+                            pinch_scale_diff=self.pinch_scale_diff,
+                            
                             wheel=self.wheel,
                             key_modifier=self.key_modifier,
                             key=self.key)
@@ -76,7 +90,26 @@ class UserActionGenerator(object):
     def clean_action(self):
         """Reset the current action."""
         self.action = None
-        
+
+    def pinchEvent(self, e):
+        if e.state() == Qt.GestureStarted:
+            self.action = 'Pinch'
+            self.pinch_start_position = self.get_pos(e.centerPoint())
+        elif e.state() == Qt.GestureUpdated:
+            self.action = 'Pinch'
+            self.pinch_position = self.get_pos(e.centerPoint())
+            self.pinch_rotation_diff = e.rotationAngle()
+            self.pinch_rotation = e.totalRotationAngle()
+            self.pinch_scale_diff = e.scaleFactor() - 1
+            self.pinch_scale = e.totalScaleFactor()
+        elif e.state() == Qt.GestureFinished:
+            self.action = None
+            self.pinch_position = (0, 0)
+            self.pinch_rotation = 0.
+            self.pinch_scale = 1.
+            self.pinch_scale_diff = 0.
+            self.pinch_start_position = (0, 0)
+
     def mousePressEvent(self, e):
         self.mouse_button = e.button()
         self.mouse_press_position = self.mouse_position = self.get_pos(e.pos())

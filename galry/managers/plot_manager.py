@@ -189,6 +189,16 @@ class PlotBindings(DefaultBindings):
                                     p["wheel"]*.002, 
                                     p["mouse_position"][1]))
         
+    def set_zooming_pinch(self):
+        self.set('Pinch', 'Zoom', param_getter=lambda p: 
+            (
+            # pinch position does not appear to be well calibrated
+             p["pinch_scale_diff"],
+             0, # p["pinch_start_position"][0],  
+             p["pinch_scale_diff"],
+             0, # p["pinch_start_position"][1],
+             ))
+
     def set_reset(self):
         """Set reset bindings."""
         # Reset view
@@ -210,6 +220,7 @@ class PlotBindings(DefaultBindings):
         self.set_zoombox_keyboard()
         self.set_zooming_keyboard()
         self.set_zooming_wheel()
+        self.set_zooming_pinch()
         # reset
         self.set_reset()
         # Extended bindings
