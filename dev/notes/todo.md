@@ -60,6 +60,22 @@ Tested
   * MacOSX 64 bits with Nvidia
 
 
+Running Galry through SSH X
+---------------------------
+
+What I had to do to make it work with
+client=Windows 8 64 bits, XMing, PuTTy,
+server=Ubuntu 12.04 64 bits, Nvidia GPU
+
+  * in PuTTY, specify X display location = 'localhost:0'
+  * export DISPLAY='localhost:0.0' 
+  * edit /etc/ssh/ssh_config and do:
+      ForwardX11 yes
+      ForwardX11Trusted yes
+  * edit /etc/ssh/sshd_config and do:
+      X11Forwarding yes
+  
+  
 Later
 -----
 

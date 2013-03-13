@@ -36,6 +36,7 @@ for source, target in links:
 
 # copy setup.py and remove commented lines so that external dependencies
 # are built into the package
+copy('setup.py', 'setup.bak')
 uncomment = False
 with open('setup.py', 'r') as fr:
     with open('setup_dev.py', 'w') as fw:
@@ -53,11 +54,16 @@ with open('setup.py', 'r') as fr:
             # or copy lines
             else:
                 fw.write(line)
+# override setup.py with the uncommented lines, so that this new file is
+# included in the packages
+copy('setup_dev.py', 'setup.py')
             
 # build the distribution
-call('python setup_dev.py bdist_wininst sdist --formats=gztar,zip')
+call('python setup.py bdist_wininst sdist --formats=gztar,zip')
+
+# use the original setup.py
+copy('setup.bak', 'setup.py')
 
 # clean up
+os.remove('setup.bak')
 os.remove('setup_dev.py')
-# for _, target in links:
-    # os.remove(target)
