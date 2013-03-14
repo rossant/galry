@@ -1,0 +1,28 @@
+Visuals
+can customize paint()
+have a unique name
+can customize how its data is transformed
+methods to access other visuals
+can be shown or hidden
+
+Templating shaders
+main{
+%VS_START%
+...
+%VS_END
+}
+
+Actuators
+make changes on visuals following triggers {trigger -> action}
+plugin: modify shader, add variables
+
+ex. mouse navigation
+initiate: press ==> action
+update: move ==> action
+end: release ==> action
+
+transitions, easing
+
+Interaction: fixed FPS
+
+
