@@ -168,6 +168,7 @@ class Figure(object):
         self.figsize = (GalryWidget.w, GalryWidget.h)
         self.toolbar = True
         self.autosave = None
+        self.autodestruct = None
         
         self.pmclass = kwargs.pop('paint_manager', mgs.PlotPaintManager)
         self.imclass = kwargs.pop('interaction_manager', mgs.PlotInteractionManager)
@@ -513,6 +514,7 @@ class Figure(object):
             size=self.figsize,
             toolbar=self.toolbar,
             autosave=self.autosave,
+            autodestruct=self.autodestruct,
             )
         return window
 
