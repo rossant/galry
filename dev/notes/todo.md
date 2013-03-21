@@ -68,6 +68,9 @@ client=Windows 8 64 bits, XMing, PuTTy,
 server=Ubuntu 12.04 64 bits, Nvidia GPU
 
   * in PuTTY, specify X display location = 'localhost:0'
+  
+  * (sudo apt-get install xbase-clients)
+  * direct rendering needs to be YES
   * export DISPLAY='localhost:0.0' 
   * edit /etc/ssh/ssh_config and do:
       ForwardX11 yes
