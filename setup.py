@@ -18,7 +18,7 @@ if __name__ == '__main__':
 
     setup(
         name='galry',
-        version='0.1.0.dev',  # alpha pre-release
+        version='0.1.0.dev_opengl20',  # alpha pre-release
         author='Cyrille Rossant',
         author_email='rossant@github',
         packages=['galry',

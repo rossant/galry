@@ -62,9 +62,9 @@ class SpriteVisual(Visual):
             colors_ndim = len(color)
             
             
-        # texture_shader = """
-        # out_color = texture%NDIM%(tex_sampler, gl_PointCoord%POINTCOORD%) * %COLOR%;
-        # """
+        texture_shader = """
+        out_color = %COLOR%;
+        """
             
         
         shader_ndim = "%dD" % self.ndim
