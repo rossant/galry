@@ -215,5 +215,5 @@ class PlotVisual(Visual):
         # add point size uniform (when it's not specified, there might be some
         # bugs where its value is obtained from other datasets...)
         self.add_uniform("point_size", data=point_size)
-        self.add_vertex_main("""gl_PointSize = point_size;""")
+        # self.add_vertex_main("""gl_PointSize = point_size;""")
         

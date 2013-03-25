@@ -62,9 +62,9 @@ class SpriteVisual(Visual):
             colors_ndim = len(color)
             
             
-        texture_shader = """
-        out_color = texture%NDIM%(tex_sampler, gl_PointCoord%POINTCOORD%) * %COLOR%;
-        """
+        # texture_shader = """
+        # out_color = texture%NDIM%(tex_sampler, gl_PointCoord%POINTCOORD%) * %COLOR%;
+        # """
             
         
         shader_ndim = "%dD" % self.ndim
@@ -106,7 +106,7 @@ class SpriteVisual(Visual):
         self.add_uniform("point_size", vartype="float", ndim=1, data=texsize)
         
         # Vertex shader
-        self.add_vertex_main("""
-        gl_PointSize = point_size;
-        """)
+        # self.add_vertex_main("""
+        # gl_PointSize = point_size;
+        # """)
         

@@ -7,19 +7,21 @@ from visual import Visual
 __all__ = ['TextVisual']
 
 VS = """
-gl_Position.x += (offset - text_width / 2) * spacing.x / window_size.x;
+gl_Position.x += (offset - text_width / 2.0) * spacing.x / window_size.x;
 gl_Position.y -= index * spacing.y / window_size.y;
 
 gl_Position.xy = gl_Position.xy + posoffset;
 
-gl_PointSize = point_size;
+//gl_PointSize = point_size;
 flat_text_map = text_map;
 """
 
 FS = """
 // relative coordinates of the pixel within the sprite (in [0,1])
-float x = gl_PointCoord.x;
-float y = gl_PointCoord.y;
+//float x = gl_PointCoord.x;
+//float y = gl_PointCoord.y;
+float x = 0.0;
+float y = 0.0;
 
 // size of the corresponding character
 float w = flat_text_map.z;
