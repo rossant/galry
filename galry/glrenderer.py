@@ -1214,7 +1214,6 @@ class GLVisualRenderer(object):
         # handle bounds keyword
         bounds = kwargs.pop('bounds', None)
         if bounds is not None:
-            # print "changing bounds to", bounds
             self.slicer.set_bounds(bounds)
             
         # handle primitive type special keyword

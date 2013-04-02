@@ -46,7 +46,7 @@ class PlotVisual(Visual):
             if thickness:
                 shape = (2 * position.shape[0], 1)
             else:
-                shape = (position.shape[0], 1)
+                shape = (1, position.shape[0])
         else:
             position, shape = process_coordinates(x=x, y=y)
             if thickness:
