@@ -49,12 +49,13 @@ def format_number(x, nfrac=None):
         return "0"
         
     elif np.abs(x) > 100.001:
-        return "%.2e" % x
+        return "%.3e" % x
         
     if nfrac <= 2:
         return "%.2f" % x
     else:
-        return ("%." + str(nfrac - 1) + "e") % x
+        nfrac = nfrac + int(np.log10(np.abs(x)))
+        return ("%." + str(nfrac) + "e") % x
 
 def get_ticks_text(x0, y0, x1, y1):
     ticksx, nfracx = get_ticks(x0, x1)
