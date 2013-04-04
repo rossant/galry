@@ -94,10 +94,13 @@ class UserActionGenerator(object):
     def pinchEvent(self, e):
         if e.state() == Qt.GestureStarted:
             self.action = 'Pinch'
-            self.pinch_start_position = self.get_pos(e.centerPoint())
+            self.pinch_start_position = (0, 0)
         elif e.state() == Qt.GestureUpdated:
             self.action = 'Pinch'
             self.pinch_position = self.get_pos(e.centerPoint())
+            # Save the pinch start position at the first GestureUpdated event
+            if self.pinch_start_position == (0, 0):
+                self.pinch_start_position = self.pinch_position
             self.pinch_rotation_diff = e.rotationAngle()
             self.pinch_rotation = e.totalRotationAngle()
             self.pinch_scale_diff = e.scaleFactor() - 1
