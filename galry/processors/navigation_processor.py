@@ -99,6 +99,7 @@ class NavigationEventProcessor(EventProcessor):
         # Momentum.
         self.is_panning = True
         self.momentum = False
+        self.parent.block_refresh = False
         self.add_pan(parameter)
         
         self.pan(parameter)
@@ -115,9 +116,10 @@ class NavigationEventProcessor(EventProcessor):
             # End momentum.
             if (np.abs(self.pan_vec) < .0001).all():
                 self.momentum = False
+                self.parent.block_refresh = True
                 self.pan_list = []
                 self.pan_vec = np.zeros(2)
-        self.transform_view()
+            self.transform_view()
     
     def process_rotation_event(self, parameter):
         self.rotate(parameter)

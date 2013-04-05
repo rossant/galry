@@ -76,6 +76,7 @@ class GridEventProcessor(EventProcessor):
         self.register('Pan', self.update_axes)
         self.register('Zoom', self.update_axes)
         self.register('Reset', self.update_axes)
+        self.register('Animate', self.update_axes)
         self.register(None, self.update_axes)
         
     def update_axes(self, parameter):

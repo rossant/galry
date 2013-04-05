@@ -113,6 +113,7 @@ class GalryWidget(QGLWidget):
         self.constrain_navigation = False
         self.activate_help = True
         self.activate_grid = False
+        self.block_refresh = False
         
         # Capture keyboard events.
         if getfocus:
@@ -540,6 +541,11 @@ class GalryWidget(QGLWidget):
         if event is None:
             # get current event from current user action
             event, args = self.get_current_event()
+        
+        
+        if event == 'Animate' and self.block_refresh:
+            return
+        
         
         prev_event = self.interaction_manager.prev_event
         
