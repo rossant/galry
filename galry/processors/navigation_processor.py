@@ -1,4 +1,5 @@
 import inspect
+import time
 import numpy as np
 from processor import EventProcessor
 from galry import Manager, TextVisual, get_color
@@ -31,7 +32,15 @@ class NavigationEventProcessor(EventProcessor):
         self.register('ResetZoom', self.process_resetzoom_event)
         self.register('SetPosition', self.process_setposition_event)
         self.register('SetViewbox', self.process_setviewbox_event)
-
+        
+        # Momentum
+        self.register('Animate', self.process_animate_event)
+        self.pan_list = []
+        self.pan_list_maxsize = 10
+        self.pan_vec = np.zeros(2)
+        self.is_panning = False
+        self.momentum = False
+        
         self.register('Grid', self.process_grid_event)
         self.grid_visible = getattr(self.parent, 'show_grid', False)
         self.activate_grid()
@@ -71,12 +80,43 @@ class NavigationEventProcessor(EventProcessor):
             self.set_relative_viewbox(*self.navigation_rectangle)
             self.paint_manager.hide_navigation_rectangle()
         self.navigation_rectangle = None
+        # Trigger panning momentum
+        if self.is_panning:
+            self.is_panning = False
+            if len(self.pan_list) >= self.pan_list_maxsize:
+                self.momentum = True
         # self.set_cursor(None)
         self.transform_view()
 
+    def add_pan(self, parameter):
+        # Momentum.
+        self.pan_list.append(parameter)
+        if len(self.pan_list) > self.pan_list_maxsize:
+            del self.pan_list[0]
+        self.pan_vec = np.array(self.pan_list).mean(axis=0)
+        
     def process_pan_event(self, parameter):
+        # Momentum.
+        self.is_panning = True
+        self.momentum = False
+        self.add_pan(parameter)
+        
         self.pan(parameter)
         self.set_cursor('ClosedHandCursor')
+        self.transform_view()
+    
+    def process_animate_event(self, parameter):
+        # Momentum.
+        if self.is_panning:
+            self.add_pan((0., 0.))
+        if self.momentum:
+            self.pan(self.pan_vec)
+            self.pan_vec *= .975
+            # End momentum.
+            if (np.abs(self.pan_vec) < .0001).all():
+                self.momentum = False
+                self.pan_list = []
+                self.pan_vec = np.zeros(2)
         self.transform_view()
     
     def process_rotation_event(self, parameter):

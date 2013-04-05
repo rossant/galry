@@ -164,7 +164,7 @@ class Figure(object):
         self.activate_grid = True
         self.show_grid = False
         self.activate_help = True
-        self.animation_interval = None
+        self.animation_interval = .01
         self.figsize = (GalryWidget.w, GalryWidget.h)
         self.toolbar = True
         self.autosave = None

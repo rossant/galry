@@ -673,7 +673,7 @@ def create_custom_widget(bindings=None,
                          show_grid=False,
                          display_fps=False,
                          activate3D=False,
-                         animation_interval=None,
+                         animation_interval=.01,
                          autosave=None,
                          getfocus=True,
                         **companion_classes):
