@@ -16,7 +16,7 @@ vec4 HSVtoRGB(vec3 HSV)
 
 vec4 RGBtoHSV(vec3 RGB)
 {
-    vec3 HSV = 0;
+    vec3 HSV = vec3(0., 0., 0.);
     HSV.z = max(RGB.r, max(RGB.g, RGB.b));
     float M = min(RGB.r, min(RGB.g, RGB.b));
     float C = HSV.z - M;

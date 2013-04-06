@@ -789,7 +789,7 @@ class AutodestructibleWindow(QtGui.QMainWindow):
             self.timer.timeout.connect(self.kill)
             self.timer.start()
             
-def create_basic_window(widget=None, size=None, position=(100, 100),
+def create_basic_window(widget=None, size=None, position=(20, 20),
                         autodestruct=None,
                         toolbar=False):
     """Create a basic QT window with a Galry widget inside.
@@ -951,7 +951,7 @@ def create_basic_window(widget=None, size=None, position=(100, 100),
     return BasicWindow
     
 def show_basic_window(widget_class=None, window_class=None, size=None,
-            position=(100, 100), autodestruct=None, toolbar=False, **kwargs):
+            position=(20, 20), autodestruct=None, toolbar=False, **kwargs):
     """Create a custom widget and/or window and show it immediately.
     
     Arguments:

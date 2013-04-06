@@ -12,6 +12,7 @@ __all__ = ['GridEventProcessor']
 def nicenum(x, round=False):
     e = np.floor(np.log10(x))
     f = x / 10 ** e
+    eps = 1e-6
     if round:
         if f < 1.5:
             nf = 1.
@@ -22,11 +23,11 @@ def nicenum(x, round=False):
         else:
             nf = 10.
     else:
-        if f <= 1:
+        if f < 1 - eps:
             nf = 1.
-        elif f <= 2:
+        elif f < 2 - eps:
             nf = 2.
-        elif f <= 5.:
+        elif f < 5 - eps:
             nf = 5.
         else:
             nf = 10.

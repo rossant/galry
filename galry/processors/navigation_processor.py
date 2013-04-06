@@ -85,6 +85,7 @@ class NavigationEventProcessor(EventProcessor):
             self.is_panning = False
             if len(self.pan_list) >= self.pan_list_maxsize:
                 self.momentum = True
+        self.parent.block_refresh = False
         # self.set_cursor(None)
         self.transform_view()
 
@@ -105,7 +106,7 @@ class NavigationEventProcessor(EventProcessor):
         self.pan(parameter)
         self.set_cursor('ClosedHandCursor')
         self.transform_view()
-    
+
     def process_animate_event(self, parameter):
         # Momentum.
         if self.is_panning:
@@ -128,30 +129,38 @@ class NavigationEventProcessor(EventProcessor):
 
     def process_zoom_event(self, parameter):
         self.zoom(parameter)
+        self.parent.block_refresh = False
+        # Block momentum when zooming.
+        self.momentum = False
         self.set_cursor('MagnifyingGlassCursor')
         self.transform_view()
         
     def process_zoombox_event(self, parameter):
         self.zoombox(parameter)
+        self.parent.block_refresh = False
         self.set_cursor('MagnifyingGlassCursor')
         self.transform_view()
     
     def process_reset_event(self, parameter):
         self.reset()
+        self.parent.block_refresh = False
         self.set_cursor(None)
         self.transform_view()
 
     def process_resetzoom_event(self, parameter):
         self.reset_zoom()
+        self.parent.block_refresh = False
         self.set_cursor(None)
         self.transform_view()
         
     def process_setposition_event(self, parameter):
         self.set_position(*parameter)
+        self.parent.block_refresh = False
         self.transform_view()
         
     def process_setviewbox_event(self, parameter):
         self.set_viewbox(*parameter)
+        self.parent.block_refresh = False
         self.transform_view()
     
         
