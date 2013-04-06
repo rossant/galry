@@ -194,13 +194,9 @@ class PlotBindings(DefaultBindings):
             (
             # pinch position does not appear to be well calibrated
              p["pinch_scale_diff"],
-             p["pinch_start_position"][0],  
-             # 0, # p["pinch_start_position"][0],  
-             # p["mouse_position"][0],
+             0, # p["pinch_start_position"][0],  
              p["pinch_scale_diff"],
-             # p["mouse_position"][1],
-             p["pinch_start_position"][1],
-             # 0, # p["pinch_start_position"][1],
+             0, # p["pinch_start_position"][1],
              ))
 
     def set_reset(self):
