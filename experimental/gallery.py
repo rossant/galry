@@ -18,46 +18,52 @@ def get_aspect_ratio(image):
     hi, wi, _ = image.shape
     return float(wi) / hi
 
-# @inprocess
+
 class Loader(object):
-    # def __init__(self, cache):
-        # self.cache = cache
-        
     def load(self, key, path):
-        print "loading", key, path[-10:]
+        print "loading", key, path[-8:]
         img = load(path, 1366)
         return img
         
     @staticmethod
     def load_done(key=None, path=None, _result=None):
-        # print key, _result.shape
         CACHE[key] = _result
 
 
 class Navigator(object):
-    def __init__(self, n, steps=2):
+    def __init__(self, n, steps):
         self.n = n
         self.steps = steps
         self.i = 0
+        self.dir = 0
     
     def set(self, i):
         self.i = i
+        self.dir = 0
     
     def next(self):
         if self.i < self.n - 1:
             self.i += 1
+        self.dir = 1
         
     def previous(self):
         if self.i > 0:
             self.i -= 1
+        self.dir = -1
     
     def current(self):
         return self.i
     
     def indices(self):
         steps = self.steps
-        return range(max(0, self.i - steps), min(self.n - 1, self.i + steps) + 1)
-    
+        before = range(max(0, self.i - steps), self.i)
+        after = range(self.i + 1, min(self.n - 1, self.i + steps) + 1)
+        current = [self.i]
+        if dir >= 0:
+            return current + after + before
+        else:
+            return current + before + after
+        
     
 class PictureViewer(object):
     EMPTY = np.zeros((2, 2, 3))
@@ -72,16 +78,18 @@ class PictureViewer(object):
         self.files = sorted(filter(lambda f: f.lower().endswith('.jpg'), os.listdir(folder)))
         self.cache = {}
         self.n = len(self.files)
-        # self.loader = inthread(Loader)()#self.cache)
-        self.loader = inprocess(Loader)()#self.cache)
-        self.nav = Navigator(self.n)
+        # Number of images to keep forward/backward in cache.
+        self.steps = 2
+        self.loader = inprocess(Loader)()
+        self.nav = Navigator(self.n, self.steps)
         self.set_index(0)
         
     def set_index(self, i):
         self.nav.set(i)
         indices = self.nav.indices()
         paths = [(j, os.path.join(self.folder, self.files[j])) for j in indices 
-            if j not in self.cache]
+            if j not in self.cache]# or self.cache[j] is None]
+        # Tag keys that are being loaded so that they're not loaded once again.
         for j in indices:
             if j not in self.cache:
                 self.cache[j] = None
@@ -100,16 +108,19 @@ class PictureViewer(object):
     
     def __getitem__(self, key):
         img = self.cache.get(key, None)
-        if img is None:
-            return self.EMPTY
-        else:
-            return img
+        return img
+        # if img is None:
+            # return self.EMPTY
+        # else:
+            # return img
         
     def __setitem__(self, key, value):
         self.cache[key] = value
         
 
 def show_image(figure, img):
+    if img is None:
+        return
     ar = get_aspect_ratio(img)
     figure.set_data(texture=img)
     figure.set_rendering_options(constrain_ratio=ar)
@@ -129,8 +140,13 @@ def previous(fig, params):
 
 def anim(fig, (t,)):
     global CURRENT_IMAGE
-    if (CURRENT_IMAGE.shape == pw.EMPTY.shape and 
-        pw.current().shape != pw.EMPTY.shape):
+    image_last_loaded = pw.current()
+    # Skip if current image in memory is None.
+    if image_last_loaded is None or np.array_equal(image_last_loaded, pw.EMPTY):
+        return
+    # Update only if current displayed image is empty, and current image in
+    # memory is not empty.
+    if (CURRENT_IMAGE is None or np.array_equal(CURRENT_IMAGE, pw.EMPTY)):
         print "update"
         CURRENT_IMAGE = pw.current()
         show_image(fig, CURRENT_IMAGE)
@@ -152,7 +168,7 @@ if __name__ == '__main__':
     # previous/next images with keyboard
     action('KeyPress', previous, key='Left')
     action('KeyPress', next, key='Right')
-    animate(anim, dt=.1)
+    animate(anim, dt=.01)
 
 
     show()
