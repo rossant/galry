@@ -12,7 +12,7 @@ try:
     from qtools.qtpy.QtOpenGL import QGLWidget, QGLFormat
 except Exception as e:
     log_warn(("The QT-OpenGL bindings are not available and Galry won't be"
-        " able to render plots."))
+        " able to render plots. Original exception was: %s" % e))
     # mock QGLWidget
     class QGLWidget(QtGui.QWidget):
         def initializeGL(self):
