@@ -10,9 +10,12 @@ from qtools.qtpy.QtCore import Qt, pyqtSignal
 from galry import DEBUG, log_debug, log_info, log_warn
 try:
     from qtools.qtpy.QtOpenGL import QGLWidget, QGLFormat
+    raise Exception
 except Exception as e:
-    log_warn(("The QT-OpenGL bindings are not available and Galry won't be"
-        " able to render plots. Original exception was: %s" % e))
+    log_warn((("The Qt-OpenGL bindings are not available. "
+    "On Ubuntu, please install python-qt4-gl (PyQt4) or "
+    "python-pyside.qtopengl (PySide). "
+    "Original exception was: %s" % e)))
     # mock QGLWidget
     class QGLWidget(QtGui.QWidget):
         def initializeGL(self):
