@@ -59,7 +59,8 @@ with open('setup.py', 'r') as fr:
 copy('setup_dev.py', 'setup.py')
             
 # build the distribution
-call('python setup.py bdist_wininst sdist --formats=gztar,zip')
+# call('python setup.py bdist_wininst sdist --formats=gztar,zip')
+call('python setup.py sdist --formats=zip')
 
 # use the original setup.py
 copy('setup.bak', 'setup.py')

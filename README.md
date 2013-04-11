@@ -16,6 +16,14 @@ written for advanced uses.
 
 [Click here to go to the FAQ](https://github.com/rossant/galry/blob/master/docs/faq.md).
 
+### Note
+
+The library will be entirely rewritten in the coming months
+in the context of the [pyvis collaborative project](https://github.com/pyvis/pyvis).
+The goal is to share common building blocks with other visualization libraries
+(visvis, pyqtgraph, glumpy...). The low-level API will change and we suggest not
+to use it in production for now.
+
 
 User survey
 -----------
@@ -36,27 +44,42 @@ Gallery
 Installation
 ------------
 
-Galry should work on any platform (Window/Linux/MacOS).
-Mandatory dependencies include Python 2.7, Numpy, either PyQt4 or PySide,
-PyOpenGL, matplotlib. OpenGL v2+ is required (it's probably a good idea to
-use the latest graphics card drivers).
+### Requirements
+
+  * Galry should work on any platform (Window/Linux/MacOS).
+  * Mandatory dependencies include:
+  
+      * Python 2.7
+      * Numpy
+      * PyQt4 or PySide with the OpenGL bindings
+      * PyOpenGL
+      * matplotlib
+
+  * Your graphics card drivers must be up-to-date and support **OpenGL 2.1**.
 
 Galry is licensed under the BSD license.
 
-### Packages
+### Installation procedure
 
-Here are the packages:
+  * [Download the package](http://galry.rossant.net/galry-0.1.0.rc1.zip).
+  * Extract it.
+  * Run in a console:
+  
+        python setup.py install
+        
+  * Test it:
+      
+        from galry import *
+        from numpy.random import randn
+        plot(randn(3, 10000))
+        show()
+        
+  * You should see three overlayed random signals. You can navigate with the
+    mouse and the keyboard. Press `H` to see all available actions.
 
-  * [ZIP](http://galry.rossant.net/galry-0.1.0.dev.tar.gz)
-  * [TGZ](http://galry.rossant.net/galry-0.1.0.dev.zip)
+[More details](https://github.com/rossant/galry/wiki/Installation).
 
-To install Galry:
-
-  * Make sure you've installed all dependencies.
-  * Download one of the packages above.
-  * Extract the package and do `python setup.py install`.
-
-### Development version
+### Development version (expert users)
 
   * Clone the repository:
   
@@ -66,24 +89,6 @@ To install Galry:
     updated (like `qtools` which contains some Qt-related utility functions):
   
         pip install -r requirements.txt
-
-  
-### Test that Galry is well installed
-  
-To test that the installation went fine, open a Python or IPython prompt and type:
-    
-    from galry import *
-    from numpy.random import randn
-    plot(randn(3, 10000))
-    show()
-    
-You should see three overlayed random signals. You can navigate with the
-mouse and the keyboard. Press `H` to see all available actions.
-
-
-### More details
-    
-[Click here to go to the installation page](https://github.com/rossant/galry/wiki/Installation).
 
 
 Quick links
