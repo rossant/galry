@@ -43,6 +43,14 @@ written for advanced uses.</p>
 
 <p><a href="https://github.com/rossant/galry/blob/master/docs/faq.md">Click here to go to the FAQ</a>.</p>
 
+<h3>Note</h3>
+
+<p>The library will be entirely rewritten in the coming months
+in the context of the <a href="https://github.com/pyvis/pyvis">pyvis collaborative project</a>.
+The goal is to share common building blocks with other visualization libraries
+(visvis, pyqtgraph, glumpy...). The low-level API will change and we suggest not
+to use it in production for now.</p>
+
 <h2>User survey</h2>
 
 <p><a href="https://docs.google.com/spreadsheet/viewform?formkey=dE5qZldRN3pvY2NEaXRhb2J4UDhoYWc6MQ#gid=0"><strong>We'd be very grateful if you could fill in this really short form if you're interested in Galry!</strong></a></p>
@@ -55,27 +63,50 @@ written for advanced uses.</p>
 
 <h2>Installation</h2>
 
-<p>Galry should work on any platform (Window/Linux/MacOS).
-Mandatory dependencies include Python 2.7, Numpy, either PyQt4 or PySide,
-PyOpenGL, matplotlib. OpenGL v2+ is required (it's probably a good idea to
-use the latest graphics card drivers).</p>
-
-<p>Galry is licensed under the BSD license.</p>
-
-<h3>Packages</h3>
-
-<p>Here are the packages:</p>
+<h3>Requirements</h3>
 
 <ul>
-<li><a href="http://galry.rossant.net/galry-0.1.0.dev.tar.gz">ZIP</a></li>
-<li><a href="http://galry.rossant.net/galry-0.1.0.dev.zip">TGZ</a></li>
-</ul><p>To install Galry:</p>
+<li>Galry should work on any platform (Window/Linux/MacOS).</li>
+<li>
+<p>Mandatory dependencies include:</p>
 
 <ul>
-<li>Make sure you've installed all dependencies.</li>
-<li>Download one of the packages above.</li>
-<li>Extract the package and do <code>python setup.py install</code>.</li>
-</ul><h3>Development version</h3>
+<li>Python 2.7</li>
+<li>Numpy</li>
+<li>PyQt4 or PySide with the OpenGL bindings</li>
+<li>PyOpenGL</li>
+<li>matplotlib</li>
+</ul>
+</li>
+<li><p>Your graphics card drivers must be up-to-date and support <strong>OpenGL 2.1</strong>.</p></li>
+</ul><p>Galry is licensed under the BSD license.</p>
+
+<h3>Installation procedure</h3>
+
+<ul>
+<li>
+<a href="http://galry.rossant.net/galry-0.1.0.rc1.zip">Download the package</a>.</li>
+<li>Extract it.</li>
+<li>
+<p>Run in a console:</p>
+
+<pre><code>python setup.py install
+</code></pre>
+</li>
+<li>
+<p>Test it:</p>
+
+<pre><code>from galry import *
+from numpy.random import randn
+plot(randn(3, 10000))
+show()
+</code></pre>
+</li>
+<li><p>You should see three overlayed random signals. You can navigate with the
+mouse and the keyboard. Press <code>H</code> to see all available actions.</p></li>
+</ul><p><a href="https://github.com/rossant/galry/wiki/Installation">More details</a>.</p>
+
+<h3>Development version (expert users)</h3>
 
 <ul>
 <li>
@@ -91,24 +122,7 @@ updated (like <code>qtools</code> which contains some Qt-related utility functio
 <pre><code>pip install -r requirements.txt
 </code></pre>
 </li>
-</ul><h3>Test that Galry is well installed</h3>
-
-<p>To test that the installation went fine, open a Python or IPython prompt and type:</p>
-
-<pre><code>from galry import *
-from numpy.random import randn
-plot(randn(3, 10000))
-show()
-</code></pre>
-
-<p>You should see three overlayed random signals. You can navigate with the
-mouse and the keyboard. Press <code>H</code> to see all available actions.</p>
-
-<h3>More details</h3>
-
-<p><a href="https://github.com/rossant/galry/wiki/Installation">Click here to go to the installation page</a>.</p>
-
-<h2>Quick links</h2>
+</ul><h2>Quick links</h2>
 
 <ul>
 <li><a href="https://github.com/rossant/galry/blob/master/CHANGES.md">What's new?</a></li>
@@ -140,25 +154,6 @@ mouse and the keyboard. Press <code>H</code> to see all available actions.</p>
             pageTracker._trackPageview();
             } catch(err) {}
           </script>
-          
-          
-          
-<script type="text/javascript">
-var sc_project=8405204; 
-var sc_invisible=1; 
-var sc_security="c13aafcf"; 
-var scJsHost = (("https:" == document.location.protocol) ?
-"https://secure." : "http://www.");
-document.write("<sc"+"ript type='text/javascript' src='" +
-scJsHost +
-"statcounter.com/counter/counter.js'></"+"script>");</script>
-<noscript><div class="statcounter"><a title="web analytics"
-href="http://statcounter.com/" target="_blank"><img
-class="statcounter"
-src="https://c.statcounter.com/8405204/0/c13aafcf/1/"
-alt="web analytics"></a></div></noscript>
-
-
 
   </body>
 </html>
