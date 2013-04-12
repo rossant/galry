@@ -16,7 +16,12 @@ gl_PointSize = point_size;
 flat_text_map = text_map;
 """
 
-FS = """
+def FS(background_transparent=True):
+    if background_transparent:
+        background_transparent_shader = "letter_alpha"
+    else:
+        background_transparent_shader = "1."
+    fs = """
 // relative coordinates of the pixel within the sprite (in [0,1])
 float x = gl_PointCoord.x;
 float y = gl_PointCoord.y;
@@ -32,11 +37,14 @@ if ((x >= 0) && (x <= 1))
 {
     // coordinates of the character in the font atlas
     vec2 coord = flat_text_map.xy + vec2(w * x, h * y);
-    out_color = texture2D(tex_sampler, coord) * color;
+    float letter_alpha = texture2D(tex_sampler, coord).a;
+    out_color = color * letter_alpha;
+    out_color.a = %s;
 }
 else
     out_color = vec4(0, 0, 0, 0);
-"""
+""" % background_transparent_shader
+    return fs
 
 
 class TextVisual(Visual):
@@ -120,6 +128,7 @@ class TextVisual(Visual):
 
     def initialize(self, text, coordinates=(0., 0.), font='segoe', fontsize=24,
             color=None, letter_spacing=None, interline=0., autocolor=None,
+            background_transparent=True,
             prevent_constrain=False, depth=None, posoffset=None):
         """Initialize the text template."""
         
@@ -183,6 +192,6 @@ class TextVisual(Visual):
         self.add_vertex_main(VS, after='viewport')
 
         # fragment shader
-        self.add_fragment_main(FS)
+        self.add_fragment_main(FS(background_transparent))
         
         self.depth = depth
