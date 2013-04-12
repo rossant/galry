@@ -53,7 +53,7 @@ class UserActionGenerator(object):
         self.pinch_start_position = (0, 0)
         
         self.wheel = 0
-        # self.init_leap()
+        self.init_leap()
         
     def init_leap(self):
         if LEAP:
@@ -172,7 +172,7 @@ class UserActionGenerator(object):
         self.reset()
         
     def close(self):
-        if hasattr(self, 'leap_controller'):
+        if LEAP:
             self.leap_controller.remove_listener(self.leap_listener)
         
         

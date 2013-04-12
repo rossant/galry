@@ -944,6 +944,7 @@ def create_basic_window(widget=None, size=None, position=(20, 20),
             
         def closeEvent(self, e):
             """Clean up memory upon closing."""
+            self.widget.user_action_generator.close()
             self.widget.paint_manager.cleanup()
             super(BasicWindow, self).closeEvent(e)
             

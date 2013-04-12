@@ -8,9 +8,11 @@ plot(zeros(10), zeros(10), 'o', ms=50, is_static=True)
 fingers = zeros((10, 2))
 
 def anim(fig, param):
+    # print LEAP
+    # return
     # retrive the Leap motion frame
     frame = LEAP['frame']
-    
+    # raise Exception()
     # update the finger positions
     fingers[:,:] = 10
     for i in xrange(len(frame.fingers)):
