@@ -19,7 +19,7 @@ written for advanced uses.
 ### Note
 
 The library will be entirely rewritten in the coming months
-in the context of the [pyvis collaborative project](https://github.com/pyvis/pyvis).
+in the context of the [vispy collaborative project](https://github.com/vispy/vispy).
 The goal is to share common building blocks with other visualization libraries
 (visvis, pyqtgraph, glumpy...). The low-level API will change and we suggest not
 to use it in production for now.
