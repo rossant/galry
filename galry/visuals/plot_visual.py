@@ -38,7 +38,7 @@ class PlotVisual(Visual):
     def initialize(self, x=None, y=None, color=None, point_size=1.0,
             position=None, nprimitives=None, index=None,
             color_array_index=None, thickness=None,
-            options=None, autocolor=None):
+            options=None, autocolor=None, autonormalizable=True):
             
         # if position is specified, it contains x and y as column vectors
         if position is not None:
@@ -148,7 +148,8 @@ class PlotVisual(Visual):
             colors_ndim = len(color)
         
         # set position attribute
-        self.add_attribute("position", ndim=2, data=position, autonormalizable=True)
+        self.add_attribute("position", ndim=2, data=position, 
+            autonormalizable=autonormalizable)
         
         if index is not None:
             index = np.array(index)
