@@ -359,6 +359,9 @@ class GalryWidget(QGLWidget):
     def reset_action_generator(self):
         self.user_action_generator.reset()
         
+    def leaveEvent (self, e):
+        self.process_interaction(None)
+        
         
     # Normalization methods
     # ---------------------
