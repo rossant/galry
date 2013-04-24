@@ -54,8 +54,14 @@ class GraphVisual(CompoundVisual):
             primitive_type='LINES', color=edges_color,
             index=edges.ravel(), name='edges')
         
+        if isinstance(node_size, np.ndarray):
+            texsize = int(node_size.max())
+        else:
+            texsize = node_size
+        
         # nodes
         self.add_visual(SpriteVisual,
             position=RefVar(self.name + '_edges', 'position'),
-            color=color, texture=get_tex(node_size), name='nodes')
+            point_size=node_size, zoomable=True,
+            color=color, texture=get_tex(texsize * 2), name='nodes')
 

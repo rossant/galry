@@ -66,6 +66,9 @@ def update(figure, parameter):
         figure.nodes_positions += figure.velocities * figure.dt
         figure.set_data(position=figure.nodes_positions, visual='graph_edges')
 
+    if not hasattr(figure, '_viewbox'):
+        figure._viewbox = (-10., -10., 10., 10.)
+        figure.process_interaction('SetViewbox', figure._viewbox)
         
 def node_moved(figure, parameter):
     x0, y0, x, y = parameter
@@ -115,9 +118,10 @@ color[:,-1] = 1
 
 coledges = (1., 1., 1., .25)
 
+size = np.random.randint(low=50, high=200, size=n)
 
 graph(position=positions, edges=edges, color=color, edges_color=coledges,
-    name='graph')
+    node_size=size, name='graph')
 
     
 f.edges = edges

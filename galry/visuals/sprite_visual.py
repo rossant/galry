@@ -8,7 +8,7 @@ class SpriteVisual(Visual):
     different colors."""
     
     def initialize(self, x=None, y=None, color=None, autocolor=None,
-            texture=None, position=None):#, normalize=None):
+            texture=None, position=None, point_size=None, zoomable=False):
             
         # if position is specified, it contains x and y as column vectors
         if position is not None:
@@ -103,10 +103,26 @@ class SpriteVisual(Visual):
             ncomponents=ncomponents)
         self.add_compound("texture", fun=lambda texture: \
                          dict(tex_sampler=texture), data=texture)
-        self.add_uniform("point_size", vartype="float", ndim=1, data=texsize)
+        
+        # size
+        if point_size is None:
+            point_size = texsize
+        
+        if isinstance(point_size, np.ndarray):
+            self.add_attribute("point_size", vartype="float", ndim=1,
+                data=point_size)
+        else:
+            self.add_uniform("point_size", vartype="float", ndim=1, data=point_size)
         
         # Vertex shader
-        self.add_vertex_main("""
-        gl_PointSize = point_size;
-        """)
+        if zoomable:
+            # The size of the points increases with zoom.
+            self.add_vertex_main("""
+            gl_PointSize = point_size * max(scale.x, scale.y);
+            """)
+        else:
+            self.add_vertex_main("""
+            gl_PointSize = point_size;
+            """)
+            
         
