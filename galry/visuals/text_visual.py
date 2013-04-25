@@ -10,7 +10,7 @@ VS = """
 gl_Position.x += (offset - text_width / 2) * spacing.x / window_size.x;
 gl_Position.y -= index * spacing.y / window_size.y;
 
-gl_Position.xy = gl_Position.xy + posoffset;
+gl_Position.xy = gl_Position.xy + posoffset / window_size;
 
 gl_PointSize = point_size;
 flat_text_map = text_map;
