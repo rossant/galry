@@ -40,7 +40,7 @@ def load_mesh(filename):
 
          
 class MeshInteractionManager(DefaultInteractionManager):
-    def initialize_default(self, constrain_navigation=None):
+    def initialize_default(self, constrain_navigation=None, momentum=None):
         super(MeshInteractionManager, self).initialize_default()
         self.add_processor(MeshNavigationEventProcessor, name='navigation')
         self.add_processor(GridEventProcessor, name='grid')

@@ -113,6 +113,7 @@ class GalryWidget(QGLWidget):
         # constrain width/height ratio when resizing of zooming
         self.constrain_ratio = False
         self.constrain_navigation = False
+        self.momentum = True
         self.activate_help = True
         self.activate_grid = False
         self.block_refresh = False
@@ -684,7 +685,8 @@ def create_custom_widget(bindings=None,
                          show_grid=False,
                          display_fps=False,
                          activate3D=False,
-                         animation_interval=.01,
+                         animation_interval=None,
+                         momentum=True,
                          autosave=None,
                          getfocus=True,
                         **companion_classes):
@@ -705,6 +707,9 @@ def create_custom_widget(bindings=None,
       * **companion_classes: keyword arguments with the companion classes.
     
     """
+    if momentum and animation_interval is None:
+        animation_interval = .01
+    
     # use the GalryTimerWidget if animation_interval is not None
     if animation_interval is not None:
         baseclass = GalryTimerWidget
@@ -740,6 +745,7 @@ def create_custom_widget(bindings=None,
             self.activate_grid = activate_grid
             self.show_grid = show_grid
             self.activate3D = activate3D
+            self.momentum = momentum
             self.display_fps = display_fps
             self.initialize_companion_classes()
             if animation_interval is not None:

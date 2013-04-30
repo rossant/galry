@@ -93,12 +93,14 @@ class PlotPaintManager(DefaultPaintManager):
 
 class PlotInteractionManager(DefaultInteractionManager):
     def initialize_default(self, constrain_navigation=None,
+        momentum=True,
         # normalization_viewbox=None
         ):
         super(PlotInteractionManager, self).initialize_default()
         self.add_processor(NavigationEventProcessor,
             constrain_navigation=constrain_navigation, 
             # normalization_viewbox=normalization_viewbox,
+            momentum=momentum,
             name='navigation')
         self.add_processor(GridEventProcessor, name='grid')#, activated=False)
         

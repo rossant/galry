@@ -24,7 +24,8 @@ class InteractionManager(Manager):
         self.prev_event = None
         self.processors = ordict()
         self.initialize_default(
-            constrain_navigation=self.parent.constrain_navigation)
+            constrain_navigation=self.parent.constrain_navigation,
+            momentum=self.parent.momentum)
         self.initialize()
         
     def initialize(self):

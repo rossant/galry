@@ -164,7 +164,7 @@ class Figure(object):
         self.activate_grid = True
         self.show_grid = False
         self.activate_help = True
-        self.animation_interval = .01
+        self.momentum = True
         self.figsize = (GalryWidget.w, GalryWidget.h)
         self.toolbar = True
         self.autosave = None
@@ -175,6 +175,11 @@ class Figure(object):
         self.bindingsclass = kwargs.pop('bindings', mgs.PlotBindings)
         
         self.initialize(*args, **kwargs)
+        
+        if self.momentum:
+            self.animation_interval = .01
+        else:
+            self.animation_interval = None
         
     def initialize(self, **kwargs):
         for name, value in kwargs.iteritems():
@@ -508,6 +513,7 @@ class Figure(object):
             activate3D=self.activate3D,
             antialiasing=self.antialiasing,
             activate_grid=self.activate_grid,
+            momentum=self.momentum,
             show_grid=self.show_grid,
             activate_help=self.activate_help,
             animation_interval=self.animation_interval,

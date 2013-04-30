@@ -31,7 +31,7 @@ class GraphVisual(CompoundVisual):
             color = get_color(autocolor)
         
         if node_size is None:
-            node_size = 8
+            node_size = 8.
         if color is None:
             color = (1., 1., 1., .25)
 
@@ -63,5 +63,5 @@ class GraphVisual(CompoundVisual):
         self.add_visual(SpriteVisual,
             position=RefVar(self.name + '_edges', 'position'),
             point_size=node_size, zoomable=True,
-            color=color, texture=get_tex(texsize * 2), name='nodes')
+            color=color, texture=get_tex(texsize * 4), name='nodes')
 

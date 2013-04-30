@@ -13,7 +13,8 @@ MAX_VIEWBOX = (-1., -1., 1., 1.)
 
 class NavigationEventProcessor(EventProcessor):
     """Handle navigation-related events."""
-    def initialize(self, constrain_navigation=False, normalization_viewbox=None):
+    def initialize(self, constrain_navigation=False,
+        normalization_viewbox=None, momentum=True):
         # zoom box
         self.navigation_rectangle = None
         self.constrain_navigation = constrain_navigation
@@ -34,7 +35,9 @@ class NavigationEventProcessor(EventProcessor):
         self.register('SetViewbox', self.process_setviewbox_event)
         
         # Momentum
-        self.register('Animate', self.process_animate_event)
+        if momentum:
+            self.register('Animate', self.process_animate_event)
+            
         self.pan_list = []
         self.pan_list_maxsize = 10
         self.pan_vec = np.zeros(2)
