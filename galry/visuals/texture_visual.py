@@ -73,8 +73,11 @@ class TextureVisual(Visual):
         elif texture is not None:
             
             if texture.ndim == 2:
+                m, M = texture.min(), texture.max()
+                if m < M:
+                    texture = (texture - m) / (M - m)
                 texture = colormap(texture)
-            
+                
             shape = texture.shape[:2]
             ncomponents = texture.shape[2]
         else:
