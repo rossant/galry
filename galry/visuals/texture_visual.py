@@ -1,6 +1,33 @@
 import numpy as np
 from visual import Visual, RefVar
     
+from matplotlib.colors import hsv_to_rgb
+
+def colormap(x):
+    """Colorize a 2D grayscale array.
+    
+    Arguments: 
+      * x:an NxM array with values in [0,1] 
+    
+    Returns:
+      * y: an NxMx3 array with a rainbow color palette.
+    
+    """
+    x = np.clip(x, 0., 1.)
+    
+    # initial and final gradient colors, here rainbow gradient
+    col0 = np.array([.67, .91, .65]).reshape((1, 1, -1))
+    col1 = np.array([0., 1., 1.]).reshape((1, 1, -1))
+    
+    col0 = np.tile(col0, x.shape + (1,))
+    col1 = np.tile(col1, x.shape + (1,))
+    
+    x = np.tile(x.reshape(x.shape + (1,)), (1, 1, 3))
+    
+    return hsv_to_rgb(col0 + (col1 - col0) * x)
+
+    
+    
 class TextureVisual(Visual):
     """Visual that displays a colored texture."""
     
@@ -44,6 +71,10 @@ class TextureVisual(Visual):
             targettex = self.resolve_reference(texture)['data']
             shape, ncomponents = targettex.shape[:2], targettex.shape[2]
         elif texture is not None:
+            
+            if texture.ndim == 2:
+                texture = colormap(texture)
+            
             shape = texture.shape[:2]
             ncomponents = texture.shape[2]
         else:
