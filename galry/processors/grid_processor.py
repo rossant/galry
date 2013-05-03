@@ -4,6 +4,7 @@ import numpy as np
 from processor import EventProcessor
 from galry import DataNormalizer
 
+NTICKS = 10
 
 __all__ = ['GridEventProcessor']
 
@@ -34,7 +35,7 @@ def nicenum(x, round=False):
     return nf * 10 ** e
     
 def get_ticks(x0, x1):
-    nticks = 10
+    nticks = NTICKS
     r = nicenum(x1 - x0, False)
     d = nicenum(r / (nticks - 1), True)
     g0 = np.floor(x0 / d) * d
