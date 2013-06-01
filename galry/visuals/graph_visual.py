@@ -37,9 +37,9 @@ class GraphVisual(CompoundVisual):
 
         # relative indexing
         edges = np.array(edges, dtype=np.int32).reshape((-1, 2))
-        uedges = np.unique(edges)
-        edges[:,0] = np.digitize(edges[:,0], uedges) - 1
-        edges[:,1] = np.digitize(edges[:,1], uedges) - 1
+        # uedges = np.unique(edges)
+        # edges[:,0] = np.digitize(edges[:,0], uedges) - 1
+        # edges[:,1] = np.digitize(edges[:,1], uedges) - 1
         
         # edges
         self.add_visual(PlotVisual, position=position,
