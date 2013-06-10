@@ -14,7 +14,7 @@ MAX_VIEWBOX = (-1., -1., 1., 1.)
 class NavigationEventProcessor(EventProcessor):
     """Handle navigation-related events."""
     def initialize(self, constrain_navigation=False,
-        normalization_viewbox=None, momentum=True):
+        normalization_viewbox=None, momentum=False):
         # zoom box
         self.navigation_rectangle = None
         self.constrain_navigation = constrain_navigation

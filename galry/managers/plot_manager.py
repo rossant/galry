@@ -93,7 +93,7 @@ class PlotPaintManager(DefaultPaintManager):
 
 class PlotInteractionManager(DefaultInteractionManager):
     def initialize_default(self, constrain_navigation=None,
-        momentum=True,
+        momentum=False,
         # normalization_viewbox=None
         ):
         super(PlotInteractionManager, self).initialize_default()

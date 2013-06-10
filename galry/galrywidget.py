@@ -113,7 +113,7 @@ class GalryWidget(QGLWidget):
         # constrain width/height ratio when resizing of zooming
         self.constrain_ratio = False
         self.constrain_navigation = False
-        self.momentum = True
+        self.momentum = False
         self.activate_help = True
         self.activate_grid = False
         self.block_refresh = False
@@ -686,7 +686,7 @@ def create_custom_widget(bindings=None,
                          display_fps=False,
                          activate3D=False,
                          animation_interval=None,
-                         momentum=True,
+                         momentum=False,
                          autosave=None,
                          getfocus=True,
                         **companion_classes):
