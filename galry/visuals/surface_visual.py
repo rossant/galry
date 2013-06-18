@@ -2,7 +2,7 @@ import numpy as np
 from visual import Visual
 from mesh_visual import MeshVisual
 
-from matplotlib.colors import hsv_to_rgb
+from galry.tools import hsv_to_rgb
 
 def colormap(x):
     """Colorize a 2D grayscale array.

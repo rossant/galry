@@ -1,7 +1,7 @@
 import numpy as np
 from visual import Visual, RefVar
     
-from matplotlib.colors import hsv_to_rgb
+from galry.tools import hsv_to_rgb
 
 def colormap(x):
     """Colorize a 2D grayscale array.

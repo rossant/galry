@@ -51,8 +51,8 @@ def get_font_filenames(font="segoe", size=32):
 
 def load_png(filename):
     """Load a PNG texture."""
-    import matplotlib.pyplot as plt
-    return plt.imread(filename)
+    import matplotlib.image as mpimg
+    return mpimg.imread(filename)
     
 def load_fnt(filename):
     """Load a bitmap font file.
