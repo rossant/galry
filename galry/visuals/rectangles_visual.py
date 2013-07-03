@@ -53,6 +53,12 @@ class RectanglesVisual(PlotVisual):
         
         if color is None:
             color = self.default_color
+            
+        # If there is one color per rectangle, repeat the color array so
+        # that there is one color per vertex.
+        if isinstance(color, np.ndarray):
+            if color.shape[0] == nprimitives:
+                color = np.repeat(color, 4, axis=0)
         
         # there are four vertices per rectangle
         self.size = 4 * nprimitives
