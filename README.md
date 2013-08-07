@@ -18,7 +18,7 @@ written for advanced uses.
 
 ### Note
 
-The library will be entirely rewritten in the coming months
+This is currently an experimental library. It will be entirely rewritten in the coming months
 in the context of the [vispy collaborative project](https://github.com/vispy/vispy).
 The goal is to share common building blocks with other visualization libraries
 (visvis, pyqtgraph, glumpy...). The low-level API will change and we suggest not
@@ -38,6 +38,24 @@ Gallery
 Installation
 ------------
 
+### Installation procedure
+
+  * Type in a terminal:
+        
+        $ pip install galry
+
+  * In Python, type:
+      
+        from galry import *
+        from numpy.random import randn
+        plot(randn(3, 10000))
+        show()
+        
+  * You should see three overlayed random signals. You can navigate with the
+    mouse and the keyboard. Press `H` to see all available actions.
+
+[More details](https://github.com/rossant/galry/wiki/Installation).
+
 ### Requirements
 
   * Galry should work on any platform (Window/Linux/MacOS).
@@ -52,26 +70,6 @@ Installation
   * Your graphics card drivers must be up-to-date and support **OpenGL 2.1**.
 
 Galry is licensed under the BSD license.
-
-### Installation procedure
-
-  * [Download the package](https://github.com/rossant/galry/releases/download/v0.1.0/galry-0.1.0.zip).
-  * Extract it.
-  * Run in a console:
-  
-        python setup.py install
-        
-  * Test it:
-      
-        from galry import *
-        from numpy.random import randn
-        plot(randn(3, 10000))
-        show()
-        
-  * You should see three overlayed random signals. You can navigate with the
-    mouse and the keyboard. Press `H` to see all available actions.
-
-[More details](https://github.com/rossant/galry/wiki/Installation).
 
 ### Development version (expert users)
 
