@@ -108,7 +108,8 @@ class TicksLineVisual(PlotVisual):
         
         
 class GridVisual(CompoundVisual):
-    def initialize(self, *args, **kwargs):
+    def initialize(self, background_transparent=True, letter_spacing=250.,
+        *args, **kwargs):
         # add lines visual
         self.add_visual(TicksLineVisual, name='lines',
             position=np.zeros((1,2)),
@@ -117,7 +118,8 @@ class GridVisual(CompoundVisual):
         # add the text visual
         self.add_visual(TicksTextVisual, text='',
             fontsize=14, color=(1., 1., 1., .75), name='text',
-            letter_spacing=250.,
+            letter_spacing=letter_spacing,
+            background_transparent=background_transparent,
             **kwargs)
         
         
