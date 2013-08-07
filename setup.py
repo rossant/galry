@@ -13,8 +13,9 @@ if os.path.exists('MANIFEST'):
 if __name__ == '__main__':
 
     setup(
+        zip_safe=False,
         name='galry',
-        version='0.1.0.rc1',
+        version='0.1.0',
         author='Cyrille Rossant',
         author_email='rossant@github',
         packages=['galry',
@@ -41,7 +42,7 @@ if __name__ == '__main__':
         description='High-performance interactive visualization in Python.',
         long_description=LONG_DESCRIPTION,
         install_requires=[
-            "numpy >= 1.6",
-            "PyOpenGL >= 3.0",
+            # "numpy >= 1.6",
+            # "PyOpenGL >= 3.0",
         ],
     )

@@ -25,12 +25,6 @@ The goal is to share common building blocks with other visualization libraries
 to use it in production for now.
 
 
-User survey
------------
-
-[**We'd be very grateful if you could fill in this really short form if you're interested in Galry!**](https://docs.google.com/spreadsheet/viewform?formkey=dE5qZldRN3pvY2NEaXRhb2J4UDhoYWc6MQ#gid=0)
-
-
 Gallery
 -------
 
@@ -61,7 +55,7 @@ Galry is licensed under the BSD license.
 
 ### Installation procedure
 
-  * [Download the package](http://galry.rossant.net/galry-0.1.0.rc1.zip).
+  * [Download the package](https://github.com/rossant/galry/releases/download/v0.1.0/galry-0.1.0.zip).
   * Extract it.
   * Run in a console:
   
