@@ -7,6 +7,7 @@ import numpy as np
 import numpy.random as rdn
 from qtools.qtpy import QtCore, QtGui
 from qtools.qtpy.QtCore import Qt, pyqtSignal
+from qtools import show_window
 from galry import DEBUG, log_debug, log_info, log_warn
 try:
     from qtools.qtpy.QtOpenGL import QGLWidget, QGLFormat
@@ -26,7 +27,7 @@ except Exception as e:
         def resizeGL(self):
             pass
     QGLFormat = None
-from galry import get_cursor, FpsCounter, show_window, PaintManager, \
+from galry import get_cursor, FpsCounter, PaintManager, \
     InteractionManager, BindingManager, \
     UserActionGenerator, PlotBindings, Bindings, FpsCounter, \
     show_window, get_icon

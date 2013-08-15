@@ -7,6 +7,7 @@ import timeit
 import collections
 import subprocess
 from qtools.qtpy import QtCore, QtGui
+from qtools.utils import get_application, show_window
 from functools import wraps
 from galry import log_debug, log_info, log_warn
 from collections import OrderedDict as ordict
@@ -94,39 +95,7 @@ def get_intermediate_classes(cls, baseclass):
     classes = inspect.getmro(cls)
     classes = [c for c in classes if issubclass(c, baseclass)]
     return classes
-    
-def get_application():
-    """Get the current QApplication, or create a new one."""
-    app_created = False
-    app = QtCore.QCoreApplication.instance()
-    if app is None:
-        log_debug("creating a new QApplication in order to show the window")
-        app = QtGui.QApplication(sys.argv)
-        app_created = True
-    return app, app_created
-    
-def show_window(window, **kwargs):
-    """Create a QT window in Python, or interactively in IPython with QT GUI
-    event loop integration:
-    
-        # in ~/.ipython/ipython_config.py
-        c.TerminalIPythonApp.gui = 'qt'
-        c.TerminalIPythonApp.pylab = 'qt'
-    
-    See also:
-        http://ipython.org/ipython-doc/dev/interactive/qtconsole.html#qt-and-the-qtconsole
-    
-    """
-    app, app_created = get_application()
-    app.references = set()
-    if not isinstance(window, QtGui.QWidget):
-        window = window(**kwargs)
-    app.references.add(window)
-    window.show()
-    if app_created:
-        app.exec_()
-    return window
-    
+     
 def run_all_scripts(dir=".", autodestruct=True, condition=None, ignore=[]):
     """Run all scripts successively."""
     if condition is None:
