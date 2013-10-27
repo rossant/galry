@@ -1,6 +1,10 @@
 Galry: high performance interactive visualization package in Python
 ===================================================================
 
+
+**This experimental project will be superseded by [Vispy](https://github.com/vispy/vispy) probably some time in 2014. In the meantime, Galry will be minimally maintained.**
+
+
 Galry is a **high performance interactive visualization package in 
 Python** based on OpenGL.
 It allows to interactively visualize very large plots (tens of millions of
@@ -16,13 +20,6 @@ written for advanced uses.
 
 [Click here to go to the FAQ](https://github.com/rossant/galry/blob/master/docs/faq.md).
 
-### Note
-
-This is currently an experimental library. It will be entirely rewritten in the coming months
-in the context of the [vispy collaborative project](https://github.com/vispy/vispy).
-The goal is to share common building blocks with other visualization libraries
-(visvis, pyqtgraph, glumpy...). The low-level API will change and we suggest not
-to use it in production for now.
 
 
 Gallery
