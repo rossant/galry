@@ -690,6 +690,7 @@ def create_custom_widget(bindings=None,
                          momentum=False,
                          autosave=None,
                          getfocus=True,
+                         figure=None,
                         **companion_classes):
     """Helper function to create a custom widget class from various parameters.
     
@@ -738,6 +739,8 @@ def create_custom_widget(bindings=None,
                 getfocus=getfocus)
         
         def initialize(self):
+            if figure:
+                figure.widget = self
             self.set_bindings(*bindings)
             self.set_companion_classes(**companion_classes)
             self.constrain_ratio = constrain_ratio

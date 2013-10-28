@@ -504,6 +504,7 @@ class Figure(object):
         im = InteractionManagerCreator.create(self, self.imclass)
         bindings = BindingCreator.create(self, self.bindingsclass)
         window = show_basic_window(
+            figure=self,
             paint_manager=pm,
             interaction_manager=im,
             bindings=bindings,

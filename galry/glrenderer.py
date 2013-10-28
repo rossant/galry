@@ -1336,7 +1336,7 @@ class GLVisualRenderer(object):
         # if the shaders could not be successfully activated, stop the
         # rendering immediately
         except Exception as e:
-            log_warn("Error while activating the shaders: " + str(e))
+            log_info("Error while activating the shaders: " + str(e))
             return
             
         # update all variables
