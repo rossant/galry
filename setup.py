@@ -15,7 +15,7 @@ if __name__ == '__main__':
     setup(
         zip_safe=False,
         name='galry',
-        version='0.2.0dev',
+        version='0.3.0dev',
         author='Cyrille Rossant',
         author_email='rossant@github',
         packages=['galry',
