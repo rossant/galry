@@ -96,3 +96,7 @@ Quick links
   * [Contact](http://cyrille.rossant.net)
   
   
+
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/rossant/galry/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
