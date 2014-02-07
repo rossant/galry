@@ -497,7 +497,7 @@ class Figure(object):
         
     # Rendering methods
     # -----------------
-    def show(self):
+    def show(self, position=(20,20) ):
         """Show the figure."""
         # self.update_normalization()
         pm = PaintManagerCreator.create(self, self.pmclass)
@@ -519,6 +519,7 @@ class Figure(object):
             activate_help=self.activate_help,
             animation_interval=self.animation_interval,
             size=self.figsize,
+            position=position,
             toolbar=self.toolbar,
             autosave=self.autosave,
             autodestruct=self.autodestruct,
