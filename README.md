@@ -2,7 +2,7 @@ Galry: high performance interactive visualization package in Python
 ===================================================================
 
 
-**This experimental project will be superseded by [Vispy](https://github.com/vispy/vispy) probably some time in 2014. In the meantime, Galry will be minimally maintained.**
+**This experimental project is now superseded by [Vispy](https://github.com/vispy/vispy). Galry is no longer maintained.**
 
 
 Galry is a **high performance interactive visualization package in 
