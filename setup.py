@@ -1,6 +1,6 @@
 import os
 try:
-    from setuptools import setup 
+    from setuptools import setup
 except ImportError:
     from distutils.core import setup
 
@@ -15,7 +15,7 @@ if __name__ == '__main__':
     setup(
         zip_safe=False,
         name='galry',
-        version='0.3.0dev',
+        version='0.3.1',
         author='Cyrille Rossant',
         author_email='rossant@github',
         packages=['galry',
@@ -24,12 +24,6 @@ if __name__ == '__main__':
                   'galry.test',
                   'galry.visuals',
                   'galry.visuals.fontmaps',
-                  
-                  #<
-                  # 'qtools',
-                  # 'qtools.qtpy',
-                  # 'qtools.tests',
-                  #>
                   ],
         package_data={
             'galry': ['cursors/*.png', 'icons/*.png'],
@@ -42,7 +36,5 @@ if __name__ == '__main__':
         description='High-performance interactive visualization in Python.',
         long_description=LONG_DESCRIPTION,
         install_requires=[
-            # "numpy >= 1.6",
-            # "PyOpenGL >= 3.0",
         ],
     )
